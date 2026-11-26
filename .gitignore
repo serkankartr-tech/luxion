@@ -1,0 +1,18 @@
+node_modules
+dist
+.env
+server/data
+dev-dist
+.DS_Store
+.claude/settings.local.json
+ses-ornekleri/*.html
+
+# Yerel notlar ve geliştirme ayarı (repoda yok; Halil GitHub'dan kaldırdı)
+docs/DEVIR-NOTU.md
+.claude/
+
+# El Kontrolü modeli (npm run el-modeli ile indirilir)
+web/public/models/
+
+# Ultron Paketi: üretilen replik sesleri (kişisel ad içerebilir) ve kayıtlar
+scenes/ultron/audio/

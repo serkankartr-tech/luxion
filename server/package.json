@@ -1,0 +1,45 @@
+{
+  "name": "jarvis-server",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "models": "tsx src/listModels.ts",
+    "test": "tsx src/selftest.ts",
+    "voices": "tsx src/voices.ts",
+    "eleven": "tsx src/eleven-cli.ts",
+    "test:kitaplik": "tsx src/kitaplik-test.ts",
+    "test:haber": "MOCK=1 tsx src/haber-test.ts",
+    "test:sohbet": "tsx src/sohbet-test.ts",
+    "test:beyin": "tsx src/beyin-test.ts",
+    "test:bekci": "tsx src/bekci-test.ts",
+    "test:toplanti": "tsx src/toplanti-test.ts",
+    "eval:toplanti": "tsx src/toplanti-eval.ts",
+    "test:ultron": "tsx src/ultron-test.ts",
+    "ultron:kayit": "tsx src/ultron-kayit.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "imapflow": "2.9.1",
+    "jpeg-js": "0.4.4",
+    "jsqr": "1.4.0",
+    "pngjs": "7.0.0",
+    "postal-mime": "4.1.4",
+    "rss-parser": "^3.13.0",
+    "satellite.js": "^7.2.0",
+    "tldts": "7.4.19"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.4",
+    "@types/pngjs": "6.0.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "type": "module"
+}

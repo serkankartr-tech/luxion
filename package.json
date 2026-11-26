@@ -1,0 +1,25 @@
+{
+  "name": "jarvis",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix web install && node -e \"const fs=require('fs');if(!fs.existsSync('server/.env'))fs.copyFileSync('server/.env.example','server/.env')\"",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm --prefix web run build",
+    "start": "npm run build && npm --prefix server start",
+    "test": "npm --prefix server run test",
+    "models": "npm --prefix server run models",
+    "voices": "npm --prefix server run voices",
+    "el-modeli": "node scripts/el-modeli.mjs",
+    "test:kitap": "server/node_modules/.bin/tsx web/src/lib/bookCommands.test.ts && npm --prefix server run -s test:kitaplik",
+    "test:haber": "npm --prefix server run -s test:haber && server/node_modules/.bin/tsx web/src/hands/news/commands.test.ts && server/node_modules/.bin/tsx web/src/hands/news/gestures.test.ts",
+    "test:uzay": "server/node_modules/.bin/tsx web/src/hands/space/commands.test.ts && npm run -s test:lab",
+    "test:lab": "server/node_modules/.bin/tsx web/src/hands/space/physics.test.ts && server/node_modules/.bin/tsx web/src/hands/space/life.test.ts && server/node_modules/.bin/tsx web/src/hands/space/extra/moonHole.test.ts",
+    "test:gok": "server/node_modules/.bin/tsx web/src/sky/sky.test.ts && server/node_modules/.bin/tsx server/src/gok-test.ts",
+    "test:bekci": "npm --prefix server run -s test:bekci",
+    "test:ultron": "npm --prefix server run -s test:ultron && server/node_modules/.bin/tsx web/src/ultron/ultron.test.ts",
+    "ultron:kayit": "npm --prefix server run -s ultron:kayit --",
+    "ultron:sinirlar": "node scripts/ultron-sinirlar.mjs",
+    "test:toplanti": "npm --prefix server run -s test:toplanti && server/node_modules/.bin/tsx web/src/toplanti/komutlar.test.ts && server/node_modules/.bin/tsx web/src/toplanti/canli.test.ts"
+  }
+}

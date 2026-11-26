@@ -1,0 +1,1004 @@
+// El Kontrolü: kamera görüntüsü üstünde el takibi, büyü efektleri ve jestle Jarvis kontrolü.
+// Tuşlar: Esc kapat · L arayüzü gizle/göster (temiz çekim) · D iskelet · M ses · C kamera değiştir · F yüz kilidi · K kitaplık ayarı
+// U uzay modu · N haber modu · B arka plan (tam uzay / oda) · G laboratuvar ↔ gösteri · T temiz çekim (yalnızca sonuçlar)
+// Haber modunda: ←/→ haber · ↑/↓ kategori · Enter detay · K karşılaştır · W dünya basını · / ara · I iddia kontrolü · S sorular · O sabah özeti · ⌫ geri
+// Laboratuvarda: Z yakınlaş/uzaklaş · Y yaşanabilir bölge · Boşluk zamanı durdur
+import type { HandLandmarker } from '@mediapipe/tasks-vision';
+import { useEffect, useRef, useState } from 'react';
+import { Controller, KONTROLLER, type Kontrol, type Status } from './controller';
+import { Fx } from './fx';
+import { GESTURE_LABEL } from './gestures';
+import { Sfx } from './sfx';
+import { demoBookHands, demoHands } from './synthetic';
+import { detect, listCameras, loadLandmarker, openCamera, type CameraInfo, type RawHand } from './tracker';
+import { FaceHud, demoFace, detectFaces, loadFaceDetector, type FaceBox } from './face';
+import type { FaceDetector } from '@mediapipe/tasks-vision';
+import { Library, loadCover, thumbOf, type KalemKaydi } from './library';
+import LibraryEditor from './LibraryEditor';
+import { DEMO_BOLUM_ALANLARI, DEMO_TARGET, buildDemoShelf, demoStream, demoTahmin, demoTarama } from './shelfDemo';
+import { AYAR_LISTESI, loadAyar, saveAyar, type ElAyar } from './settings';
+import { GEZEGENLER, type GezegenTur } from './fx';
+import { completeSection, fillBook, getLibrary, placeEstimated, saveLibrary, scanLibrary, shelfRegion, tileFrame, type Bolum, type Kitap, type Kitaplik, type Kutu } from '../lib/library';
+import { SpaceBrain } from './space/brain';
+import type { SpaceCmd } from './space/commands';
+import { demoSpaceHands } from './space/demo';
+import { ExtraScene, NUMARALAR, type NumaraAd } from './space/extra';
+import { LabBrain } from './space/lab';
+import { LAB_ONAY } from './space/labText';
+import { demoLabHands, demoLabJest, demoLabTara } from './space/labDemo';
+import { ONAY } from './space/facts';
+import { loadTextures } from './space/planets';
+import { PersonCutout, loadSegmenter } from './space/segment';
+import { Starfield } from './space/starfield';
+import { NewsScene } from './news/scene';
+import { numaraliKirpinti, okumaSirasi } from './numbered';
+import type { HaberCmd } from './news/commands';
+import { demoNews } from './news/demo';
+import './hands.css';
+import './news/news.css';
+
+export interface HandControlProps {
+  /** Sentetik ellerle çalış (kamera yok): ?el=demo */
+  demo?: boolean;
+  /** Jarvis'in o anki altyazısı ve durumu */
+  caption: string;
+  core: string;
+  onAction(k: Kontrol): void;
+  onClose(): void;
+  /** Yüz HUD etiketindeki ad (.env USER_NAME) */
+  userName?: string;
+  /** Kullanıcının yüzüne kilitlendi (yalnızca "TANINDI" yüz için) */
+  onFaceLock?(): void;
+  /** Demo: arka plana prosedürel kitaplık (?el=demo&kitaplik=1) */
+  kitaplik?: boolean;
+  /** Sunucuda kitaplık değişti (SSE): haritayı yeniden yükle */
+  libraryKey?: number;
+  /** "Jarvis, kitaplığımı tara": her artışta bir tarama */
+  scanSignal?: number;
+  onScanDone?(r: { bulunan: number; belirsiz: number; tamamlanan?: number; tahmini?: number; hata?: string }): void;
+  /** Açık kitaba sesle eklenen kayıt: kalemle yazılır (n her istekte artar) */
+  kalemKaydi?: { kayit: KalemKaydi; n: number } | null;
+  /** Jarvis'in önerdiği kitap: raftan kendiliğinden çıkar (n her öneride artar) */
+  oneriCmd?: { id: string; ad: string | null; n: number } | null;
+  /** Kitap açıkken 👍 basılı: özeti seçili sesle oku */
+  onBookRead?(k: Kitap): void;
+  /** Açık kitap değişti ("Jarvis, bunu özetle" için) */
+  onBookOpen?(k: Kitap | null): void;
+  /** "Jarvis, Mars yap": n her istekte artar */
+  planetCmd?: { tur: GezegenTur; n: number } | null;
+  /** Uzay modunda başla (?mod=uzay ya da "Jarvis, uzay modunu aç") */
+  uzay?: boolean;
+  /** Uzay sesli komutu (sunucuya gitmez): n her istekte artar. zincir: "…, sonra …" komutları sırayla */
+  spaceCmd?: { cmd: SpaceCmd; n: number; zincir?: SpaceCmd[] } | null;
+  /** Jarvis'in sohbet aracıyla başlayan yaşam izi taramasında cevabın sahne sırası */
+  sahneIlerleme?: { i: number; bitti: boolean };
+  /** Bu cümlelerin sesini önceden hazırla */
+  onPreload?(lines: string[]): void;
+  /** Mikrofon dinliyor (✌️ elinin çevresinde dalga) */
+  listening?: boolean;
+  /** Jarvis bu cümleyi seçili sesle söylesin; söz cümle bitince çözülür */
+  onSay?(text: string): Promise<void> | void;
+  /** ✌️ basılı (uzay modu): mikrofonu aç */
+  onMic?(): void;
+  onModeChange?(m: 'buyu' | 'uzay' | 'haber'): void;
+  /** Haber modunda başla (?mod=haber ya da "Jarvis, haber modunu aç") */
+  haber?: boolean;
+  /** Haber modu sesli komutu: n her istekte artar */
+  newsCmd?: { cmd: HaberCmd; n: number } | null;
+  /** ✊ (haber modu): Jarvis'in sesini kes */
+  onSus?(): void;
+  /** Uzay modunun sahnesi: laboratuvar (varsayılan) ya da gösteri (?mod=gosteri) */
+  uzaySahne?: 'lab' | 'gosteri' | 'ekstra';
+}
+
+/** Yaşam izi taraması demosu: ?el=demo&mod=lab&tara=europa | dunya-mars-yorungesi */
+const DEMO_TARA = new URLSearchParams(location.search).get('tara');
+/** Demoda oda görünümü (kitaplık demosunun raf görüntüsü arka plan olur): ?el=demo&kitaplik=1&mod=lab&oda=1 */
+const DEMO_ODA = new URLSearchParams(location.search).get('oda') === '1';
+/** Haber demosu sentetik ellersiz (klavyeyle denemek için): ?el=demo&mod=haber&haber=elle */
+const DEMO_HABER_ELLE = new URLSearchParams(location.search).get('haber') === 'elle';
+/** Haber demosunda açılıştan sonra arama (çekim için): &ara=Gazze · &dunya=1 sonra öndeki olayın dünya basını */
+const DEMO_ARA = new URLSearchParams(location.search).get('ara')?.trim() || null;
+const DEMO_DUNYA = new URLSearchParams(location.search).get('dunya') === '1';
+/** Açık kitapta sesli komutlar (lib/bookCommands.ts ile aynı kalıplar): [vurgu anahtarı, söylenen, sonuç] */
+const KITAP_KOMUTLARI: [string, string, string][] = [
+  ['durum-bitti', 'okudum', 'OKUNDU ✓'],
+  ['durum-okunuyor', 'okuyorum', 'OKUNUYOR'],
+  ['durum-okunacak', 'okunacaklara ekle', 'OKUNACAK'],
+  ['sayfa', '120. sayfadayım', 'sayfa ve ilerleme'],
+  ['not', 'not al: …', 'kalem notu yazar'],
+  ['alinti', 'alıntı ekle: …', 'kalem alıntıyı yazar'],
+  ['ozetle', 'bunu özetle', 'Jarvis özeti okur'],
+  ['ad', 'bu kitabın adı …', 'adsız kitabı adlandırır'],
+  ['sohbet', 'bu kitap hakkında konuşalım', 'kitap sohbeti'],
+];
+/** Kitaplık demosunda tarama sonrası tahmini yerleştirme (bölüm tamamlaması yerine, mor): ?el=demo&kitaplik=1&tahmin=1 */
+const DEMO_TAHMIN = new URLSearchParams(location.search).get('tahmin') === '1';
+/** Kitaplık demosunda sentetik el yok (sesli komut ve öneri denemesi için): ?el=demo&kitaplik=1&eller=yok */
+const DEMO_ELSIZ = new URLSearchParams(location.search).get('eller') === 'yok';
+/** Kitaplık demosu: taramadan sonra Jarvis bu kitabı önerir (raftan kendiliğinden çıkar): &oneri=Kitap Adı (boşsa hedef kitap) */
+const DEMO_ONERI = new URLSearchParams(location.search).get('oneri');
+
+/** Uzay Laboratuvarı jestleri */
+const LEGEND_LAB: [string, string][] = [
+  ['🤏 dokun', 'gezegene yakınlaş'], ['🤏 sürükle', 'taşı'], ['⇄', 'başka gezegenin üstüne bırak: yer değiştir'], ['💥', 'hızla vur: çarpıştır'],
+  ['↗', 'boşluğa hızla bırak: fırlat'], ['🤏🤏 boşlukta', 'büyüt / küçült'], ['✊ 1 sn', 'zamanı durdur'], ['✌️', 'mikrofon'],
+];
+
+/** Laboratuvar sahnesinde gösteriye geçmeyi gerektiren komutlar ve tersi */
+const GOSTERI_KOMUT = new Set<SpaceCmd['tip']>(['karadelik', 'theia', 'kayan', 'olcek']);
+/** Ekstra sahnenin numaraları: ?el=demo&mod=ekstra&numara=ay|asteroit|kizildev|karadelik|aykaradelik */
+const DEMO_NUMARA = new URLSearchParams(location.search).get('numara') as NumaraAd | null;
+const LEGEND_EKSTRA: [string, string][] = [['1', '🌙 kafanın etrafında Ay'], ['2', '☄️ asteroit'], ['3', "☀️ Güneş'in son günleri"], ['4', '🕳 gezgin kara delik'], ['5', '⚫ Ay yerine kara delik'], ['✊ 1 sn', 'durdur'], ['✌️', 'mikrofon']];
+const LAB_KOMUT = new Set<SpaceCmd['tip']>(['sifirla', 'yaklastir', 'tasi', 'mesaj', 'karsilastir', 'kesit', 'zaman', 'tarih', 'yasanabilir', 'gorunum', 'kilo']);
+
+/** Uzay modu jestleri */
+const LEGEND_UZAY: [string, string][] = [
+  ['🤏', 'gezegen tut'], ['🤏+1…5', 'diğer el: Dünya · Mars · Jüpiter · Satürn · Güneş'], ['↻', 'bileği çevir'], ['🤏🤏', 'büyüt'],
+  ['💥', 'iki gezegeni çarpıştır'], ['✋✋', 'güneş sistemi'], ['✊ 1,5 sn', 'kara delik'], ['✊→✋', 'patlat'], ['✌️', 'mikrofon'],
+];
+
+/** Haber modu jestleri */
+const LEGEND_HABER: [string, string][] = [
+  ['✋ 0,6 sn', 'kontrol: kilitle'], ['🤏 ↔', 'tut, sürükle'], ['🤏 ↕', 'kategori · içerik'], ['✊→🖐', 'aç'], ['✊ tut', 'geri'], ['🤏🤏 ⟷', 'yakınlaş · uzaklaş'],
+  ['🤏🤏 ↕', 'terazi: iddia'], ['☝️', 'vurgula'], ['👍 1 sn', 'özetle'], ['✌️', 'mikrofon'],
+];
+
+const LEGEND: [string, string][] = [
+  ['✋', 'ateş'], ['✋✋', 'mühür'], ['🤏', 'gezegen'], ['🤏🤏', 'büyüt'], ['✊→✋', 'patlat'], ['☝️☝️', 'şimşek'], ['☝️', 'iz'],
+  ...KONTROLLER.map(k => [k.jest === 'basparmak' ? '👍' : k.jest === 'zafer' ? '✌️' : k.jest === 'yumruk' ? '✊ tut' : k.jest, k.ad.replace(/^\S+\s/, '').toLocaleLowerCase('tr')] as [string, string]),
+];
+
+/** Kitap dışarıdayken (seçili/tutuldu/açık) jest listesi */
+const LEGEND_KITAP: [string, string][] = [['☝️', 'kitap seç'], ['🤏', 'tut ve çek'], ['✋⇠', 'sayfa çevir'], ['👍', 'özeti oku'], ['✊', 'rafa koy'], ['✋⤴', 'ileri it: rafa koy']];
+
+export default function HandControl(p: HandControlProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const faceRef = useRef<HTMLCanvasElement>(null);
+  const shelfRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const starsRef = useRef<HTMLCanvasElement>(null);
+  const spaceRef = useRef<HTMLCanvasElement>(null);
+  const brainRef = useRef<SpaceBrain | null>(null);
+  const labRef = useRef<LabBrain | null>(null);
+  /** Zincirleme komut çalıştırıcı (demo döngüsü de kullanır) */
+  const chainRef = useRef<(cmds: SpaceCmd[]) => void>(() => {});
+  /** Uzay sahnesi: laboratuvar ya da gösteri (G) */
+  const [sahne, setSahne] = useState<'lab' | 'gosteri' | 'ekstra'>(p.uzaySahne ?? 'lab');
+  const extraRef = useRef<ExtraScene | null>(null);
+  /** Ekstra sahnede seçili numara (düğmeler için) */
+  const [numara, setNumara] = useState<NumaraAd>(DEMO_NUMARA ?? 'ay');
+  const sahneRef = useRef(sahne);
+  /** Çekim: tam arayüz · temiz (T: yalnızca sonuçlar) · yok (L) */
+  const [cekim, setCekim] = useState<'tam' | 'temiz' | 'yok'>('tam');
+  /** Açık kitapta sesle verilen son komut (sesli komutlar panelinde parlar) */
+  const [sonKomut, setSonKomut] = useState<{ kayit: KalemKaydi; n: number } | null>(null);
+  const cekimRef = useRef(cekim);
+  useEffect(() => { sahneRef.current = sahne; cekimRef.current = cekim; }, [sahne, cekim]);
+  /** Mod: büyü ya da uzay (U). Arka plan: tam uzay (sizi odadan ayırır) ya da katman (oda görünür) (B). */
+  const [mod, setMod] = useState<'buyu' | 'uzay' | 'haber'>(p.haber ? 'haber' : p.uzay ? 'uzay' : 'buyu');
+  const newsRef = useRef<NewsScene | null>(null);
+  const newsStageRef = useRef<HTMLDivElement>(null);
+  /** Varsayılan oda: kullanıcının arka planı kapanmaz (tam uzay B ile) */
+  const [arka, setArka] = useState<'tam' | 'katman'>('katman');
+  const modRef = useRef(mod);
+  const arkaRef = useRef(arka);
+  useEffect(() => { modRef.current = mod; arkaRef.current = arka; }, [mod, arka]);
+  const libRef = useRef<Library | null>(null);
+  const shelfDemo = !!(p.demo && p.kitaplik);
+  /** Kitaplık ayar modu (K) */
+  const [editing, setEditing] = useState(false);
+  // Kitaplık demosu: prosedürel raf ve kitapları bir kez üret
+  const [demoShelf] = useState(() => (shelfDemo ? buildDemoShelf() : null));
+  const [libBooks, setLibBooks] = useState<Kitap[]>(() => demoShelf?.books ?? []);
+  /** Kitaplığın bölümleri (K ayarında alanları çizilir); demoda sabit 6 bölüm */
+  const [libBolumler, setLibBolumler] = useState<Bolum[]>(() => (shelfDemo ? DEMO_BOLUM_ALANLARI.map((alan, i) => ({ id: i + 1, ad: `Bölüm ${i + 1}`, alan, fotograflar: [], liste: [] })) : []));
+  const [scanning, setScanning] = useState(false);
+  const [moved, setMoved] = useState(false);
+  const [dims, setDims] = useState({ W: window.innerWidth, H: window.innerHeight, vw: 1920, vh: 1080 });
+  /** Efekt ayarları (⚙ / E): bu cihazda saklanır. Kitaplık demosunda yüz kilidi kapalı başlar (raf temiz görünsün). */
+  const [ayar, setAyarState] = useState<ElAyar>(() => ({ ...loadAyar(), ...(shelfDemo ? { yuz: false } : {}) }));
+  const [ayarOpen, setAyarOpen] = useState(false);
+  const setAyar = (patch: Partial<ElAyar>) => setAyarState(a => { const n = { ...a, ...patch }; if (!shelfDemo) saveAyar(n); return n; });
+  const face = ayar.yuz;
+  const faceOn = useRef(face);
+  const ayarRef = useRef(ayar);
+  useEffect(() => { faceOn.current = face; ayarRef.current = ayar; }, [face, ayar]);
+  const [status, setStatus] = useState<string>('kamera açılıyor…');
+  const [err, setErr] = useState<string | null>(null);
+  const hud = cekim === 'tam';
+  const [stats, setStats] = useState<{ fps: number; st: Status; delegate: string; step?: string }>({ fps: 0, st: { hands: [], mode: '—' }, delegate: '' });
+  const muted = !ayar.ses;
+  const [cams, setCams] = useState<CameraInfo[]>([]);
+  const [camId, setCamId] = useState<string | undefined>(() => { try { return localStorage.getItem('jarvis.el.kamera') || undefined; } catch { return undefined; } });
+  const [toast, setToast] = useState<string | null>(null);
+  const ctlRef = useRef<Controller | null>(null);
+  const actionRef = useRef(p.onAction);
+  const closeRef = useRef(p.onClose);
+  const faceLockRef = useRef(p.onFaceLock);
+  const propsRef = useRef(p);
+  useEffect(() => { actionRef.current = p.onAction; closeRef.current = p.onClose; faceLockRef.current = p.onFaceLock; propsRef.current = p; });
+  // Ses bağlamı: açılış bir tık/tuşla olduğundan kullanıcı hareketi hâlâ geçerli
+  const [sfx] = useState(() => new Sfx());
+  useEffect(() => { sfx.unlock(); return () => sfx.stop(); }, [sfx]);
+  const nextCam = () => {
+    if (!cams.length) return;
+    const i = cams.findIndex(c => c.deviceId === camId);
+    const n = cams[(i + 1) % cams.length];
+    try { localStorage.setItem('jarvis.el.kamera', n.deviceId); } catch { /* yok say */ }
+    setCamId(n.deviceId);
+  };
+
+  // Kamera + model + döngü
+  useEffect(() => {
+    const canvas = canvasRef.current!, video = videoRef.current!;
+    const fx = new Fx(canvas);
+    const ctl = new Controller(fx, sfx);
+    ctlRef.current = ctl;
+    if (p.demo) ctl.debug = true; // kamera yok: sentetik eller iskelet olarak görünsün
+    ctl.onAction = k => {
+      setToast(p.demo ? `demo · ${k.ad} (komut gönderilmedi)` : k.ad);
+      setTimeout(() => setToast(null), 2200);
+      if (!p.demo) actionRef.current(k);
+    };
+    const hudFace = new FaceHud(faceRef.current!, p.userName || '');
+    hudFace.onLock = () => { sfx.lockOn(); faceLockRef.current?.(); };
+    const lib = new Library(shelfRef.current!, stageRef.current!, video, fx, sfx, {
+      onRead: k => {
+        if (p.demo) { setToast('demo · Jarvis özeti seçili sesle okurdu'); setTimeout(() => setToast(null), 2200); return; }
+        propsRef.current.onBookRead?.(k);
+      },
+      onOpenChange: k => propsRef.current.onBookOpen?.(k),
+      fill: k => (k.id.startsWith('demo-') ? Promise.resolve(null) : fillBook(k.id).then(r => r.kitap).catch(() => null)),
+      cover: loadCover,
+    });
+    libRef.current = lib;
+    ctl.library = lib;
+    // Uzay modu: yıldız alanı, uzay beyni, (tam uzayda) kişi kesiti. Dokular arka planda yüklenir.
+    const stars = new Starfield(starsRef.current!);
+    const brain = new SpaceBrain(spaceRef.current!, fx, sfx, stars, {
+      say: t => {
+        if (p.demo) { setToast(`demo · Jarvis: ${t}`); setTimeout(() => setToast(null), 2600); return; }
+        propsRef.current.onSay?.(t);
+      },
+      mic: () => propsRef.current.onMic?.(),
+    });
+    brainRef.current = brain;
+    const lab = new LabBrain(spaceRef.current!, fx, sfx, {
+      say: t => {
+        // Demoda ses yok: cümle altyazı olarak görünür, okuma süresi kadar beklenir
+        if (p.demo) {
+          const msg = `demo · Jarvis: ${t}`, ms = Math.max(1300, t.length * 52);
+          setToast(msg);
+          setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
+          return new Promise<void>(r => setTimeout(r, ms));
+        }
+        return propsRef.current.onSay?.(t);
+      },
+      preload: l => { if (!p.demo) propsRef.current.onPreload?.(l); },
+      mic: () => propsRef.current.onMic?.(),
+    });
+    labRef.current = lab;
+    const extra = new ExtraScene(spaceRef.current!, fx, sfx, {
+      say: t => {
+        if (p.demo) {
+          const msg = `demo · Jarvis: ${t}`, ms = Math.max(1300, t.length * 52);
+          setToast(msg); setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
+          return new Promise<void>(r => setTimeout(r, ms));
+        }
+        return propsRef.current.onSay?.(t);
+      },
+      mic: () => propsRef.current.onMic?.(),
+    });
+    extra.demo = !!p.demo;
+    if (DEMO_NUMARA) extra.numara = DEMO_NUMARA;
+    extraRef.current = extra;
+    // Haber Modu: haber merkezi (DOM katmanı; kişi ayırma maskesiyle derinlik)
+    const news = new NewsScene(newsStageRef.current!, fx, sfx, {
+      say: t => {
+        if (p.demo) {
+          const msg = `demo · Jarvis: ${t}`, ms = Math.min(9000, Math.max(1300, t.length * 52));
+          setToast(msg); setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
+          return new Promise<void>(r => setTimeout(r, ms));
+        }
+        return propsRef.current.onSay?.(t);
+      },
+      mic: () => propsRef.current.onMic?.(),
+      sus: () => propsRef.current.onSus?.(),
+    });
+    news.demo = !!p.demo;
+    news.mottoSesli = ayarRef.current.haberMotto;
+    newsRef.current = news;
+    ctl.space = sahneRef.current === 'lab' ? lab : brain;
+    loadTextures();
+    let cutout: PersonCutout | null = null, segLoading = false, uzOn = false;
+    const size = () => {
+      const W = window.innerWidth, H = window.innerHeight;
+      fx.resize(W, H); hudFace.resize(W, H); lib.resize(W, H);
+      stars.resize(W, H); brain.resize(W, H); lab.resize(W, H); extra.resize(W, H); news.resize(W, H);
+      setDims({ W, H, vw: video.videoWidth || 1920, vh: video.videoHeight || 1080 });
+    };
+    size();
+    window.addEventListener('resize', size);
+
+    let alive = true, raf = 0, stream: MediaStream | null = null, lm: HandLandmarker | null = null, fd: FaceDetector | null = null, faceTick = 0;
+    // Yüz algılayıcı kurulumu ana iş parçacığını ~1 sn dondurur: haber açılışı sürerken ertelenir
+    let fdBasladi = false;
+    const yuzBaslat = () => {
+      if (fdBasladi || !lm) return;
+      fdBasladi = true;
+      // Yüklenemezse el kontrolü yine çalışır (yalnızca yüz HUD'u olmaz)
+      loadFaceDetector().then(d => { if (alive) fd = d; else d.close(); }).catch(e => console.warn('[el] yüz algılayıcı yüklenemedi', e));
+    };
+    let last = performance.now(), lastVideoT = -1, frames = 0, fpsAt = last, hands: RawHand[] = [], delegate = '';
+    const demoStart = performance.now() - (Number(new URLSearchParams(location.search).get('elt')) || 0) * 1000;
+    let step = '';
+    // Kitaplık demosu: prosedürel raf sahte kamera akışı olarak <video>'ya; tarama sahnesi her döngü başında
+    let demoCam: ReturnType<typeof demoStream> | null = null;
+    const demoBooks: Kitap[] = demoShelf?.books ?? [];
+    const demoTarget = demoBooks.find(b => b.ad === DEMO_TARGET)?.id ?? '';
+    let demoLoop = -1;
+    if (demoShelf) {
+      demoCam = demoStream(demoShelf.frame);
+      video.srcObject = demoCam.stream;
+      video.muted = true;
+      video.play().catch(() => {});
+      video.addEventListener('loadedmetadata', size, { once: true });
+      lib.setBooks(demoBooks, { genislik: demoShelf.frame.width, yukseklik: demoShelf.frame.height, kucukResim: thumbOf(demoShelf.frame) });
+      demoJiggle.current = demoCam.jiggle;
+    }
+    let lastMoved = false, libOn = true, sahneOn: 'lab' | 'gosteri' | 'ekstra' | null = null, sonYuz: FaceBox | null = null, hbOn = false;
+    const demoFired = new Set<string>();
+
+    const loop = () => {
+      if (!alive) return;
+      raf = requestAnimationFrame(loop);
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      // Mod değişimi: önceki modun izleri temizlenir; uzaya geçişte oda kararır, yıldızlar ışık hızıyla belirir
+      const uz = modRef.current === 'uzay';
+      // Uzay sahnesi değişti (laboratuvar ↔ gösteri): eski sahne temizlenir, laboratuvar bugünkü gökyüzüyle açılır
+      const sh = uz ? sahneRef.current : null;
+      const sahneOf = (x: 'lab' | 'gosteri' | 'ekstra') => (x === 'lab' ? lab : x === 'gosteri' ? brain : extra);
+      if (sh !== sahneOn) {
+        if (sahneOn) sahneOf(sahneOn).reset();
+        sahneOn = sh;
+        ctl.space = sahneOf(sh ?? 'lab');
+        if (sh === 'lab') lab.open(now);
+        if (sh === 'ekstra') extra.open(now);
+      }
+      // Haber modu: haber merkezi açılır (motto), büyü ve uzay efektleri kapanır
+      const hb = modRef.current === 'haber';
+      if (!hb) yuzBaslat();
+      if (hb !== hbOn) {
+        hbOn = hb;
+        if (hb) { news.mottoSesli = ayarRef.current.haberMotto; news.open(now); lib.reset(); libOn = false; hudFace.clear(); }
+        else news.reset();
+      }
+      const ctlMod = hb ? 'haber' : uz ? 'uzay' : 'buyu';
+      if (ctl.mode !== ctlMod) ctl.setMode(ctlMod);
+      ctl.space = hb ? news : sahneOf(sh ?? 'lab');
+      if (uz !== uzOn) {
+        uzOn = uz;
+        if (uz) { stars.warp(now); sfx.warp(); lib.reset(); libOn = false; hudFace.clear(); if (sh === 'lab') lab.open(now); if (sh === 'ekstra') extra.open(now); }
+        else stars.clear();
+      }
+      const scene = sahneOf(sh ?? 'lab');
+      lab.cekim = cekimRef.current;
+      if (uz && p.demo && sh === 'lab' && DEMO_TARA === 'jest') {
+        // Jest demosu: yakınlaştırma, dokununca yakınlaşma, kesit, yer değiştirme, çarpışma
+        const d = demoLabJest((now - demoStart) / 1000, fx.W, fx.H, lab);
+        hands = d.hands; step = d.step;
+        const key = `jest:${d.loop}:${d.cmd?.key}`;
+        if (d.cmd && !demoFired.has(key)) { demoFired.add(key); lab.command(d.cmd.cmd, now); }
+      } else if (uz && p.demo && sh === 'lab' && DEMO_TARA) {
+        // Yaşam izi taraması demosu: el yok, zamanında sesli komut zinciri
+        const d = demoLabTara((now - demoStart) / 1000, DEMO_TARA);
+        hands = []; step = d.step;
+        const key = `tara:${d.loop}:${d.zincir?.key}`;
+        if (d.zincir && !demoFired.has(key)) { demoFired.add(key); chainRef.current(d.zincir.cmds); }
+      } else if (uz && p.demo && sh === 'ekstra') {
+        // Ekstra demosu: el yok; asteroit numarasında 14 sn'de bir kendiliğinden fırlar. Ay yerine kara delikte
+        // 13 sn'de bir "kara deliği büyüt": Dünya, Jüpiter, Güneş, Sgr A* kütleleri, sonra baştan
+        hands = []; step = '';
+        const t = (now - demoStart) / 1000, k = Math.floor((t - 3) / 14);
+        if (extra.numara === 'asteroit' && t > 3 && (t - 3) % 14 < 0.3 && !demoFired.has(`ast:${k}`)) { demoFired.add(`ast:${k}`); extra.command({ tip: 'sifirla' }, now); setTimeout(() => extra.command({ tip: 'ekstra', numara: 'asteroit' }, performance.now()), 400); }
+        const j = Math.floor(t / 13), jk = `akd:${j}`;
+        if (extra.numara === 'aykaradelik' && j >= 1 && !demoFired.has(jk)) { demoFired.add(jk); extra.command(j % 6 === 0 ? { tip: 'sifirla' } : { tip: 'ekstra', numara: 'aykaradelik', kutle: 'buyut' }, now); }
+      } else if (hb && p.demo && (DEMO_HABER_ELLE || DEMO_ARA)) {
+        hands = []; step = '';
+        // &ara=…: açılıştan 6 sn sonra arama; &dunya=1: sonuçlar gelince öndeki olayın dünya basını
+        if (DEMO_ARA && now - demoStart > 6000 && !demoFired.has('ara')) {
+          demoFired.add('ara');
+          void news.haber({ tip: 'ara', q: DEMO_ARA })?.then(() => { if (DEMO_DUNYA) void news.haber({ tip: 'dunya' }); });
+        }
+      } else if (hb && p.demo) {
+        // Haber demosu: motto → karusel → kart çek → detay → karşılaştırma → iddia → sorular → sabah özeti
+        const d = demoNews((now - demoStart) / 1000, fx.W, fx.H, news);
+        hands = d.hands; step = d.step;
+        if (d.cmd && !demoFired.has(d.cmd.key)) { demoFired.add(d.cmd.key); void news.haber(d.cmd.cmd); }
+      } else if (uz && p.demo) {
+        const t = (now - demoStart) / 1000;
+        const d = sh === 'lab' ? demoLabHands(t, fx.W, fx.H, lab) : demoSpaceHands(t, fx.W, fx.H);
+        hands = d.hands; step = d.step;
+        const key = `${sh}:${d.loop}:${d.cmd?.key}`;
+        if (d.cmd && !demoFired.has(key)) { demoFired.add(key); scene.command(d.cmd.cmd, now); }
+      } else if (demoShelf) {
+        const t = (now - demoStart) / 1000;
+        const d = DEMO_ELSIZ || DEMO_ONERI !== null ? { hands: [], step: DEMO_ONERI !== null && t > 10 ? '🗣 "Jarvis, bugün yorgunum, bana bir kitap öner"' : '', loop: 0, kalem: undefined } : demoBookHands(t, fx.W, fx.H, lib.rectOf(demoTarget));
+        if (DEMO_ONERI !== null && t > 11 && !demoFired.has('oneri')) {
+          demoFired.add('oneri');
+          const k = demoBooks.find(b => b.ad && (DEMO_ONERI ? b.ad.toLocaleLowerCase('tr') === DEMO_ONERI.toLocaleLowerCase('tr') : b.id === demoTarget));
+          if (k) lib.cagir(k.id);
+        }
+        if (d.loop !== demoLoop) {
+          demoLoop = d.loop;
+          lib.scanStart();
+          // Uzaktan okunamayan sırtlar, ardından bölüm listeleriyle tamamlama (yeşil)
+          const dt = demoTarama(demoBooks, demoShelf!.gizli);
+          setTimeout(() => {
+            if (!alive) return;
+            lib.scanResult(dt.maskeli, dt.maskeli.filter(b => b.ad).length, dt.maskeli.filter(b => b.kutu && !b.ad).length);
+            // &tahmin=1: bölüm tamamlaması yerine kayıtlı kitaplar tahmini yerleşir (mor)
+            const son = DEMO_TAHMIN ? demoTahmin(demoBooks, dt.maskeli, demoShelf!.gizli) : null;
+            setTimeout(() => {
+              if (!alive) return;
+              lib.scanCompleting(son ? 'tahmin' : 'bolum');
+              setTimeout(() => { if (alive) { lib.setBooks(son?.tam ?? dt.tam, null); lib.scanCompleted(son?.yerlesen ?? dt.tamamlanan, son?.tam ?? dt.tam); } }, 2000);
+            }, 2800);
+          }, 1300);
+        }
+        hands = d.hands;
+        step = DEMO_TAHMIN ? d.step.replace('bölüm listeleriyle tamamlanıyor', 'kayıtlı kitaplar tahminen yerleşiyor').replace('bölüm listesinden tamamlandı (yeşil)', 'kayıtlı kitaplar tahmini yerleşti (mor)') : d.step;
+        // Sesli kayıt (demo): kalem açık kitaba yazar
+        const kk = d.kalem ? `kalem:${d.loop}:${d.kalem}` : '';
+        if (kk && !demoFired.has(kk)) {
+          demoFired.add(kk);
+          const kayit: KalemKaydi = d.kalem === 'not' ? { tip: 'not', metin: 'Yeni videoda bu kitabın ana fikrini anlat.' } : { tip: 'durum', durum: 'bitti' };
+          setSonKomut(c => ({ kayit, n: (c?.n ?? 0) + 1 }));
+          void lib.kitabaYaz(kayit);
+        }
+      } else if (p.demo) {
+        const d = demoHands((now - demoStart) / 1000, fx.W, fx.H);
+        hands = d.hands; step = d.step;
+      } else if (lm && video.readyState >= 2 && video.currentTime !== lastVideoT) {
+        lastVideoT = video.currentTime;
+        try { hands = detect(lm, video, now, fx.W, fx.H); } catch (e) { console.warn('[el] algılama', e); }
+      }
+      // Uzay: yıldızlar (kara delik varsa bükülerek) ve tam uzayda sizi odadan ayıran kesit
+      if (uz) {
+        const tam = !p.demo && arkaRef.current === 'tam';
+        // Kafanın etrafında Ay: kişi maskesi (kafa Ay'ı kapatsın) ve yüz kutusu gerekir
+        const ayAR = sh === 'ekstra' && extra.numara === 'ay';
+        if (tam || (ayAR && !p.demo)) {
+          if (!cutout && !segLoading) {
+            segLoading = true;
+            loadSegmenter()
+              .then(sg => { if (!alive) { sg.close(); return; } cutout = new PersonCutout(sg); })
+              .catch(e => { console.warn('[uzay] segmentasyon yüklenemedi', e); setToast('arka plan ayrılamadı: oda modu'); setArka('katman'); });
+          }
+          cutout?.update(video, now);
+        }
+        // Oda modu (varsayılan): gökyüzü odayı kapatmaz. Demoda kamera yok, tam gökyüzü çizilir.
+        const oda = p.demo ? DEMO_ODA : arkaRef.current === 'katman';
+        stars.render(now, dt, scene.lens(now), tam && cutout ? (g, W, H) => cutout!.punch(g, W, H) : undefined, oda);
+        lab.scan.oda = oda;
+        extra.oda = oda;
+        if (ayAR) {
+          if (p.demo) sonYuz = demoFace((now - demoStart) / 1000, fx.W, fx.H)[0] ?? null;
+          else if (fd && video.readyState >= 2 && ++faceTick % 2 === 0) {
+            try { sonYuz = detectFaces(fd, video, now, fx.W, fx.H)[0] ?? null; } catch (e) { console.warn('[uzay] yüz', e); }
+          }
+          extra.head = sonYuz;
+          extra.cutout = cutout;
+        }
+        scene.listening = !!propsRef.current.listening;
+      }
+      // Haber: kişi ayırma maskesi (arkadaki kartlar başınızın arkasında kalsın)
+      if (hb) {
+        // Açılış bitince yüz algılayıcı ve kişi ayırma kurulur (ikisi de birkaç saniye donduruyor)
+        if (!news.acilisSurer) yuzBaslat();
+        if (!p.demo) {
+          if (!cutout && !segLoading && !news.acilisSurer) {
+            segLoading = true;
+            loadSegmenter().then(sg => { if (!alive) { sg.close(); return; } cutout = new PersonCutout(sg); }).catch(e => console.warn('[haber] segmentasyon yüklenemedi', e));
+          }
+          cutout?.update(video, now);
+          news.cutout = cutout; news.video = video;
+        }
+        news.listening = !!propsRef.current.listening;
+      }
+      // Yüz: demoda sahte yüz; kamerada her 3. yeni karede algıla (el takibine yer kalsın), arada yumuşatılmış kutu
+      if (faceOn.current && !uz && !hb) {
+        if (p.demo) hudFace.update(demoFace((now - demoStart) / 1000, fx.W, fx.H), now);
+        else if (fd && video.readyState >= 2 && ++faceTick % 3 === 0) {
+          try { hudFace.update(detectFaces(fd, video, now, fx.W, fx.H), now); } catch (e) { console.warn('[el] yüz', e); }
+        }
+        hudFace.render(now);
+      } else hudFace.clear();
+      ctl.ayar = ayarRef.current;
+      const st = ctl.update(hands, now, dt);
+      // Kitaplık ayardan kapatılınca (ya da uzay modunda) dışarıdaki kitap ve raf katmanı temizlenir
+      if (ctl.ayar.kitaplik && !uz && !hb) { libOn = true; lib.render(now); }
+      else if (libOn) { libOn = false; lib.reset(); }
+      if (lib.moved !== lastMoved) { lastMoved = lib.moved; setMoved(lib.moved); }
+      frames++;
+      if (now - fpsAt > 400) {
+        const fps = Math.round((frames * 1000) / (now - fpsAt));
+        frames = 0; fpsAt = now;
+        setStats({ fps, st, delegate, step });
+      }
+    };
+
+    (async () => {
+      if (p.demo) { setStatus(''); loop(); return; }
+      try {
+        const s = await openCamera(video, camId);
+        // Bu başlatma bu arada geçersiz kaldıysa (bileşen yeniden başladı / kapandı) kamerayı hemen kapat
+        if (!alive) { s.getTracks().forEach(t => t.stop()); return; }
+        stream = s;
+        listCameras().then(setCams);
+        size();
+        // Kitaplık haritası (kurulumda bir kez taranır; sunucuda durur)
+        getLibrary().then(k => { if (!alive) return; lib.setBooks(k.kitaplar, k.referans); setLibBooks(k.kitaplar); setLibBolumler(k.bolumler ?? []); }).catch(() => {});
+      } catch (e: any) {
+        if (!alive) return; // eski başlatmanın hatası ekrana gelmesin
+        setErr(e?.name === 'NotAllowedError' ? 'Kamera izni verilmedi. Adres çubuğundaki kamera simgesinden izin verin.' : `Kamera açılamadı: ${e?.message || e}`);
+        return;
+      }
+      try {
+        const r = await loadLandmarker(setStatus);
+        if (!alive) { r.lm.close(); return; }
+        lm = r.lm; delegate = r.delegate;
+        setStatus('');
+        // Haber modunda açılış bitince (döngü başlatır), diğer modlarda hemen
+        if (modRef.current !== 'haber') yuzBaslat();
+      } catch (e: any) {
+        setErr(`El takip modeli yüklenemedi: ${e?.message || e}. İnternet bağlantısını kontrol edin ya da "npm run el-modeli" ile modeli indirin.`);
+        return;
+      }
+      loop();
+    })();
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', size);
+      stream?.getTracks().forEach(t => t.stop());
+      lm?.close();
+      fd?.close();
+      sfx.setRoar(0);
+      demoCam?.stop();
+      lib.dispose();
+      libRef.current = null;
+      cutout?.close();
+      brain.reset();
+      brainRef.current = null;
+      extra.reset();
+      extraRef.current = null;
+      news.dispose();
+      newsRef.current = null;
+      lab.reset();
+      labRef.current = null;
+    };
+  }, [p.demo, camId, sfx, demoShelf]);
+
+  // ---- Kitaplık: tarama, harita yenileme, ayar modu
+  /** Kameradan TAM ÇÖZÜNÜRLÜKTE tek kare (aynalanmamış) → görüntü modeli → kutular. Demoda sahte sonuç. */
+  const scanBusy = useRef(false);
+  /** Kitaplık demosu: J tuşu kamerayı "kıpırdatır" (uyarıyı denemek için) */
+  const demoJiggle = useRef<((on: boolean) => void) | null>(null);
+  const jiggled = useRef(false);
+  const runScan = async () => {
+    const lib = libRef.current, video = videoRef.current;
+    if (!lib || !video || scanBusy.current) return;
+    scanBusy.current = true;
+    setScanning(true);
+    lib.scanStart();
+    const done = (r: { bulunan: number; belirsiz: number; tamamlanan?: number; tahmini?: number; hata?: string }) => { scanBusy.current = false; setScanning(false); propsRef.current.onScanDone?.(r); };
+    if (shelfDemo && demoShelf) {
+      const dt = demoTarama(demoShelf.books, demoShelf.gizli);
+      setTimeout(() => {
+        lib.scanResult(dt.maskeli, dt.maskeli.filter(b => b.ad).length, dt.maskeli.filter(b => b.kutu && !b.ad).length);
+        if (DEMO_TAHMIN) {
+          const dtt = demoTahmin(demoShelf.books, dt.maskeli, demoShelf.gizli);
+          lib.scanCompleting('tahmin');
+          setTimeout(() => {
+            lib.setBooks(dtt.tam, null); setLibBooks(dtt.tam);
+            lib.scanCompleted(dtt.yerlesen, dtt.tam);
+            done({ bulunan: dt.maskeli.filter(b => b.ad).length, belirsiz: dtt.tam.filter(b => b.kutu && !b.ad).length, tahmini: dtt.yerlesen.length });
+          }, 2400);
+          return;
+        }
+        lib.scanCompleting();
+        setTimeout(() => {
+          lib.setBooks(dt.tam, null); setLibBooks(dt.tam);
+          lib.scanCompleted(dt.tamamlanan, dt.tam);
+          done({ bulunan: dt.maskeli.filter(b => b.ad).length, belirsiz: dt.tam.filter(b => b.kutu && !b.ad).length, tamamlanan: dt.tamamlanan.length });
+        }, 2400);
+      }, 1300);
+      return;
+    }
+    // Kamera hazır değilse biraz bekle (sesli komutla El Kontrolü yeni açıldıysa)
+    for (let i = 0; i < 40 && (video.readyState < 2 || !video.videoWidth); i++) await new Promise(r => setTimeout(r, 250));
+    if (!video.videoWidth) { lib.scanFail('kamera hazır değil'); done({ bulunan: 0, belirsiz: 0, hata: 'kamera hazır değil' }); return; }
+    try {
+      const c = document.createElement('canvas');
+      c.width = video.videoWidth; c.height = video.videoHeight;
+      c.getContext('2d')!.drawImage(video, 0, 0);
+      // İlk taramada tüm kare; sonra yalnızca rafın bulunduğu bölge (kamera kıpırdadıysa yine tüm kare)
+      const region = lib.moved ? undefined : shelfRegion(lib.books);
+      const r = await scanLibrary({ parcalar: tileFrame(c, region), genislik: c.width, yukseklik: c.height, kucukResim: thumbOf(video) });
+      lib.setBooks(r.kitaplik.kitaplar, r.kitaplik.referans);
+      setLibBooks(r.kitaplik.kitaplar);
+      if (r.hata) { lib.scanFail(r.hata); done({ bulunan: r.bulunan, belirsiz: r.belirsiz, hata: r.hata }); return; }
+      lib.scanResult(r.kitaplik.kitaplar.filter(b => b.kutu), r.bulunan, r.belirsiz);
+      // Belirsiz sırtlar bölüm listeleriyle tamamlanır (bölümün yakın çekim fotoğrafları varsa)
+      const t = await bolumlerleTamamla(c, r.kitaplik).catch(e => { console.warn('[kitaplık] tamamlama', e); return null; });
+      // Hâlâ adsız sırtlar: kayıtlı kitaplar tahmini yerleşir
+      const sonra = t ? await getLibrary() : r.kitaplik;
+      const tahmini = await tahminenYerlestir(c, sonra).catch(e => { console.warn('[kitaplık] tahmini yerleştirme', e); return 0; });
+      const belirsiz = tahmini ? (libRef.current?.books ?? []).filter(x => x.kutu && !x.ad).length : t?.belirsiz ?? r.belirsiz;
+      done({ bulunan: r.bulunan, belirsiz, tamamlanan: t?.sayi ?? 0, tahmini });
+    } catch (e) {
+      const msg = (e as Error).message;
+      lib.scanFail(msg);
+      done({ bulunan: 0, belirsiz: 0, hata: msg });
+    }
+  };
+  /**
+   * Taramadan sonra: alanı çizilmiş ve yakın çekim listesi olan her bölüm için, belirsiz sırtlar numaralanarak bölümün
+   * kırpıntısına çizilir ve görüntü modeline listeyle sorulur. Bölümler aynı anda; sonunda harita yeniden alınır.
+   */
+  const bolumlerleTamamla = async (c: HTMLCanvasElement, k: Kitaplik): Promise<{ sayi: number; belirsiz: number } | null> => {
+    const lib = libRef.current;
+    if (!lib) return null;
+    const icinde = (kt: Kutu, a: Kutu) => { const cy = (kt[0] + kt[2]) / 2, cx = (kt[1] + kt[3]) / 2; return cy >= a[0] && cy <= a[2] && cx >= a[1] && cx <= a[3]; };
+    const isler = (k.bolumler ?? []).filter(b => b.alan && b.liste.some(x => x.ad)).map(b => {
+      const a = b.alan!;
+      const belirsiz = k.kitaplar.filter(x => x.kutu && !x.ad && icinde(x.kutu, a)).slice(0, 60);
+      if (!belirsiz.length) return null;
+      const crop = numaraliKirpinti(c, a, belirsiz.map(x => x.kutu!), 1600);
+      return completeSection(b.id, crop.toDataURL('image/jpeg', 0.88), belirsiz.map((x, i) => ({ n: i + 1, id: x.id })))
+        .then(r => r.tamamlanan.map(t => ({ ...t, bolum: b.id })))
+        .catch(e => { console.warn(`[kitaplık] ${b.ad} tamamlanamadı`, e); return []; });
+    }).filter((x): x is Promise<{ id: string; ad: string; bolum: number }[]> => !!x);
+    if (!isler.length) return null;
+    lib.scanCompleting();
+    const list = (await Promise.all(isler)).flat();
+    const yeni = await getLibrary();
+    lib.setBooks(yeni.kitaplar, yeni.referans);
+    setLibBooks(yeni.kitaplar);
+    setLibBolumler(yeni.bolumler ?? []);
+    lib.scanCompleted(list, yeni.kitaplar);
+    return { sayi: list.length, belirsiz: yeni.kitaplar.filter(x => x.kutu && !x.ad).length };
+  };
+
+  /**
+   * Bölüm tamamlamasından sonra hâlâ adsız kalan sırtlara, rafta yeri olmayan kayıtlı kitaplar TAHMİNİ yerleşir:
+   * sırtlar okuma sırasıyla (raf raf, soldan sağa) numaralanıp rafın kırpıntısına çizilir; sunucu önce görüntü
+   * modelinin tahminini, sonra eklenme sırasını kullanır. Yerleşenler mor parlar.
+   */
+  const tahminenYerlestir = async (c: HTMLCanvasElement, k: Kitaplik): Promise<number> => {
+    const lib = libRef.current;
+    if (!lib || !k.kitaplar.some(x => x.ad && !x.kutu && !x.rafDisi)) return 0;
+    const adsiz = okumaSirasi(k.kitaplar.filter(x => x.kutu && !x.ad)).slice(0, 150);
+    if (!adsiz.length) return 0;
+    const kutular = k.kitaplar.map(x => x.kutu).filter((v): v is Kutu => !!v);
+    const m = 0.03;
+    const alan: Kutu = [
+      Math.max(0, Math.min(...kutular.map(v => v[0])) - m), Math.max(0, Math.min(...kutular.map(v => v[1])) - m),
+      Math.min(1, Math.max(...kutular.map(v => v[2])) + m), Math.min(1, Math.max(...kutular.map(v => v[3])) + m),
+    ];
+    const crop = numaraliKirpinti(c, alan, adsiz.map(x => x.kutu!), 2400);
+    lib.scanCompleting('tahmin');
+    const r = await placeEstimated(crop.toDataURL('image/jpeg', 0.88), adsiz.map((x, i) => ({ n: i + 1, id: x.id })));
+    lib.setBooks(r.kitaplik.kitaplar, r.kitaplik.referans);
+    setLibBooks(r.kitaplik.kitaplar);
+    lib.scanCompleted(r.yerlesen.map(x => ({ id: x.id, ad: x.ad, bolum: 0, tahmini: true })), r.kitaplik.kitaplar);
+    return r.yerlesen.length;
+  };
+
+  // "Jarvis, kitaplığımı tara"
+  const lastSignal = useRef(p.scanSignal ?? 0);
+  useEffect(() => {
+    if (!p.scanSignal || p.scanSignal === lastSignal.current) return;
+    lastSignal.current = p.scanSignal;
+    runScan();
+  }, [p.scanSignal]); // eslint-disable-line react-hooks/exhaustive-deps
+  // "Jarvis, Mars yap": eldeki gezegen dönüşür, yoksa sonraki çimdikte gelir
+  const lastPlanetCmd = useRef(p.planetCmd?.n ?? 0);
+  useEffect(() => {
+    const c = p.planetCmd;
+    if (!c || c.n === lastPlanetCmd.current || !ctlRef.current) return;
+    lastPlanetCmd.current = c.n;
+    const ad = GEZEGENLER.find(g => g.tur === c.tur)!.ad.toLocaleUpperCase('tr');
+    const morphed = ctlRef.current.setPlanet(c.tur, performance.now());
+    if (!morphed) { setToast(`◉ ${ad} · çimdikle oluştur`); setTimeout(() => setToast(null), 2200); }
+  }, [p.planetCmd]);
+
+  // Uzay sesli komutları: mod ve arka plan burada, gerisi uzay beyninde
+  const say = (t: string) => { if (p.demo) { setToast(`demo · Jarvis: ${t}`); setTimeout(() => setToast(null), 2600); } else propsRef.current.onSay?.(t); };
+  const lastSpaceCmd = useRef(0);
+  const applySpaceCmd = (cmd: SpaceCmd) => {
+    if (cmd.tip === 'mod') {
+      setMod(cmd.ac ? 'uzay' : 'buyu');
+      say(cmd.ac ? (sahneRef.current === 'lab' ? LAB_ONAY.ac : ONAY.modAc) : ONAY.modKapat);
+      return;
+    }
+    if (cmd.tip === 'lab') {
+      if (cmd.ac) {
+        // Zaten laboratuvardaysa açılış animasyonu yeniden oynar
+        if (modRef.current === 'uzay' && sahneRef.current === 'lab') { labRef.current?.open(performance.now()); sfx.warp(); }
+        setMod('uzay'); setSahne('lab'); say(LAB_ONAY.ac);
+      }
+      else { setMod('buyu'); say(LAB_ONAY.kapat); }
+      return;
+    }
+    if (cmd.tip === 'gosteri') { setMod('uzay'); setSahne('gosteri'); say(LAB_ONAY.gosteri); return; }
+    if (cmd.tip === 'ekstra' && cmd.numara) setNumara(cmd.numara);
+    if (cmd.tip === 'ekstra' && !cmd.numara) { setMod('uzay'); setSahne('ekstra'); say('Ekstralar, efendim. Bir numara seçin.'); return; }
+    // Komut öbür sahnenin: önce o sahneye geç, sonra çalıştır. Ekstradayken sıfırla ve zaman komutları ekstraya gider.
+    const want = cmd.tip === 'ekstra' ? 'ekstra'
+      : sahneRef.current === 'ekstra' && (cmd.tip === 'sifirla' || cmd.tip === 'temizle' || cmd.tip === 'zaman') ? 'ekstra'
+      : GOSTERI_KOMUT.has(cmd.tip) ? 'gosteri' : LAB_KOMUT.has(cmd.tip) ? 'lab' : sahneRef.current;
+    const sceneOf = () => (want === 'lab' ? labRef.current : want === 'ekstra' ? extraRef.current : brainRef.current);
+    // Ekstra sahne kapalıyken numara istendi: sahne açılınca o numara başlasın
+    if (want === 'ekstra' && sahneRef.current !== 'ekstra' && cmd.tip === 'ekstra' && cmd.numara && extraRef.current) extraRef.current.numara = cmd.numara;
+    const later = () => new Promise<void>(res => setTimeout(() => Promise.resolve(sceneOf()?.command(cmd, performance.now())).then(() => res()), 900));
+    if (want !== sahneRef.current) {
+      setSahne(want);
+      if (modRef.current !== 'uzay') setMod('uzay');
+      return later();
+    }
+    if (cmd.tip === 'arkaplan') {
+      setArka(cmd.tam ? 'tam' : 'katman');
+      say(cmd.tam ? ONAY.arkaUzay : ONAY.arkaOda);
+      return;
+    }
+    // Uzay modu kapalıyken uzay komutu: önce moda geç, ışık hızı geçişinden sonra çalıştır
+    if (modRef.current !== 'uzay') {
+      setMod('uzay');
+      return later();
+    }
+    return sceneOf()?.command(cmd, performance.now());
+  };
+  /** "…, sonra …": komutlar sırayla; her biri anlatımı ve animasyonu bitince */
+  const runChain = async (cmds: SpaceCmd[]) => {
+    for (const c of cmds) {
+      const r = applySpaceCmd(c);
+      await (r instanceof Promise ? r : new Promise(res => setTimeout(res, 700)));
+      await new Promise(res => setTimeout(res, 250));
+    }
+  };
+  useEffect(() => { chainRef.current = runChain; });
+  useEffect(() => {
+    const c = p.spaceCmd;
+    if (!c || c.n === lastSpaceCmd.current) return;
+    lastSpaceCmd.current = c.n;
+    // Komut effect'in dışında (mikro görevde) çalışır: içindeki durum değişiklikleri render'ı zincirlemesin
+    const z = c.zincir;
+    void Promise.resolve().then(() => (z?.length ? runChain(z) : applySpaceCmd(c.cmd)));
+  }, [p.spaceCmd]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Jarvis'in sahneleri sohbet aracıyla başlayan taramayı ilerletir
+  useEffect(() => {
+    const s = p.sahneIlerleme;
+    if (s) labRef.current?.drive(s.i, s.bitti);
+  }, [p.sahneIlerleme?.i, p.sahneIlerleme?.bitti]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { propsRef.current.onModeChange?.(mod); }, [mod]);
+
+  // Haber modu sesli komutları: mod burada, gerisi haber sahnesinde
+  const lastNewsCmd = useRef(0);
+  useEffect(() => {
+    const c = p.newsCmd;
+    if (!c || c.n === lastNewsCmd.current) return;
+    lastNewsCmd.current = c.n;
+    const cmd = c.cmd;
+    void Promise.resolve().then(() => {
+      if (cmd.tip === 'haber' && !cmd.ac) { setMod('buyu'); say('Haber merkezini kapattım efendim.'); return; }
+      // Haber modu henüz açılmadıysa: önce aç; komutla açılışta motto seslendirilmez (komutun sözünü kesmesin),
+      // komut açılış bitince çalışır
+      if (modRef.current !== 'haber' || !newsRef.current?.acik) {
+        if (cmd.tip !== 'haber') {
+          if (newsRef.current) newsRef.current.bekleyenKomut = cmd;
+          else setTimeout(() => void newsRef.current?.haber(cmd), 1300);
+        }
+        setMod('haber');
+        return;
+      }
+      void newsRef.current.haber(cmd);
+    });
+  }, [p.newsCmd]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Jarvis kitap önerdi: El Kontrolü büyü modundaysa kitap raftan çıkar
+  const lastOneri = useRef(0);
+  useEffect(() => {
+    const c = p.oneriCmd;
+    if (!c || c.n === lastOneri.current) return;
+    lastOneri.current = c.n;
+    const lib = libRef.current;
+    if (modRef.current !== 'buyu' || !lib) return;
+    // Kimlik bulunamazsa adla (demo rafı gerçek kitaplığın adlarını taşır)
+    const k = lib.books.find(b => b.id === c.id) ?? (c.ad ? lib.books.find(b => b.ad?.toLocaleLowerCase('tr') === c.ad!.toLocaleLowerCase('tr')) : undefined);
+    if (k) lib.cagir(k.id);
+  }, [p.oneriCmd]);
+
+  // Açık kitaba sesle eklenen kayıt: kalemle yazılır; sesli komutlar panelinde o satır parlar
+  const lastKalem = useRef(0);
+  useEffect(() => {
+    const c = p.kalemKaydi;
+    if (!c || c.n === lastKalem.current) return;
+    lastKalem.current = c.n;
+    setSonKomut(s => ({ kayit: c.kayit, n: (s?.n ?? 0) + 1 }));
+    void libRef.current?.kitabaYaz(c.kayit);
+  }, [p.kalemKaydi]);
+
+  // Sunucuda kitaplık değişti (not eklendi, Ayarlar'dan düzenlendi): haritayı yenile
+  useEffect(() => {
+    if (!p.libraryKey || shelfDemo) return;
+    getLibrary().then(k => { libRef.current?.setBooks(k.kitaplar, k.referans); setLibBooks(k.kitaplar); setLibBolumler(k.bolumler ?? []); }).catch(() => {});
+  }, [p.libraryKey, shelfDemo]);
+  useEffect(() => { if (libRef.current) libRef.current.paused = editing; }, [editing]);
+  const saveBooks = async (list: Kitap[], alanlar?: { id: number; alan: Kutu | null }[]) => {
+    const lib = libRef.current;
+    if (alanlar) setLibBolumler(b => b.map(x => ({ ...x, alan: alanlar.find(y => y.id === x.id)?.alan ?? x.alan })));
+    if (shelfDemo) { lib?.setBooks(list, null); setLibBooks(list); setToast('demo · kaydedilmedi'); setTimeout(() => setToast(null), 1800); return; }
+    try {
+      const k = await saveLibrary({ kitaplar: list, bolumler: alanlar });
+      lib?.setBooks(k.kitaplar, k.referans);
+      setLibBooks(k.kitaplar);
+      setToast(`kitaplık kaydedildi · ${k.kitaplar.filter(b => b.ad).length} kitap`);
+    } catch (e) {
+      setToast(`kaydedilemedi: ${(e as Error).message}`);
+    }
+    setTimeout(() => setToast(null), 2200);
+  };
+
+  // Tuşlar
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Kitaplık ayar modunda ad yazarken tuşlar kısayol sayılmaz
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (e.key === 'Escape') { e.stopPropagation(); if (editing) setEditing(false); else closeRef.current(); return; }
+      if (e.code === 'KeyL') setCekim(c => (c === 'yok' ? 'tam' : 'yok'));
+      else if (e.code === 'KeyT') setCekim(c => (c === 'temiz' ? 'tam' : 'temiz'));
+      else if (e.code === 'KeyG' && modRef.current === 'uzay') setSahne(v => (v === 'lab' ? 'gosteri' : v === 'gosteri' ? 'ekstra' : 'lab'));
+      else if (/^Digit[1-5]$/.test(e.code) && modRef.current === 'uzay' && sahneRef.current === 'ekstra') { const n = NUMARALAR[Number(e.code.slice(5)) - 1].ad; setNumara(n); extraRef.current?.sec(n, performance.now()); }
+      else if (e.code === 'KeyZ' && modRef.current === 'uzay' && sahneRef.current === 'lab') labRef.current?.command({ tip: 'gorunum', ic: labRef.current.zoomX < 1.5 }, performance.now());
+      else if (e.code === 'KeyY' && modRef.current === 'uzay' && sahneRef.current === 'lab') labRef.current?.command({ tip: 'yasanabilir', goster: !labRef.current.hz }, performance.now());
+      else if (e.code === 'Space' && modRef.current === 'uzay' && sahneRef.current === 'lab') { e.preventDefault(); labRef.current?.command({ tip: 'zaman', islem: labRef.current.paused ? 'devam' : 'durdur' }, performance.now()); }
+      else if (e.code === 'KeyD' && ctlRef.current) ctlRef.current.debug = !ctlRef.current.debug;
+      else if (e.code === 'KeyM') setAyar({ ses: !ayarRef.current.ses });
+      else if (e.code === 'KeyF') setAyar({ yuz: !ayarRef.current.yuz });
+      else if (e.code === 'KeyE') setAyarOpen(v => !v);
+      else if (e.code === 'KeyK' && modRef.current === 'buyu') setEditing(v => !v);
+      else if (e.code === 'KeyU') { setEditing(false); setMod(m => (m === 'uzay' ? 'buyu' : 'uzay')); }
+      else if (e.code === 'KeyN') { setEditing(false); setMod(m => (m === 'haber' ? 'buyu' : 'haber')); }
+      else if (modRef.current === 'haber' && newsRef.current && (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Backspace', 'KeyK', 'KeyI', 'KeyS', 'KeyO', 'KeyW', 'Slash', 'KeyY', 'KeyH', 'KeyR', 'KeyA', 'KeyP', 'KeyX', 'KeyV'].includes(e.code) || /^Digit[1-9]$/.test(e.code))) {
+        e.preventDefault();
+        const n = newsRef.current;
+        // "/": anahtar kelimeyle haber getir (klavyeden deneme)
+        if (e.code === 'Slash') { const q = window.prompt('Haber ara (anahtar kelime)')?.trim(); if (q) void n.haber({ tip: 'ara', q }); return; }
+        const cmd: HaberCmd | null = e.code === 'ArrowLeft' ? { tip: 'onceki' } : e.code === 'ArrowRight' ? { tip: 'sonraki' } : e.code === 'Enter' ? { tip: 'detay' } : e.code === 'Backspace' ? { tip: 'geri' }
+          : e.code === 'KeyK' ? { tip: 'karsilastir' } : e.code === 'KeyI' ? { tip: 'kontrol' } : e.code === 'KeyS' ? { tip: 'sorular' } : e.code === 'KeyO' ? { tip: 'sabah' } : e.code === 'KeyW' ? { tip: 'dunya' }
+          : e.code === 'KeyY' ? { tip: 'yayin', ac: true } : e.code === 'KeyH' ? { tip: 'sonDakika' } : e.code === 'KeyR' ? { tip: 'mansetler' } : e.code === 'KeyA' ? { tip: 'dunyaBugun' }
+          : e.code === 'KeyP' ? { tip: 'basin' } : e.code === 'KeyX' ? { tip: 'takip', ac: true } : e.code === 'KeyV' ? { tip: 'duvar' } : /^Digit/.test(e.code) ? { tip: 'numara', n: Number(e.code.slice(5)) } : null;
+        if (cmd) void n.haber(cmd);
+        else n.kategoriAdim(e.code === 'ArrowDown' ? 1 : -1);
+      }
+      else if (e.code === 'KeyB' && modRef.current === 'uzay') setArka(a => (a === 'tam' ? 'katman' : 'tam'));
+      else if (e.code === 'KeyJ' && demoJiggle.current) { jiggled.current = !jiggled.current; demoJiggle.current(jiggled.current); }
+      else if (e.code === 'KeyC' && cams.length > 1) nextCam();
+      else return;
+      e.stopPropagation();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  });
+
+  useEffect(() => sfx.setOn(!muted), [muted, sfx]);
+
+  const st = stats.st;
+  return (
+    <div className={'el-root' + (p.demo ? ' demo' : '') + (shelfDemo ? ' shelf' : '') + (mod === 'uzay' ? ` uzay ${p.demo && !DEMO_ODA ? 'tam' : arka}` : '') + (mod === 'uzay' && sahne === 'ekstra' && numara !== 'ay' ? ' ekstra' : '') + (mod === 'haber' ? ' haber' : '') + (hud ? '' : ' temiz')}>
+      <video ref={videoRef} className="el-video" playsInline muted />
+      {/* Oda modunda videonun hemen üstünde sinematik karartma (yıldızların ve HUD'un altında) */}
+      <div className="sp-grade" />
+      <canvas ref={starsRef} className="sp-stars" />
+      <canvas ref={shelfRef} className="el-shelf" />
+      <canvas ref={spaceRef} className="sp-canvas" />
+      <div ref={newsStageRef} className="hb-stage" />
+      <canvas ref={canvasRef} className="el-canvas" />
+      <div ref={stageRef} className="lb-stage" />
+      <canvas ref={faceRef} className="el-face" />
+
+      {hud && (
+        <>
+          <i className="el-corner tl" /><i className="el-corner tr" /><i className="el-corner bl" /><i className="el-corner br" />
+          <div className="el-top">
+            <span className="el-title">JARVIS · {mod === 'haber' ? 'HABER MERKEZİ' : mod === 'uzay' ? (sahne === 'lab' ? 'UZAY LABORATUVARI' : sahne === 'ekstra' ? 'UZAY · EKSTRA' : 'UZAY · GÖSTERİ') : 'EL KONTROLÜ'}</span>
+            <span className="el-chip">MOD: {st.mode.toLocaleUpperCase('tr')}</span>
+            <span className="el-meta">{stats.fps} FPS · {st.hands.length} el{stats.delegate ? ` · ${stats.delegate}` : ''}{p.demo ? ' · DEMO' : ''}</span>
+            {st.hands.map(h => <span key={h.id} className="el-meta">{GESTURE_LABEL[h.gesture]}</span>)}
+            <span className="el-sp" />
+            <button className={'el-btn' + (mod === 'uzay' ? ' on' : '')} onClick={() => { setEditing(false); setMod(m => (m === 'uzay' ? 'buyu' : 'uzay')); }} title="Uzay modu (U)">{mod === 'uzay' ? '✨ büyü' : '🪐 uzay'}</button>
+            <button className={'el-btn' + (mod === 'haber' ? ' on' : '')} onClick={() => { setEditing(false); setMod(m => (m === 'haber' ? 'buyu' : 'haber')); }} title="Haber modu (N)">{mod === 'haber' ? '✨ büyü' : '📰 haber'}</button>
+            {mod === 'uzay' && (['lab', 'gosteri', 'ekstra'] as const).map(x => (
+              <button key={x} className={'el-btn' + (sahne === x ? ' on' : '')} onClick={() => setSahne(x)} title="Sahne (G)">{x === 'lab' ? '🔬 laboratuvar' : x === 'gosteri' ? '🎆 gösteri' : '✨ ekstra'}</button>
+            ))}
+            {mod === 'uzay' && sahne === 'ekstra' && NUMARALAR.map((n, i) => (
+              <button key={n.ad} className={'el-btn' + (numara === n.ad ? ' on' : '')} onClick={() => { setNumara(n.ad); extraRef.current?.sec(n.ad, performance.now()); }} title={`${i + 1}`}>{n.etiket}</button>
+            ))}
+            {mod === 'uzay' && !p.demo && <button className="el-btn" onClick={() => setArka(a => (a === 'tam' ? 'katman' : 'tam'))} title="Arka plan (B)">{arka === 'tam' ? '🏠 oda' : '🌌 tam uzay'}</button>}
+            {cams.length > 1 && <button className="el-btn" onClick={nextCam} title="Kamera değiştir (C)">⟳ kamera</button>}
+            <button className="el-btn" onClick={() => setAyar({ ses: !ayar.ses })} title="Efekt sesi (M)">{muted ? '🔇' : '🔊'}</button>
+            <button className={'el-btn' + (ayarOpen ? ' on' : '')} onClick={() => setAyarOpen(v => !v)} title="Efektleri aç/kapat (E)">⚙ efektler</button>
+            <button className="el-btn" onClick={p.onClose} title="Kapat (Esc)">✕</button>
+          </div>
+          {!st.mode.includes('taraması') && <div className="el-legend">
+            {(mod === 'haber' ? LEGEND_HABER : mod === 'uzay' ? (sahne === 'lab' ? LEGEND_LAB : sahne === 'ekstra' ? LEGEND_EKSTRA : LEGEND_UZAY) : st.mode.startsWith('kitap') ? LEGEND_KITAP : LEGEND).map(([g, t]) => <span key={g + t}><b>{g}</b> {t}</span>)}
+            <span className="el-keys">{mod === 'haber' ? '←/→ haber · ↑/↓ kategori · Enter detay · K karşılaştır · W dünya basını · / ara · Y yayın · H son dakika · R manşetler · A dünya · P basın · X takip · V duvar · I iddia · S sorular · O sabah · ⌫ geri · T temiz çekim · N kapat · Esc çık' : mod === 'uzay' ? (sahne === 'ekstra' ? '1-5 numara · G sahne · T temiz çekim · L arayüz · B arka plan · U büyü · Esc çık' : sahne === 'lab' ? 'G gösteri · Z yakınlaş · Y yaşanabilir bölge · Boşluk durdur · T temiz çekim · L arayüz · B arka plan · U büyü · Esc çık' : 'G laboratuvar · U büyü modu · B arka plan · T temiz çekim · L arayüz · D iskelet · M ses · Esc çık') : 'U uzay · N haber · L arayüz · E efektler · F yüz kilidi · K kitaplık · D iskelet · M ses · Esc çık'}</span>
+          </div>}
+          {p.demo && stats.step && !st.mode.includes('taraması') && <div className="el-step">{stats.step}</div>}
+          {mod !== 'haber' && mod !== 'uzay' && st.mode.startsWith('kitap · sayfa') && (
+            <div className="el-komutlar" aria-label="Açık kitapta sesli komutlar">
+              <div className="el-komutlar-h">🎙 SESLİ KOMUTLAR</div>
+              <p className="el-komutlar-nasil">✌️ 0,6 sn basılı tut ya da <kbd>boşluk</kbd>, sonra söyle</p>
+              <ul>
+                {KITAP_KOMUTLARI.map(([anahtar, soz, sonuc]) => {
+                  const k = sonKomut?.kayit;
+                  const son = k && (k.tip === 'durum' ? `durum-${k.durum}` : k.tip) === anahtar;
+                  return <li key={anahtar + (son ? sonKomut!.n : '')} className={son ? 'son' : ''}><q>{soz}</q><span>{sonuc}</span></li>;
+                })}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+
+      {(p.caption || p.core === 'thinking') && (
+        <div className={'el-caption ' + p.core}>
+          <span className="el-dot" />
+          {p.caption || 'düşünüyor…'}
+        </div>
+      )}
+      {toast && <div className="el-toast">{toast}</div>}
+      {ayarOpen && (
+        <aside className="el-ayar" onPointerDown={e => e.stopPropagation()}>
+          <header><b>EFEKTLER</b><button className="el-btn" onClick={() => setAyarOpen(false)}>✕</button></header>
+          {AYAR_LISTESI.map(({ k, ad, alt }) => (
+            <label key={k} className={ayar[k] ? 'on' : ''}>
+              <input type="checkbox" checked={ayar[k]} onChange={e => setAyar({ [k]: e.target.checked })} />
+              <span>{ad}</span>
+              {alt && <em>{alt}</em>}
+            </label>
+          ))}
+          <div className="el-ayar-row">
+            <span>🪐 Gezegen</span>
+            <select value={ayar.gezegenTur} onChange={e => setAyar({ gezegenTur: e.target.value as ElAyar['gezegenTur'] })}>
+              <option value="sirayla">Sırayla (her çimdikte sonraki)</option>
+              {GEZEGENLER.map(g => <option key={g.tur} value={g.tur}>{g.ad}</option>)}
+            </select>
+          </div>
+          <p>Bu cihazda saklanır. Kapalı efekt hiç tetiklenmez. Sesle: "Jarvis, Mars yap". Kısayol: <b>E</b></p>
+        </aside>
+      )}
+      {moved && !editing && <div className="el-warn">⚠ KAMERA KIPIRDAMIŞ · KİTAPLIĞI YENİDEN TARA (K)</div>}
+      {editing && (
+        <LibraryEditor
+          books={libBooks} bolumler={libBolumler} W={dims.W} H={dims.H} vw={dims.vw} vh={dims.vh}
+          scanning={scanning} moved={moved} demo={shelfDemo}
+          onScan={runScan} onSave={saveBooks} onClose={() => setEditing(false)}
+        />
+      )}
+      {(status || err) && (
+        <div className="el-status">
+          {err ? <><b>El kontrolü başlatılamadı</b><span>{err}</span><button className="el-btn" onClick={p.onClose}>Kapat</button></> : <><span className="el-spin" />{status}</>}
+        </div>
+      )}
+    </div>
+  );
+}
