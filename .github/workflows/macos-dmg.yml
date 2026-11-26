@@ -1,9 +1,11 @@
 # Luxion macOS DMG: GitHub'ın Mac sunucusunda derler ve Release'e ekler.
-# Tetikleme: "v" ile başlayan bir etiket (ör. v1.0.0) gönderilince ya da Actions sekmesinden elle.
+# Tetikleme: main'de uygulama dosyaları değişince, "v" ile başlayan bir etiket gönderilince ya da Actions sekmesinden elle.
 name: macOS DMG
 
 on:
   push:
+    branches: [main]
+    paths: ['macos/**', 'server/**', 'web/**', 'scripts/**', '.github/workflows/macos-dmg.yml']
     tags: ['v*']
   workflow_dispatch:
 
