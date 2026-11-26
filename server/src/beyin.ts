@@ -34,7 +34,10 @@ export function beyinDurumu() {
 
 /** Sağlayıcı hata kodu → kullanıcıya söylenecek cümle */
 export function hataCumlesi(status: number | null, govde = '', model = ''): string {
-  if (status === null) return 'Servise ulaşılamadı. İnternet bağlantısını ve (özel sağlayıcıda) adresi kontrol edin.';
+  if (status === null) {
+    if (/zaman|timeout|aborted/i.test(govde)) return `Servis zamanında cevap vermedi${model ? ` (${model})` : ''}. Biraz sonra tekrar deneyin ya da listeden daha hızlı bir model seçin.`;
+    return `Servise ulaşılamadı${govde ? ` (${govde})` : ''}. İnternet bağlantısını, VPN/güvenlik duvarını ve (özel sağlayıcıda) adresi kontrol edin.`;
+  }
   // Gemini geçersiz anahtarda 400 + "API key not valid" döndürüyor
   if (status === 401 || status === 403 || /api.?key|invalid.{0,20}(key|token)|unauthori[sz]ed|authentication/i.test(govde)) return 'Anahtar geçersiz ya da bu servise yetkisi yok. Anahtarı yeniden kopyalayın.';
   if (status === 429) return 'Kota doldu ya da çok sık istek gönderildi (ücretsiz katman sınırı). Biraz bekleyip tekrar deneyin.';
@@ -80,12 +83,32 @@ export async function beyinTest(cfg: BeyinAyari, f: typeof fetch = fetch): Promi
   if (s.tts !== 'speech') delete secilen.tts;
   if (!secilen.chat) return { ok: false, hata: 'Sohbet modelini seçin', modeller: liste, secilen };
 
+  // Ağ hatasında nedeni de söyle (ör. ENOTFOUND, ECONNRESET, sertifika); zaman aşımı ayrı
+  const neden = (e: unknown) => {
+    const x = e as { name?: string; message?: string; cause?: { code?: string; message?: string } };
+    if (x?.name === 'TimeoutError' || x?.name === 'AbortError') return 'zaman aşımı';
+    return String(x?.cause?.code || x?.cause?.message || x?.message || '').slice(0, 120);
+  };
+  const sor = (model: string) => f(`${adres}/chat/completions`, {
+    method: 'POST', headers: h, signal: AbortSignal.timeout(60_000),
+    body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Yalnızca "Hazırım efendim." yaz.' }] }),
+  }).then(r => ({ r, e: '' }), (e: unknown) => ({ r: null as globalThis.Response | null, e: neden(e) }));
+
   const t0 = Date.now();
-  const cr = await f(`${adres}/chat/completions`, {
-    method: 'POST', headers: h, signal: AbortSignal.timeout(25_000),
-    body: JSON.stringify({ model: secilen.chat, messages: [{ role: 'user', content: 'Yalnızca "Hazırım efendim." yaz.' }] }),
-  }).catch(() => null);
-  if (!cr?.ok) return { ok: false, hata: hataCumlesi(cr?.status ?? null, cr ? await cr.text().catch(() => '') : '', secilen.chat), modeller: liste, secilen };
+  let { r: cr, e: ag } = await sor(secilen.chat);
+  // Otomatik seçilen (en yeni) model cevap vermezse sağlayıcının bilinen varsayılan modeli denenir
+  const yedek = s.varsayilan.chat;
+  if (!cr?.ok && !cfg.modeller?.chat && yedek && yedek !== secilen.chat) {
+    console.warn(`[beyin] test: ${secilen.chat} cevap vermedi (${cr?.status ?? ag}); ${yedek} deneniyor`);
+    const ikinci = await sor(yedek);
+    if (ikinci.r?.ok) { secilen.chat = yedek; if (secilen.vision && !cfg.modeller?.vision) secilen.vision = s.varsayilan.vision ?? yedek; if (secilen.stt && !cfg.modeller?.stt) secilen.stt = s.varsayilan.stt ?? yedek; }
+    ({ r: cr, e: ag } = ikinci.r?.ok ? ikinci : { r: cr, e: ag });
+  }
+  if (!cr?.ok) {
+    const govde = cr ? await cr.text().catch(() => '') : ag;
+    console.warn(`[beyin] test başarısız: ${s.ad} · ${secilen.chat} · ${cr?.status ?? 'ağ'} · ${govde.slice(0, 200)}`);
+    return { ok: false, hata: hataCumlesi(cr?.status ?? null, govde, secilen.chat), modeller: liste, secilen };
+  }
   const j = await cr.json().catch(() => null);
   const cevap = String(j?.choices?.[0]?.message?.content ?? '').trim().slice(0, 80);
   return { ok: true, ms: Date.now() - t0, modeller: liste.slice(0, 400), secilen, cevap };
