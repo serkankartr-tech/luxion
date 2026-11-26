@@ -28,6 +28,8 @@ export interface Saglayici {
   tercih: Partial<Record<Rol, RegExp[]>>;
   /** Liste alınamazsa */
   varsayilan: Partial<Record<Rol, string>>;
+  /** Model yoğun (503), kota/boyut sınırında (429/413) ya da cevap vermezse sırayla denenecek sohbet modelleri */
+  yedekler?: string[];
   /** Seslendirme sesleri (tts: 'speech') */
   sesler?: string[];
   /** Varsayılan ek başlıklar (Anthropic'in OpenAI uyumlu ucu x-api-key de bekler) */
@@ -47,6 +49,7 @@ export const SAGLAYICILAR: Saglayici[] = [
     stt: 'chat-audio', tts: null,
     tercih: { chat: [/^gemini-\d+(\.\d+)?-flash$/], vision: [/^gemini-\d+(\.\d+)?-flash$/], stt: [/^gemini-\d+(\.\d+)?-flash$/] },
     varsayilan: { chat: 'gemini-2.5-flash', vision: 'gemini-2.5-flash', stt: 'gemini-2.5-flash' },
+    yedekler: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-pro'],
   },
   {
     id: 'groq', ad: 'Groq', ucretsiz: true,
@@ -60,6 +63,8 @@ export const SAGLAYICILAR: Saglayici[] = [
       stt: [/^whisper-large-v3-turbo$/, /^whisper-large-v3$/],
     },
     varsayilan: { chat: 'llama-3.3-70b-versatile', vision: 'meta-llama/llama-4-scout-17b-16e-instruct', stt: 'whisper-large-v3-turbo' },
+    // Ücretsiz katmanda dakikalık token sınırı modele göre değişir; Luxion'un uzun talimatı için geniş sınırlı modeller önce
+    yedekler: ['meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.3-70b-versatile', 'meta-llama/llama-4-maverick-17b-128e-instruct'],
   },
   {
     id: 'openai', ad: 'OpenAI', ucretsiz: false,

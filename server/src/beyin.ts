@@ -5,7 +5,7 @@ import { Router, type Request, type Response } from 'express';
 import { SAGLAYICILAR, modelKimlikleri, modelSec, saglayici, type Rol, type Saglayici } from './providers.js';
 import {
   API_KEY, BASE_URL, CHAT_MODEL, KAYNAK, MOCK, PROVIDER, STT_MODEL, TTS_MODEL, VISION_MODEL, IMAGE_MODEL,
-  beyinDosyasi, beyinKaydet, beyinSifirla, yetki, type BeyinAyari,
+  beyinDosyasi, beyinKaydet, beyinSifirla, geciciHata, yetki, type BeyinAyari,
 } from './routellm.js';
 
 const ROLLER: Rol[] = ['chat', 'vision', 'stt', 'tts'];
@@ -42,6 +42,8 @@ export function hataCumlesi(status: number | null, govde = '', model = ''): stri
   if (status === 401 || status === 403 || /api.?key|invalid.{0,20}(key|token)|unauthori[sz]ed|authentication/i.test(govde)) return 'Anahtar geçersiz ya da bu servise yetkisi yok. Anahtarı yeniden kopyalayın.';
   if (status === 429) return 'Kota doldu ya da çok sık istek gönderildi (ücretsiz katman sınırı). Biraz bekleyip tekrar deneyin.';
   if (status === 402) return 'Hesapta kredi yok. Sağlayıcının faturalandırma sayfasından kredi ekleyin ya da ücretsiz bir sağlayıcı seçin.';
+  if (status === 503 || status === 500 || status === 502 || status === 504) return 'Yapay zekâ servisi şu an çok yoğun (geçici bir durum). Bir iki dakika sonra "Bağlantıyı test et"e tekrar basın.';
+  if (status === 413) return 'İstek bu modelin ücretsiz sınırını aşıyor. Listeden başka bir model seçin ya da Google Gemini kullanın.';
   if (status === 404) return `Model bulunamadı${model ? `: ${model}` : ''}. Model listesinden başka birini seçin.`;
   return `Servis hata verdi (HTTP ${status})${govde ? `: ${govde.replace(/\s+/g, ' ').slice(0, 160)}` : ''}`;
 }
@@ -95,17 +97,28 @@ export async function beyinTest(cfg: BeyinAyari, f: typeof fetch = fetch): Promi
   }).then(r => ({ r, e: '' }), (e: unknown) => ({ r: null as globalThis.Response | null, e: neden(e) }));
 
   const t0 = Date.now();
-  let { r: cr, e: ag } = await sor(secilen.chat);
-  // Otomatik seçilen (en yeni) model cevap vermezse sağlayıcının bilinen varsayılan modeli denenir
-  const yedek = s.varsayilan.chat;
-  if (!cr?.ok && !cfg.modeller?.chat && yedek && yedek !== secilen.chat) {
-    console.warn(`[beyin] test: ${secilen.chat} cevap vermedi (${cr?.status ?? ag}); ${yedek} deneniyor`);
-    const ikinci = await sor(yedek);
-    if (ikinci.r?.ok) { secilen.chat = yedek; if (secilen.vision && !cfg.modeller?.vision) secilen.vision = s.varsayilan.vision ?? yedek; if (secilen.stt && !cfg.modeller?.stt) secilen.stt = s.varsayilan.stt ?? yedek; }
-    ({ r: cr, e: ag } = ikinci.r?.ok ? ikinci : { r: cr, e: ag });
+  // Seçilen model yoğunsa (503), kota/boyut sınırındaysa (429/413) ya da cevap vermezse sağlayıcının yedekleri denenir.
+  // Liste alınabildiyse yalnızca listede olan yedekler; kullanıcının elle seçtiği model değiştirilmez.
+  const adaylar = cfg.modeller?.chat ? [secilen.chat]
+    : [...new Set([secilen.chat, s.varsayilan.chat, ...(s.yedekler ?? [])].filter((m): m is string => !!m && (!liste.length || liste.includes(m) || m === secilen.chat)))].slice(0, 4);
+  let cr: globalThis.Response | null = null, ag = '', ilkGovde = '', ilkStatus: number | null = null;
+  for (const m of adaylar) {
+    ({ r: cr, e: ag } = await sor(m));
+    if (cr?.ok) {
+      if (m !== secilen.chat) {
+        console.warn(`[beyin] test: ${secilen.chat} kullanılamadı (${ilkStatus ?? ag}); ${m} seçildi`);
+        for (const r of ['chat', 'vision', 'stt'] as const) if (secilen[r] === secilen.chat && !cfg.modeller?.[r]) secilen[r] = m;
+        secilen.chat = m;
+      }
+      break;
+    }
+    const govde = cr ? await cr.text().catch(() => '') : ag;
+    if (ilkStatus === null && !ilkGovde) { ilkStatus = cr?.status ?? null; ilkGovde = govde; }
+    if (cr && !geciciHata(cr.status) && cr.status !== 404) break; // anahtar/istek hatası: başka model denemek boşuna
   }
   if (!cr?.ok) {
-    const govde = cr ? await cr.text().catch(() => '') : ag;
+    const govde = ilkGovde || ag;
+    cr = ilkStatus !== null ? ({ status: ilkStatus } as globalThis.Response) : null;
     console.warn(`[beyin] test başarısız: ${s.ad} · ${secilen.chat} · ${cr?.status ?? 'ağ'} · ${govde.slice(0, 200)}`);
     return { ok: false, hata: hataCumlesi(cr?.status ?? null, govde, secilen.chat), modeller: liste, secilen };
   }

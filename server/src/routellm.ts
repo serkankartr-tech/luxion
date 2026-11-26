@@ -116,12 +116,56 @@ export class RouteLLMError extends Error {
   }
 }
 
+/** Geçici hata: aynı ya da başka bir modelle yeniden denenebilir (yoğunluk, kota, boyut sınırı, sunucu hatası) */
+export const geciciHata = (status: number) => status === 408 || status === 413 || status === 429 || status >= 500;
+const bekle = (ms: number) => new Promise(r => setTimeout(r, ms));
+/** Bir dakikalığına "yoğun" sayılan modeller atlanır; sohbet o sürede çalışan yedekle devam eder */
+const yogun = new Map<string, number>();
+
+/** Sohbet isteği için denenecek modeller: istenen, sonra sağlayıcının yedekleri (yoğun olanlar sona) */
+export function modelSirasi(model: unknown): string[] {
+  if (typeof model !== 'string' || !model) return [model as string];
+  const simdi = Date.now();
+  const hepsi = [...new Set([model, ...(PROVIDER.yedekler ?? [])])];
+  const bos = hepsi.filter(m => (yogun.get(m) ?? 0) < simdi);
+  return [...bos, ...hepsi.filter(m => !bos.includes(m))].slice(0, 4);
+}
+
+/**
+ * Sohbet isteğini geçici hatalarda yedek modellerle tekrarlar. İlk başarılı cevap döner; hepsi başarısızsa ilk hata
+ * fırlatılır. Kalıcı hatalar (anahtar geçersiz, istek hatalı) hemen fırlatılır.
+ */
+async function yedekliIste(body: any, gonder: (b: any) => Promise<Response>): Promise<Response> {
+  const sohbet = body && typeof body === 'object' && typeof body.model === 'string' && !body.modalities;
+  const sira = sohbet ? modelSirasi(body.model) : [body?.model];
+  let ilk: RouteLLMError | null = null;
+  for (let i = 0; i < sira.length; i++) {
+    const b = sohbet ? { ...body, model: sira[i] } : body;
+    let res: Response;
+    try { res = await gonder(b); } catch (e) {
+      if ((e as Error)?.name === 'AbortError' || !sohbet || i === sira.length - 1) throw e;
+      continue;
+    }
+    if (res.ok) {
+      if (i > 0) console.warn(`[beyin] ${sira[0]} geçici olarak kullanılamadı; ${sira[i]} ile cevaplandı`);
+      return res;
+    }
+    const hata = new RouteLLMError(res.status, await res.text());
+    ilk ??= hata;
+    if (!sohbet || !geciciHata(res.status)) throw hata;
+    yogun.set(sira[i], Date.now() + 60_000);
+    if (i < sira.length - 1) await bekle(400);
+  }
+  throw ilk ?? new RouteLLMError(503, 'Model servisi cevap vermedi');
+}
+
 export async function routellm<T = any>(path: string, body?: unknown, method = body ? 'POST' : 'GET'): Promise<T> {
-  const res = await fetch(BASE_URL + path, {
+  const gonder = (b: unknown) => fetch(BASE_URL + path, {
     method,
     headers: { ...yetki(), 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined,
+    body: b ? JSON.stringify(b) : undefined,
   });
+  const res = path === '/chat/completions' && body ? await yedekliIste(body, gonder) : await gonder(body);
   const text = await res.text();
   if (!res.ok) throw new RouteLLMError(res.status, text);
   return JSON.parse(text) as T;
@@ -142,12 +186,12 @@ export interface StreamResult {
  */
 export async function routellmStream(body: object, onContent?: (delta: string, full: string) => void, signal?: AbortSignal): Promise<StreamResult> {
   const t0 = performance.now();
-  const res = await fetch(BASE_URL + '/chat/completions', {
+  const res = await yedekliIste(body, b => fetch(BASE_URL + '/chat/completions', {
     method: 'POST',
     headers: { ...yetki(), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, stream: true }),
+    body: JSON.stringify({ ...b, stream: true }),
     signal, // Toplantı Odası: kullanıcı araya girince üretim iptal edilir
-  });
+  }));
   if (!res.ok || !res.body) throw new RouteLLMError(res.status, await res.text());
   const dec = new TextDecoder();
   let buf = '';
