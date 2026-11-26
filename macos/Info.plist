@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>Luxion</string>
+  <key>CFBundleDisplayName</key><string>Luxion</string>
+  <key>CFBundleIdentifier</key><string>app.luxion.asistan</string>
+  <key>CFBundleVersion</key><string>__SURUM__</string>
+  <key>CFBundleShortVersionString</key><string>__SURUM__</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleExecutable</key><string>Luxion</string>
+  <key>CFBundleIconFile</key><string>Luxion</string>
+  <key>CFBundleDevelopmentRegion</key><string>tr</string>
+  <key>LSMinimumSystemVersion</key><string>13.5</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSHumanReadableCopyright</key><string>Luxion · kişisel yapay zekâ asistanı</string>
+</dict>
+</plist>

@@ -66,7 +66,7 @@ export class Toplanti {
     public mod: 'tartisma' | 'canli',
     konu: string,
     private yay: (o: Olay) => void,
-    private sesler: { jarvis: () => VoiceSel; friday: () => VoiceSel },
+    private sesler: { luxion: () => VoiceSel; iris: () => VoiceSel },
     readonly demo: DemoSenaryo | null = null,
     readonly kaydet = false,
   ) {
@@ -75,11 +75,11 @@ export class Toplanti {
   }
 
   async baslat() {
-    this.m = this.demo ? { jarvis: 'demo senaryosu', friday: 'demo senaryosu', hakem: 'demo', ayniAile: false, kaynak: 'demo' } : await modeller();
+    this.m = this.demo ? { luxion: 'demo senaryosu', iris: 'demo senaryosu', hakem: 'demo', ayniAile: false, kaynak: 'demo' } : await modeller();
     const a = ayarOku();
     this.yay({
       olay: 'acildi', id: this.id, mod: this.mod, konu: this.oturum.topic, demo: !!this.demo, modeller: this.m,
-      sesler: { jarvis: this.sesler.jarvis(), friday: this.sesler.friday() }, karakterler: a.karakterler, sinirlar: sinirlar(),
+      sesler: { luxion: this.sesler.luxion(), iris: this.sesler.iris() }, karakterler: a.karakterler, sinirlar: sinirlar(),
     });
     if (this.oturum.topic) this.isEkle(() => this.tartis());
     else this.durum('dinliyor');
@@ -118,7 +118,7 @@ export class Toplanti {
         if (n !== this.nesil) return;
         o.uzlasmaSonucu(u);
         this.yay({ olay: 'uzlasma', sonuc: u });
-        await this.konus('jarvis', '', uzlasmaSozu(u, ayarOku().karakterler.jarvis.hitap));
+        await this.konus('luxion', '', uzlasmaSozu(u, ayarOku().karakterler.luxion.hitap));
       }
     }
     if (n === this.nesil) this.durum(this.mod === 'canli' ? 'dinliyor' : 'bitti');
@@ -142,7 +142,7 @@ export class Toplanti {
     const k = t.toLocaleLowerCase('tr');
     this.kayitEkle('user', t);
     this.yay({ olay: 'kullanici', metin: t, birlesti: !!birlesik });
-    // Resmî tartışma (Jarvis açar → Friday sorgular → hakem) yalnızca açıkça "tartışın" denince (Senaryo A).
+    // Resmî tartışma (Luxion açar → Iris sorgular → hakem) yalnızca açıkça "tartışın" denince (Senaryo A).
     // Karar soruları da doğal sohbette konuşulur: sıra kalıbı yok, karakterler sözü birbirine ya da kullanıcıya bırakır.
     if (/\b(tart[ıi][sş][ıi]n|tart[ıi][sş]s[ıi]n)\b/.test(k)) {
       this.oturum.tartismaBaslat(t.replace(/^.*?(tart[ıi][sş][ıi]n|tart[ıi][sş]s[ıi]n)\s*[:,]?\s*/i, '') || t);
@@ -215,7 +215,7 @@ export class Toplanti {
       let yayilan = 0, yeter = false, ilkParca = '', sonFull = '';
       let etiketZamani: ReturnType<typeof setTimeout> | null = null;
       try {
-        const r = await routellmStream({ model: this.m[kim], messages: mesajlar, temperature: kim === 'friday' ? 0.8 : 0.6, max_tokens: 220 }, (_d, full) => {
+        const r = await routellmStream({ model: this.m[kim], messages: mesajlar, temperature: kim === 'iris' ? 0.8 : 0.6, max_tokens: 220 }, (_d, full) => {
           olc.ilkToken ??= Math.round(performance.now() - t0);
           sonFull = full;
           if (yeter) { if (siraEtiketi(full).sira) ac.abort(); return; } // sınırdan sonra yalnızca söz etiketi beklenir
@@ -269,7 +269,7 @@ export class Toplanti {
 
   private mesajlar(kim: Karakter, talimat: string, a: Ayar): ChatMessage[] {
     const sistem = doldur(promptOku(kim), { hitap: a.karakterler[kim].hitap, cumle_siniri: a.cumle_siniri, tarih: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }), kullanici: process.env.USER_NAME || 'Kullanıcı' });
-    const ad = { user: 'Kullanıcı', jarvis: 'Jarvis', friday: 'Friday' };
+    const ad = { user: 'Kullanıcı', luxion: 'Luxion', iris: 'Iris' };
     const dokum = this.oturum.transcript.slice(-24).map(s => `${ad[s.konusan]}: ${s.metin}`).join('\n');
     return [
       { role: 'system', content: sistem },
@@ -279,7 +279,7 @@ export class Toplanti {
 
   private async hakem(): Promise<Hakem> {
     if (this.demo) { await bekle(ayarOku().demo.hakem_ms); return this.demo.hakemler?.[this.oturum.round] ?? { agreement: 85, new_point_raised: false, should_continue: false }; }
-    const tur = this.oturum.transcript.slice(-2).map(s => `${s.konusan === 'jarvis' ? 'Jarvis' : s.konusan === 'friday' ? 'Friday' : 'Kullanıcı'}: ${s.metin}`).join('\n');
+    const tur = this.oturum.transcript.slice(-2).map(s => `${s.konusan === 'luxion' ? 'Luxion' : s.konusan === 'iris' ? 'Iris' : 'Kullanıcı'}: ${s.metin}`).join('\n');
     const once = this.oturum.transcript.slice(0, -2).filter(s => s.konusan !== 'user').map(s => s.metin).join(' ').slice(-2500);
     const mesajlar: ChatMessage[] = [{ role: 'system', content: promptOku('hakem') }, { role: 'user', content: `Konu: ${this.oturum.topic}\n\nÖnceki turlarda söylenenler: ${once || '(yok)'}\n\nSon tur:\n${tur}` }];
     const r = await routellmStream({ model: this.m.hakem, messages: mesajlar, temperature: 0, max_tokens: 80 }).catch(() => null);
@@ -289,9 +289,9 @@ export class Toplanti {
 
   private async uzlas(): Promise<Uzlasma> {
     if (this.demo?.uzlasma) { await bekle(ayarOku().demo.hakem_ms); return this.demo.uzlasma; }
-    const ad = { user: 'Kullanıcı', jarvis: 'Jarvis', friday: 'Friday' };
+    const ad = { user: 'Kullanıcı', luxion: 'Luxion', iris: 'Iris' };
     const mesajlar: ChatMessage[] = [{ role: 'system', content: promptOku('uzlasma') }, { role: 'user', content: `Konu: ${this.oturum.topic}\n\n${this.oturum.transcript.map(s => `${ad[s.konusan]}: ${s.metin}`).join('\n')}` }];
-    const r = await routellmStream({ model: this.m.jarvis, messages: mesajlar, temperature: 0.2, max_tokens: 350 }).catch(() => null);
+    const r = await routellmStream({ model: this.m.luxion, messages: mesajlar, temperature: 0.2, max_tokens: 350 }).catch(() => null);
     this.maliyetEkle(mesajlar, r?.content ?? '');
     return uzlasmaDogrula(r?.content ?? '') ?? { agreed: [], disagreed: [], recommendation: 'Kararı kendi önceliklerinize göre verin; iki görüşü de not ettim', confidence: 'düşük' };
   }
@@ -324,7 +324,7 @@ export class Toplanti {
 
   private sinirAsildi() { const s = sinirlar(); return this.karakterTurlari >= s.tur || this.maliyet.token >= s.token; }
   private async sinirdaKapat() {
-    await this.konus('jarvis', '', `Efendim, bu toplantı için ayrılan sınıra ulaştık. Tutanağı çıkarıyorum.`);
+    await this.konus('luxion', '', `Efendim, bu toplantı için ayrılan sınıra ulaştık. Tutanağı çıkarıyorum.`);
     await this.bitir(true);
   }
 
@@ -334,7 +334,7 @@ export class Toplanti {
     if (!icerden) { this.kes(null); await this.calisiyor.catch(() => {}); }
     this.kapali = true;
     this.durum('tutanak');
-    const t = this.demo?.tutanak ?? await tutanakCikar(this.oturum, this.m.jarvis, (m, c) => this.maliyetEkle(m, c));
+    const t = this.demo?.tutanak ?? await tutanakCikar(this.oturum, this.m.luxion, (m, c) => this.maliyetEkle(m, c));
     t.date ||= new Date().toISOString().slice(0, 16).replace('T', ' ');
     const dosya = tutanakKaydet(t, this.oturum, { modeller: this.m, maliyet: this.maliyet, sure: Date.now() - this.baslangic });
     this.tutanak = t;
@@ -342,7 +342,7 @@ export class Toplanti {
     this.yay({ olay: 'tutanak', tutanak: t, dosya: path.basename(dosya), maliyet: this.maliyet });
     if (this.kaydet) this.kaydiYaz();
     this.kapali = false; // özet konuşulabilsin
-    await this.konus('jarvis', '', t.summary || 'Toplantı tutanağı hazır efendim.');
+    await this.konus('luxion', '', t.summary || 'Toplantı tutanağı hazır efendim.');
     this.kapali = true;
     this.durum('kapandi');
     return t;

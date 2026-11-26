@@ -100,7 +100,7 @@ t('test: ağ hatası → servise ulaşılamadı', !t6.ok && /ulaşılamadı/.tes
 
 // ---------------------------------------------------------------- Demo niyetleri
 const niyet: [string, string][] = [
-  ['Jarvis, aydınlat beni', 'brifing'], ['gündemde ne var', 'brifing'], ['hava nasıl', 'hava'], ['bugün yağmur yağacak mı', 'hava'],
+  ['Luxion, aydınlat beni', 'brifing'], ['gündemde ne var', 'brifing'], ['hava nasıl', 'hava'], ['bugün yağmur yağacak mı', 'hava'],
   ['dolar kaç', 'doviz'], ['euro ne kadar', 'doviz'], ['salon ışığını aç', 'ev'], ['çalışma odasının lambasını kapat', 'ev'],
   ['bana bir kitap öner', 'kitap'], ['kimsin sen', 'tanit'], ['neler yapabilirsin', 'tanit'], ['günaydın', 'selam'],
   ['saat kaç', 'saat'], ['teşekkürler', 'tesekkur'], ['Atatürk kimdir', 'wiki'], ['Kapadokya nerede', 'wiki'],

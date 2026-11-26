@@ -3,7 +3,7 @@
 import type { Gorsel } from './types.js';
 import { control } from './home.js';
 
-/** Eşleşme bağlamı: fotoğraf var mı, Jarvis'in son cevabı, bağlı kamera var mı */
+/** Eşleşme bağlamı: fotoğraf var mı, Luxion'un son cevabı, bağlı kamera var mı */
 export interface ScriptedCtx { image: boolean; prev: string; cameraOnline: boolean }
 
 export interface ScriptedCommand {
@@ -59,7 +59,7 @@ export const SCRIPTED: ScriptedCommand[] = [
     detay: '**Türk kahvesi** — hazırlanıyor. Yapılışı kamera panelinden izlenebilir.',
   },
   {
-    // Kahve bitti → fal daveti. "Falıma bak" da buraya düşer, ama yalnızca bağlı kamera yokken (kamera varsa Jarvis kameradan bakar)
+    // Kahve bitti → fal daveti. "Falıma bak" da buraya düşer, ama yalnızca bağlı kamera yokken (kamera varsa Luxion kameradan bakar)
     name: 'fal daveti',
     match: (t, c) => !c.image && (BITTI.test(t) || (FAL.test(t) && !c.cameraOnline)),
     sahneler: [{ ses: FAL_DAVET, gorsel: { tip: 'ikon', ikon: 'coffee', baslik: 'Kahve falı', alt: 'Fincanınızın fotoğrafını gönderin', foto_arama: 'turkish coffee cup grounds' } }],
@@ -82,7 +82,7 @@ export const KITAPLIK_TARA = 'Kitaplığınızı tarıyorum efendim.';
 /** El Kontrolü'nde açık kitaba sesle not/alıntı eklenince (istemcideki metinlerle birebir aynı olmalı) */
 export const NOT_ALDIM = 'Not aldım efendim.';
 export const ALINTI_ALDIM = 'Alıntıyı ekledim efendim.';
-/** Açık kitap adlandırılınca ("Jarvis, bu kitabın adı …") */
+/** Açık kitap adlandırılınca ("Luxion, bu kitabın adı …") */
 export const KITAP_EKLIYORUM = 'Tamamdır efendim, ekliyorum.';
 
 export const SCRIPTED_LINES = [...SCRIPTED.flatMap(s => s.sahneler.map(x => x.ses)), FAL_SON, YUZ_KILIDI, KITAPLIK_TARA, NOT_ALDIM, ALINTI_ALDIM, KITAP_EKLIYORUM];

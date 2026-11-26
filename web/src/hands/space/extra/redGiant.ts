@@ -69,7 +69,7 @@ const SOZ: [number, string][] = [
 
 export class RedGiant implements ExtraNumara {
   ad = "GÜNEŞ'İN SON GÜNLERİ";
-  ipucu = '✊ 1 sn: durdur / devam   ·   "Jarvis, durdur / devam et / sıfırla"';
+  ipucu = '✊ 1 sn: durdur / devam   ·   "Luxion, durdur / devam et / sıfırla"';
   private startAt = 0;
   private t = 0;
   private durdu = false;

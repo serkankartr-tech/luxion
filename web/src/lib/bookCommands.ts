@@ -11,7 +11,7 @@ export type KitapKomut =
   | { tip: 'ad'; ad: string }
   | { tip: 'ozetle' };
 
-const ON = String.raw`^\s*(?:(?:hey\s+)?jarvis[,\s]+)?`;
+const ON = String.raw`^\s*(?:(?:hey\s+)?luxion[,\s]+)?`;
 const AYIR = String.raw`\s*[:,.\-–]?\s*`;
 const KITABA = String.raw`(?:(?:bu\s+kitaba|kitaba|buna|bunu|şunu|sunu)\s+)?(?:şu\s+|su\s+|bir\s+)?`;
 
@@ -27,7 +27,7 @@ const OKUNACAK = /(okunacak(?:lar)?(?:a|\s+listesine|\s+listeme)?\s+(?:ekle|al|k
 const SAYFA = /(\d{1,4})\s*\.?\s*sayfa(?:s[ıi]na|ya|da|de)?\s*(?:day[ıi]m|deyim|ya\s+geldim|ya\s+kadar\s+okudum|da\s+kald[ıi]m|y[ıi]\s+okuyorum|y[ıi]\s+bitirdim)|sayfa\s*(\d{1,4})['’]?\s*(?:day[ıi]m|deyim|da|de|ya\s+geldim)/iu;
 const TOPLAM = /(?:toplam|kitap|tamam[ıi])\s*(\d{1,4})\s*sayfa/iu;
 
-/** Komut yoksa null (cümle normal Jarvis'e gider) */
+/** Komut yoksa null (cümle normal Luxion'a gider) */
 export function matchBookCommand(text: string): KitapKomut | null {
   const t = text.trim();
   if (!t) return null;
@@ -54,7 +54,7 @@ export function matchBookCommand(text: string): KitapKomut | null {
 /** Sonundaki nokta ve tırnaklar atılır, ilk harf korunur */
 const temizle = (s: string) => s.trim().replace(/^["“'‘]+|["”'’]+$/g, '').replace(/[.。]+$/, '').trim();
 
-/** Jarvis'in kısa onayı */
+/** Luxion'un kısa onayı */
 export function onayCumlesi(k: KitapKomut, ad: string | null): string {
   const kitap = ad ? `${ad}` : 'Kitaba';
   switch (k.tip) {
@@ -71,7 +71,7 @@ export function onayCumlesi(k: KitapKomut, ad: string | null): string {
 
 export type SohbetKomut = { tip: 'basla'; kitap: string | null } | { tip: 'bitir' };
 
-const SOHBET_BASLA = /^\s*(?:(?:hey\s+)?jarvis[,\s]+)?(?:seninle\s+)?(.+?)\s+(?:kitab[ıi]\s+)?(?:hakk[ıi]nda|üzerine)\s+(?:biraz\s+)?(?:sohbet\s+edelim|konuşal[ıi]m|muhabbet\s+edelim|sohbet\s+etmek\s+istiyorum|konuşmak\s+istiyorum|sohbet\s+eder\s+misin|konuşur\s+musun)\b/iu;
+const SOHBET_BASLA = /^\s*(?:(?:hey\s+)?luxion[,\s]+)?(?:seninle\s+)?(.+?)\s+(?:kitab[ıi]\s+)?(?:hakk[ıi]nda|üzerine)\s+(?:biraz\s+)?(?:sohbet\s+edelim|konuşal[ıi]m|muhabbet\s+edelim|sohbet\s+etmek\s+istiyorum|konuşmak\s+istiyorum|sohbet\s+eder\s+misin|konuşur\s+musun)\b/iu;
 const SOHBET_GENEL = /(^|\s)kitap\s+sohbet(?:i|ini)?\s+(?:başlat|aç|yapal[ıi]m)|okuduğum\s+kitap\s+(?:hakk[ıi]nda|üzerine)/iu;
 const SOHBET_BITIR = /(?:kitap\s+)?sohbet(?:i|imizi|ini)?\s+(?:bitir|kapat|sonland[ıi]r)|sohbeti\s+bitirelim|kitap\s+sohbetinden\s+ç[ıi]k/iu;
 const GENEL_AD = /^(?:şu\s+an\s+|şimdi\s+)?(?:okuduğum|okumakta\s+olduğum|bu|şu|açık|kitab[ıi]m|okuduğum\s+kitap|bu\s+kitap|kitap)(?:\s+kitap)?$/iu;

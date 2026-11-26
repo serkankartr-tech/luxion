@@ -3,8 +3,8 @@
 // Düzenleme:
 // - Kaynak eklemek: KAYNAKLAR'a { ad, cizgi, beslemeler: [{ url, kategori }] } ekleyin. `npm run test` her beslemeyi dener.
 // - Kaynak çıkarmak: satırı silin ya da başına // koyun.
-// - "cizgi" yalnızca listenin dengesini görmek içindir (her gruptan kaynak olsun diye). Ekranda ya da Jarvis'in
-//   sözlerinde hiçbir kaynağa etiket olarak gösterilmez; Jarvis kaynakları değerlendirmez, yalnızca karşılaştırır.
+// - "cizgi" yalnızca listenin dengesini görmek içindir (her gruptan kaynak olsun diye). Ekranda ya da Luxion'un
+//   sözlerinde hiçbir kaynağa etiket olarak gösterilmez; Luxion kaynakları değerlendirmez, yalnızca karşılaştırır.
 // - Kategori: beslemenin kendi kategorisi. "gundem" beslemelerindeki haberlerin kategorisi bağlantı adresinden
 //   ("/ekonomi/", "/dunya-haberleri/" …) tahmin edilir (news.ts → kategoriTahmin).
 //

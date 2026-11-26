@@ -62,7 +62,7 @@ export function demoNews(t: number, W: number, H: number, news: NewsScene): Habe
     if (k < 11.8) return { step: '✊→🖐 kısa yumruk ve aç: kart açılır', hands: [] };
     return { step: '✊→🖐 kısa yumruk ve aç: kart açılır', hands: [k < 12.5 ? yumruk(R, W * 0.7, H * 0.55) : acik(R, W * 0.7, H * 0.55)] };
   }
-  if (k < 15.6) return { step: news.analizHazir ? '📄 haber detayı: özet, sayılar, harita, kim ne zaman verdi' : '⏳ Jarvis kaynakları okuyor (tam metin + analiz)', hands: [] };
+  if (k < 15.6) return { step: news.analizHazir ? '📄 haber detayı: özet, sayılar, harita, kim ne zaman verdi' : '⏳ Luxion kaynakları okuyor (tam metin + analiz)', hands: [] };
   if (k < 17.4) {
     // 🤏 tut ve yukarı sürükle: içerik kayar
     const m = smooth((k - 15.9) / 1.1);
@@ -88,10 +88,10 @@ export function demoNews(t: number, W: number, H: number, news: NewsScene): Habe
   if (k < 40) return { step: news.iddiaHazir ? '⚖️ söylenen ↔ resmî veri: etiket, kaynak bağlantısı ve tarih' : '⏳ iddialar resmî veriyle karşılaştırılıyor', hands: [] };
   if (k < 41.4) return { step: '🤏 tut ve sola sürükle: sonraki iddia', hands: surukle(40.1, W * 0.72, cy, W * 0.36, cy) };
   if (k < 46) return { step: '⚖️ iddia kontrolü', hands: [] };
-  if (k < 53) return { step: '🗣 "Jarvis, burada ne sorulmamış?"', hands: [], cmd: cmd(46.2, 'sorular', { tip: 'sorular' }) };
+  if (k < 53) return { step: '🗣 "Luxion, burada ne sorulmamış?"', hands: [], cmd: cmd(46.2, 'sorular', { tip: 'sorular' }) };
   if (k < 55) return { step: '🖐→✊ avucunu kapat: detaya dön', hands: k < 53.3 ? [] : [k < 53.9 ? acik(R, W * 0.7, H * 0.55) : yumruk(R, W * 0.7, H * 0.55)] };
   if (k < 57) return { step: '✊ yumruğu tut: ana görünüme dön', hands: kapat(55.4, W * 0.7, H * 0.55) };
-  if (k < 58) return { step: '🗣 "Jarvis, günümü özetle"', hands: [], cmd: cmd(57, 'sabah', { tip: 'sabah' }) };
+  if (k < 58) return { step: '🗣 "Luxion, günümü özetle"', hands: [], cmd: cmd(57, 'sabah', { tip: 'sabah' }) };
   if (k < 74) {
     const h = [...surukle(63, W * 0.72, H * 0.72, W * 0.72, H * 0.4), ...surukle(67.5, W * 0.72, H * 0.72, W * 0.72, H * 0.4), ...surukle(71.5, W * 0.72, H * 0.72, W * 0.72, H * 0.4)];
     return { step: '🌅 sabah özeti · 🤏 tut ve yukarı sürükle: sonraki kart', hands: h };

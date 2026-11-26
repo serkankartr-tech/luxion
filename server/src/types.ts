@@ -41,7 +41,7 @@ export interface Sahne {
   gorsel: GorselWithPhoto;
 }
 
-export interface JarvisReply {
+export interface LuxionReply {
   id: string;
   sahneler: Sahne[];
   detay: string;
@@ -51,7 +51,7 @@ export interface JarvisReply {
   created_at: string;
   /** Cevap başlarken sabitlenen ses: cevap sürerken Ayarlar'dan değişse de bu cevap tek sesle biter. */
   voice?: { model: string; voice: string; speed: number };
-  /** İstekte kullanılan model adı (route-llm ya da Jarvis router'ı); `model` ise gerçekten çalışan alt model. */
+  /** İstekte kullanılan model adı (route-llm ya da Luxion router'ı); `model` ise gerçekten çalışan alt model. */
   router?: string;
 }
 
@@ -60,5 +60,5 @@ export interface StoredMessage {
   text: string; // assistant için sahnelerin ses metni birleştirilmiş
   device: Device;
   at: string;
-  reply?: JarvisReply;
+  reply?: LuxionReply;
 }

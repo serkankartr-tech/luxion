@@ -14,7 +14,7 @@ const DURUM = path.join(VERI, 'sms.json');
 
 export interface SmsDurum { ok: boolean; hata?: string; kurulum?: string; son?: number }
 
-export const KURULUM_SMS = 'Jarvis sunucusunu çalıştıran uygulamaya (Terminal, iTerm ya da VS Code) Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi verin; iPhone\'da Ayarlar → Mesajlar → Metin Mesajı Yönlendirme\'de bu Mac\'i açın.';
+export const KURULUM_SMS = 'Luxion sunucusunu çalıştıran uygulamaya (Terminal, iTerm ya da VS Code) Sistem Ayarları → Gizlilik ve Güvenlik → Tam Disk Erişimi verin; iPhone\'da Ayarlar → Mesajlar → Metin Mesajı Yönlendirme\'de bu Mac\'i açın.';
 
 const servis = (s: string | null): Kaynak => (/imessage/i.test(s ?? '') ? 'imessage' : /rcs/i.test(s ?? '') ? 'rcs' : 'sms');
 

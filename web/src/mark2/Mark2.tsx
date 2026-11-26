@@ -5,7 +5,7 @@ import { useMemo, type ReactNode } from 'react';
 import { Visual } from '../components/Visuals';
 import type { AgendaItem } from '../components/dashboard/agenda';
 import { cityCoord } from '../data/cities';
-import { DEVICE_LABEL, type CoreState, type Dashboard, type Device, type Gorsel, type JarvisReply, type Photo, type Sahne } from '../lib/types';
+import { DEVICE_LABEL, type CoreState, type Dashboard, type Device, type Gorsel, type LuxionReply, type Photo, type Sahne } from '../lib/types';
 import { clockInfo } from '../lib/wake';
 import { Globe, type GlobeMarker } from './Globe';
 import { HudCore } from './HudCore';
@@ -27,7 +27,7 @@ export interface Mark2Props {
   core: CoreState;
   level: () => number;
   introAt: number | null;
-  reply: JarvisReply | null;
+  reply: LuxionReply | null;
   sceneIdx: number;
   visualScene: Sahne | null;
   visualKey: string;
@@ -55,10 +55,10 @@ export interface Mark2Props {
   onSky(): void;
   /** Bekçi (mesaj denetimi) */
   onBekci(): void;
-  /** Toplantı Odası (Jarvis + Friday) */
+  /** Toplantı Odası (Luxion + Iris) */
   onToplanti(): void;
-  /** Ultron (Savaş Modu / Ultron'un Gözü seçimi) */
-  onUltron(): void;
+  /** Noxion (Savaş Modu / Noxion'un Gözü seçimi) */
+  onNoxion(): void;
   onStop(): void;
   onDrawer(d: 'detay' | 'gecmis' | 'ayarlar'): void;
   onSleep(): void;
@@ -149,7 +149,7 @@ export default function Mark2(p: Mark2Props) {
             <HudCore state={p.core} level={p.level} introAt={p.introAt} info={{ scene: p.speakingReply && p.reply ? [p.sceneIdx, p.reply.sahneler.length] : null }} />
             <div className="m2-statelabel">
               <b>{STATE_LABEL[p.core]}</b>
-              <span>{p.speakingReply && p.reply ? `SAHNE ${pad2(p.sceneIdx + 1)}/${pad2(p.reply.sahneler.length)}` : 'JARVIS · MARK II'}</span>
+              <span>{p.speakingReply && p.reply ? `SAHNE ${pad2(p.sceneIdx + 1)}/${pad2(p.reply.sahneler.length)}` : 'LUXION · MARK II'}</span>
             </div>
             {p.checks}
           </div>
@@ -196,7 +196,7 @@ export default function Mark2(p: Mark2Props) {
           <AnimatePresence mode="wait">
             {p.caption && (
               <motion.p key={p.caption} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}>
-                <span className="who">{p.core === 'listening' ? 'SİZ' : 'JARVIS'} ▸</span> {p.caption}
+                <span className="who">{p.core === 'listening' ? 'SİZ' : 'LUXION'} ▸</span> {p.caption}
               </motion.p>
             )}
           </AnimatePresence>
@@ -243,20 +243,20 @@ export default function Mark2(p: Mark2Props) {
       <footer className="m2-dock">
         <form className="m2-cmd" onSubmit={e => { e.preventDefault(); p.onSubmit(p.input); }}>
           <span className="m2-cmd-l">KOMUT</span>
-          <input value={p.input} onChange={e => p.setInput(e.target.value)} placeholder="Jarvis'e yazın…" enterKeyHint="send" />
+          <input value={p.input} onChange={e => p.setInput(e.target.value)} placeholder="Luxion'a yazın…" enterKeyHint="send" />
         </form>
         <div className="m2-btns">
           <RoundButton label="Geçmiş" onClick={() => p.onDrawer('gecmis')}><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" /></svg></RoundButton>
           <RoundButton label="Fotoğraf" onClick={p.onCamera}><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg></RoundButton>
           <RoundButton label="Kamera" onClick={p.onLiveCamera}><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2" /><path d="M16 11l5-3v8l-5-3z" /><circle cx="7" cy="10" r="1" /></svg></RoundButton>
-          <RoundButton label="Brifing" onClick={() => p.onSubmit('Jarvis, aydınlat beni')}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" /></svg></RoundButton>
+          <RoundButton label="Brifing" onClick={() => p.onSubmit('Luxion, aydınlat beni')}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2" /></svg></RoundButton>
           <RoundButton label={p.core === 'listening' ? 'Dinliyor' : 'Konuş'} onClick={p.onMic} big active={p.core === 'listening'}><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg></RoundButton>
           <RoundButton label="Devam" onClick={() => p.onSubmit('Devam et')}><svg viewBox="0 0 24 24"><path d="M6 5l7 7-7 7M13 5l7 7-7 7" /></svg></RoundButton>
           <RoundButton label="Durdur" onClick={p.onStop} disabled={p.core !== 'speaking'}><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" /></svg></RoundButton>
           <RoundButton label="El" onClick={p.onHands}><svg viewBox="0 0 24 24"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4a1.5 1.5 0 0 1 3 0v6.5M14 10.5V5.5a1.5 1.5 0 0 1 3 0V13M8 11.5a1.5 1.5 0 0 0-3 0V14a7 7 0 0 0 7 7h1a6 6 0 0 0 6-6V9.5a1.5 1.5 0 0 0-3 0" /></svg></RoundButton>
           <RoundButton label="Toplantı" onClick={p.onToplanti}><svg viewBox="0 0 24 24"><circle cx="7.5" cy="10" r="3.5" /><circle cx="16.5" cy="10" r="3.5" /><path d="M2.5 20c.8-3 2.6-4.5 5-4.5s4.2 1.5 5 4.5M11.5 20c.8-3 2.6-4.5 5-4.5s4.2 1.5 5 4.5" /></svg></RoundButton>
           <RoundButton label="Bekçi" onClick={p.onBekci}><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z" /><path d="M9 12l2 2 4-4" /></svg></RoundButton>
-          <RoundButton label="Ultron" onClick={p.onUltron}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" /><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4M5.3 5.3l2.9 2.9M15.8 15.8l2.9 2.9M5.3 18.7l2.9-2.9M15.8 8.2l2.9-2.9" /></svg></RoundButton>
+          <RoundButton label="Noxion" onClick={p.onNoxion}><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" /><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4M5.3 5.3l2.9 2.9M15.8 15.8l2.9 2.9M5.3 18.7l2.9-2.9M15.8 8.2l2.9-2.9" /></svg></RoundButton>
           <RoundButton label="Gökyüzü" onClick={p.onSky}><svg viewBox="0 0 24 24"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z" /><path d="M18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8zM5 15.5l.6 1.4 1.4.6-1.4.6L5 19.5l-.6-1.4-1.4-.6 1.4-.6z" /></svg></RoundButton>
           <RoundButton label="Kitaplık" onClick={p.onLibrary}><svg viewBox="0 0 24 24"><path d="M4 4h3v16H4zM9 4h3v16H9z" /><path d="M14.5 5.2l2.9-.8 3.6 15-2.9.8z" /></svg></RoundButton>
           <RoundButton label="Ev" onClick={p.onHome}><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h14V10" /><path d="M10 20v-5h4v5" /></svg></RoundButton>

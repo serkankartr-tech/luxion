@@ -1,4 +1,4 @@
-// Bekçi · metin analizi (LLM). Jarvis'in seçili beyni kullanılır (Ayarlar → Beyin: Abacus RouteLLM, Gemini, Groq,
+// Bekçi · metin analizi (LLM). Luxion'un seçili beyni kullanılır (Ayarlar → Beyin: Abacus RouteLLM, Gemini, Groq,
 // OpenAI uyumlu herhangi bir servis). Modele YALNIZCA maskelenmiş metin gider. Düşük sıcaklık, JSON çıktı, şema
 // doğrulaması; zaman aşımında ya da beyin yoksa kural tabanlı sonuçla devam edilir.
 import { CHAT_MODEL, MOCK, routellm } from '../routellm.js';

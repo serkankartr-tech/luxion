@@ -10,7 +10,7 @@ function mediapipeWasm(): Plugin {
   const src = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'node_modules/@mediapipe/tasks-vision/wasm')
   const route = '/mediapipe/wasm/'
   return {
-    name: 'jarvis-mediapipe-wasm',
+    name: 'luxion-mediapipe-wasm',
     configureServer(server) {
       server.middlewares.use(route, (req, res, next) => {
         const file = path.join(src, path.basename((req.url || '').split('?')[0]))
@@ -29,23 +29,23 @@ function mediapipeWasm(): Plugin {
 }
 
 export default defineConfig({
-  // Ultron Paketi tembel yüklenir: bağımlılıklar baştan optimize edilsin (yoksa ilk açılışta Vite sayfayı yeniler)
+  // Noxion Paketi tembel yüklenir: bağımlılıklar baştan optimize edilsin (yoksa ilk açılışta Vite sayfayı yeniler)
   optimizeDeps: { include: ['three', 'three/addons/postprocessing/EffectComposer.js', 'three/addons/postprocessing/RenderPass.js', 'three/addons/postprocessing/UnrealBloomPass.js', 'three/addons/postprocessing/OutputPass.js'] },
   plugins: [
     react(),
     mediapipeWasm(),
     VitePWA({
-      // Yeni service worker hemen devreye girer (skipWaiting + clientsClaim); sayfayı main.tsx Jarvis boştayken yeniler.
+      // Yeni service worker hemen devreye girer (skipWaiting + clientsClaim); sayfayı main.tsx Luxion boştayken yeniler.
       // Eskiden yeni sürüm ancak ikinci yenilemede geliyordu; tablet eski sürümde kalıyordu.
       registerType: 'autoUpdate',
       injectRegister: false,
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Jarvis',
-        short_name: 'Jarvis',
+        name: 'Luxion',
+        short_name: 'Luxion',
         description: 'Kişisel yapay zeka asistanı',
-        theme_color: '#04070c',
-        background_color: '#04070c',
+        theme_color: '#07060d',
+        background_color: '#07060d',
         display: 'standalone',
         orientation: 'any',
         icons: [

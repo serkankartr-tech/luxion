@@ -16,7 +16,7 @@ const TUR = 9;
 
 export class ArMoon implements ExtraNumara {
   ad = 'KAFANIZIN ETRAFINDA AY';
-  ipucu = '🤏 sağa/sola sürükle: hızlandır, yavaşlat   ·   "Jarvis, halka ekle"   ·   ✊ 1 sn: durdur';
+  ipucu = '🤏 sağa/sola sürükle: hızlandır, yavaşlat   ·   "Luxion, halka ekle"   ·   ✊ 1 sn: durdur';
   private moon: Body | null = null;
   private ang = Math.PI * 0.3;
   private hiz = TAU / TUR;

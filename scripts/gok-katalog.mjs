@@ -106,7 +106,7 @@ for (const f of cizgiler.features) {
   takim[f.id].cizgiler = f.geometry.coordinates.map(cz => cz.map(([l, b]) => [ra(l), +b.toFixed(4)]));
 }
 fs.writeFileSync(path.join(out, 'takimyildizlar.json'), JSON.stringify({
-  kaynak: 'd3-celestial (BSD-3, Olaf Frohn) · Türkçe adlar: Jarvis',
+  kaynak: 'd3-celestial (BSD-3, Olaf Frohn) · Türkçe adlar: Luxion',
   takimyildizlar: takim,
 }));
 console.log(`${yildizlar.length} yıldız (kadir < ${KADIR_SINIRI}, paralakssız ${paralakssiz}), ${Object.keys(takim).length} takımyıldız → ${out}`);

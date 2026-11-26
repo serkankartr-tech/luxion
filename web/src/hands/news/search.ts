@@ -45,7 +45,7 @@ export class Tarama {
       <div class="hb-tr-izgara"></div>
       <div class="hb-tr-sutunlar">${'<div class="hb-tr-sutun"></div>'.repeat(4)}</div>
       <canvas class="hb-tr-kure"></canvas>
-      <header class="hb-tr-ust"><b>JARVIS · İNTERNET TARAMASI</b><div class="hb-tr-cubuk"><i>⌕</i><span class="hb-tr-soru"></span><u></u></div></header>
+      <header class="hb-tr-ust"><b>LUXION · İNTERNET TARAMASI</b><div class="hb-tr-cubuk"><i>⌕</i><span class="hb-tr-soru"></span><u></u></div></header>
       <aside class="hb-tr-akis"></aside>
       <footer class="hb-tr-alt"><ol class="hb-tr-adimlar"></ol><div class="hb-tr-sayac"></div></footer>`;
     parent.appendChild(el);

@@ -1,4 +1,4 @@
-// Uzay Laboratuvarı · Jarvis'in hafızası ve samimi anlatımı. Oturumda neler yapıldığını (taşınan gezegenler, kaldırılan
+// Uzay Laboratuvarı · Luxion'un hafızası ve samimi anlatımı. Oturumda neler yapıldığını (taşınan gezegenler, kaldırılan
 // Ay, önceki taramalar) hatırlar; tarama cümlelerine bunlara gönderme yapan, aynı cümleyi tekrarlamayan bir ton katar.
 // Son taramalar bu cihazda saklanır ("geçen sefer Europa'ya bakmıştık"). Saf fonksiyonlar; yaşam olasılığı yok.
 import type { Cisim } from './data';
@@ -8,7 +8,7 @@ import { sayi } from './sentences';
 export interface TaramaKaydi { cisim: Cisim; ad: string; esi: number; suYuzey: string; suAlti: string | null; r: number; Tc: number; degisti: boolean; at: number }
 export interface Olay { tip: 'tasi' | 'yaklastir' | 'kaldir' | 'firlat' | 'carpisma' | 'tarih' | 'sifirla'; cisim?: Cisim; metin: string; at: number }
 
-const ANAHTAR = 'jarvis.lab.taramalar';
+const ANAHTAR = 'luxion.lab.taramalar';
 
 export class LabHafiza {
   taramalar: TaramaKaydi[] = [];
@@ -30,7 +30,7 @@ export class LabHafiza {
   }
   /** Sıfırlayınca oturumun taşıma olayları unutulur, taramalar hatırlanır */
   sifirla() { this.olay({ tip: 'sifirla', metin: 'sıfırlandı' }); }
-  /** Jarvis'in sohbet bağlamı için */
+  /** Luxion'un sohbet bağlamı için */
   ozet() {
     return {
       bu_oturumdaki_taramalar: this.taramalar.map(k => `${k.ad}: ESI ${sayi(k.esi, 2)}, yüzeyde su ${k.suYuzey === 'evet' ? 'var' : 'yok'}${k.degisti ? ' (yeri değiştirilmişti)' : ''}`),

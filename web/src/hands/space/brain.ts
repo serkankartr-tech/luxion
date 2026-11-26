@@ -1,4 +1,4 @@
-// Uzay Modu · gösteri sahnesi (laboratuvarın yanında, "Jarvis, gösteri modu" ya da G): jestleri ve sesli komutları gezegenlere, çarpışmaya, Güneş sistemine ve kara deliğe çevirir.
+// Uzay Modu · gösteri sahnesi (laboratuvarın yanında, "Luxion, gösteri modu" ya da G): jestleri ve sesli komutları gezegenlere, çarpışmaya, Güneş sistemine ve kara deliğe çevirir.
 // Büyü modunun efektleri (ateş, mühür, şimşek, iz) burada hiç çalışmaz; controller.ts moda göre yönlendirir.
 //
 // Jestler: 🤏 gezegen oluştur/tut · tutarken diğer elin parmak sayısı 1-5: Dünya, Mars, Jüpiter, Satürn, Güneş ·
@@ -18,7 +18,7 @@ import type { SpaceScene } from './scene';
 import type { Lens, Starfield } from './starfield';
 
 export interface SpaceHooks {
-  /** Jarvis bu cümleyi seçili sesle söylesin (hazır cümleler önceden yüklenir). Söz, cümle bitince çözülür. */
+  /** Luxion bu cümleyi seçili sesle söylesin (hazır cümleler önceden yüklenir). Söz, cümle bitince çözülür. */
   say(text: string): Promise<void> | void;
   /** Bu cümlelerin sesini önceden hazırla (tarama adımları ses beklemesin) */
   preload?(lines: string[]): void;
@@ -520,7 +520,7 @@ export class SpaceBrain implements SpaceScene {
 
   // ---------------------------------------------------------------- Sesli komutlar
 
-  /** Uzay komutu (mod ve arka plan HandControl'de). Başarılıysa Jarvis kısa bir onay söyler. */
+  /** Uzay komutu (mod ve arka plan HandControl'de). Başarılıysa Luxion kısa bir onay söyler. */
   command(cmd: SpaceCmd, now: number) {
     const say = this.hooks.say;
     const cx = this.W / 2, cy = this.H * 0.48;

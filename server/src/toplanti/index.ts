@@ -1,6 +1,6 @@
-// Toplantı Odası: Jarvis'in yanına ikinci bir yapay zekâ karakteri, Friday. Bir soruyu tartışıp ortak sonuca varırlar
+// Toplantı Odası: Luxion'un yanına ikinci bir yapay zekâ karakteri, Iris. Bir soruyu tartışıp ortak sonuca varırlar
 // (Senaryo A); canlı toplantıda kullanıcı sesle katılır (B); bitince tutanak çıkar (C).
-// Jarvis seçili sesle konuşur; Friday'in sesi ayrı (FRIDAY_VOICE_ID, yoksa ElevenLabs hesabındaki bir kadın sesi).
+// Luxion seçili sesle konuşur; Iris'in sesi ayrı (IRIS_VOICE_ID, yoksa ElevenLabs hesabındaki bir kadın sesi).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,37 +15,37 @@ import { eskileriSil, sonKararlarSozu, sonTutanak } from './tutanak.js';
 
 const KOK = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let yay: (e: object) => void = () => {};
-let jarvisSes: () => VoiceSel = () => ({ model: BROWSER, voice: 'tr', speed: 1.08 });
+let luxionSes: () => VoiceSel = () => ({ model: BROWSER, voice: 'tr', speed: 1.08 });
 let aktif: Toplanti | null = null;
-let fridayId: string | null = null;
+let irisId: string | null = null;
 export const etkin = () => process.env.MEETING_ENABLED !== 'false';
 const kayitModu = () => process.argv.includes('--meeting-record') || process.env.MEETING_RECORD === '1';
 
-/** Friday'in sesi: FRIDAY_VOICE_ID; yoksa hesaptaki Türkçe kadın sesi, yoksa İngilizce kadın sesi (çok dilli model Türkçe konuşur) */
-async function fridaySesBul() {
-  if (process.env.FRIDAY_VOICE_ID?.trim()) { fridayId = process.env.FRIDAY_VOICE_ID.trim(); return; }
+/** Iris'in sesi: IRIS_VOICE_ID; yoksa hesaptaki Türkçe kadın sesi, yoksa İngilizce kadın sesi (çok dilli model Türkçe konuşur) */
+async function irisSesBul() {
+  if (process.env.IRIS_VOICE_ID?.trim()) { irisId = process.env.IRIS_VOICE_ID.trim(); return; }
   if (!elevenReady()) return;
   try {
     const v = (await elevenVoices()).filter(x => x.labels?.gender === 'female');
     const tr = v.find(x => (x.labels?.language ?? '').toLowerCase() === 'tr');
-    fridayId = (tr ?? v.find(x => x.category === 'premade') ?? v[0])?.voice_id ?? null;
-    if (fridayId) console.log(`[toplantı] Friday'in sesi: ${(tr ?? v.find(x => x.voice_id === fridayId))?.name} (FRIDAY_VOICE_ID ile değiştirilebilir)`);
+    irisId = (tr ?? v.find(x => x.category === 'premade') ?? v[0])?.voice_id ?? null;
+    if (irisId) console.log(`[toplantı] Iris'in sesi: ${(tr ?? v.find(x => x.voice_id === irisId))?.name} (IRIS_VOICE_ID ile değiştirilebilir)`);
   } catch (e) { console.warn('[toplantı] ElevenLabs sesleri alınamadı:', e instanceof Error ? e.message : e); }
 }
 
-/** Friday için ses: ElevenLabs varsa ayrı kadın sesi; yoksa sağlayıcının kadın sesi (OpenAI: nova); o da yoksa tarayıcı sesi */
-export function fridaySes(): VoiceSel {
-  const hiz = jarvisSes().speed;
-  if (fridayId && elevenReady()) return { model: process.env.FRIDAY_VOICE_MODEL?.trim() || ELEVEN_MODEL, voice: fridayId, speed: hiz };
-  if (!MOCK && PROVIDER.tts === 'speech' && process.env.TTS_MODEL) return { model: process.env.TTS_MODEL, voice: process.env.FRIDAY_TTS_VOICE || 'nova', speed: hiz };
+/** Iris için ses: ElevenLabs varsa ayrı kadın sesi; yoksa sağlayıcının kadın sesi (OpenAI: nova); o da yoksa tarayıcı sesi */
+export function irisSes(): VoiceSel {
+  const hiz = luxionSes().speed;
+  if (irisId && elevenReady()) return { model: process.env.IRIS_VOICE_MODEL?.trim() || ELEVEN_MODEL, voice: irisId, speed: hiz };
+  if (!MOCK && PROVIDER.tts === 'speech' && process.env.TTS_MODEL) return { model: process.env.TTS_MODEL, voice: process.env.IRIS_TTS_VOICE || 'nova', speed: hiz };
   return { model: BROWSER, voice: 'tr-kadin', speed: hiz };
 }
 
-export function initToplanti(broadcast: (e: object) => void, o: { jarvisSes: () => VoiceSel }) {
+export function initToplanti(broadcast: (e: object) => void, o: { luxionSes: () => VoiceSel }) {
   yay = broadcast;
-  jarvisSes = o.jarvisSes;
+  luxionSes = o.luxionSes;
   if (!etkin()) { console.log('[toplantı] kapalı (MEETING_ENABLED=false)'); return; }
-  void fridaySesBul();
+  void irisSesBul();
   eskileriSil(ayarOku().transkript_saklama_gun);
   setInterval(() => eskileriSil(ayarOku().transkript_saklama_gun), 86_400_000).unref();
   if (process.argv.includes('--meeting-demo') || process.env.MEETING_DEMO === '1') setTimeout(() => void baslat({ mod: 'tartisma', demo: true }), 6000);
@@ -64,7 +64,7 @@ export async function baslat(o: { mod: 'tartisma' | 'canli'; konu?: string; demo
   const demo = o.demo ? demoSenaryo() : null;
   const konu = demo && o.mod === 'tartisma' ? demo.konu : (o.konu ?? '').trim();
   // origin: toplantıyı başlatan istemci (sesi yalnızca o çalar; diğer cihazlar sessiz izler)
-  const t = new Toplanti(o.mod, konu, (e: Olay) => yay({ type: 'toplanti', toplanti: t.id, origin: o.origin, ...e }), { jarvis: jarvisSes, friday: fridaySes }, demo, kayitModu());
+  const t = new Toplanti(o.mod, konu, (e: Olay) => yay({ type: 'toplanti', toplanti: t.id, origin: o.origin, ...e }), { luxion: luxionSes, iris: irisSes }, demo, kayitModu());
   aktif = t;
   console.log(`[toplantı] başladı · ${o.mod}${demo ? ' · demo' : ''}${o.kaynak ? ` · ${o.kaynak}` : ''}${konu ? ` · ${konu.slice(0, 60)}` : ''}`);
   await t.baslat();
@@ -82,7 +82,7 @@ export function toplantiArac(args: { istek?: string; konu?: string }): string {
   if (istek === 'tartis' || istek === 'baslat') {
     if (!etkin()) return JSON.stringify({ hata: 'Toplantı Odası kapalı (MEETING_ENABLED=false)' });
     void baslat({ mod: istek === 'baslat' ? 'canli' : 'tartisma', konu: args.konu });
-    return JSON.stringify({ ok: true, soyle: istek === 'baslat' ? 'Toplantı odasını açıyorum efendim. Friday de burada.' : 'Bunu Friday ile tartışalım efendim.' });
+    return JSON.stringify({ ok: true, soyle: istek === 'baslat' ? 'Toplantı odasını açıyorum efendim. Iris de burada.' : 'Bunu Iris ile tartışalım efendim.' });
   }
   return JSON.stringify({ hata: 'istek: tartis | baslat | son_kararlar' });
 }
@@ -100,7 +100,7 @@ export function toplantiRouter() {
   const r = Router();
   r.get('/api/toplanti/durum', async (_req, res) => {
     const m = await modeller().catch(() => null);
-    res.json({ etkin: etkin(), aktif: aktif && !aktif.kapali ? { id: aktif.id, mod: aktif.mod, durum: aktif.oturum.state, konu: aktif.oturum.topic } : null, modeller: m, sesler: { jarvis: jarvisSes(), friday: fridaySes() }, karakterler: ayarOku().karakterler, otomatik: ayarOku().otomatik_tartisma, vadMs: Number(process.env.VAD_SILENCE_MS) || 700, son: sonTutanak() });
+    res.json({ etkin: etkin(), aktif: aktif && !aktif.kapali ? { id: aktif.id, mod: aktif.mod, durum: aktif.oturum.state, konu: aktif.oturum.topic } : null, modeller: m, sesler: { luxion: luxionSes(), iris: irisSes() }, karakterler: ayarOku().karakterler, otomatik: ayarOku().otomatik_tartisma, vadMs: Number(process.env.VAD_SILENCE_MS) || 700, son: sonTutanak() });
   });
   r.post('/api/toplanti/baslat', async (req, res) => {
     if (!etkin()) return res.status(403).json({ hata: 'Toplantı Odası kapalı (MEETING_ENABLED=false)' });
@@ -146,5 +146,5 @@ export function toplantiRouter() {
 
 export { kararSorusuMu };
 
-/** Normal sohbette karar sorusu → Toplantı Odası (Senaryo A). Basit sorular (Senaryo E) normal Jarvis'e gider. */
+/** Normal sohbette karar sorusu → Toplantı Odası (Senaryo A). Basit sorular (Senaryo E) normal Luxion'a gider. */
 export const otomatikTartisma = (metin: string) => etkin() && ayarOku().otomatik_tartisma && kararSorusuMu(metin) && !(aktif && !aktif.kapali && aktif.mod === 'canli');

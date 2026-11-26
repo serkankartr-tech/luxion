@@ -121,7 +121,7 @@ export function demoBookHands(t0: number, W: number, H: number, r: DemoRect | nu
   t -= 5.5;
   // Kitap açıkken sesli kayıtlar (kalem): 14,4 → 23,4
   if (t >= 14.4 && t < 23.4) {
-    return t < 19 ? { step: '🗣 "Jarvis, not al: …" · kalem yazar', hands: [], loop, kalem: 'not' } : { step: '🗣 "okundu listesine ekle" · kalem işaretler', hands: [], loop, kalem: 'durum' };
+    return t < 19 ? { step: '🗣 "Luxion, not al: …" · kalem yazar', hands: [], loop, kalem: 'not' } : { step: '🗣 "okundu listesine ekle" · kalem işaretler', hands: [], loop, kalem: 'durum' };
   }
   if (t >= 23.4) t -= 9;
   const s = Math.min(W, H) * 0.16;

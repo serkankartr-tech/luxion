@@ -1,4 +1,4 @@
-// Kullanıcı profili ("Hakkımda") ve Jarvis'in hafızası. İkisi de yalnızca bu bilgisayarda, server/data altında durur
+// Kullanıcı profili ("Hakkımda") ve Luxion'un hafızası. İkisi de yalnızca bu bilgisayarda, server/data altında durur
 // (git'e girmez) ve her istekte modelin talimatına eklenir.
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';

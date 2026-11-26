@@ -1,4 +1,4 @@
-// Kitaplık · Jarvis'in kitap danışmanlığı.
+// Kitaplık · Luxion'un kitap danışmanlığı.
 // 1) Ruh haline göre öneri ("bugün yorgunum, bana bir kitap öner"): önce kullanıcının rafındaki OKUNMAMIŞ kitaplardan
 //    seçilir; model yalnızca bu listeden seçebilir. El Kontrolü açıksa önerilen kitap raftan kendiliğinden çıkar.
 // 2) Tarz analizi ("tarzımı analiz et, 5 kitap öner"): okuma profili kodla çıkarılır (durumlar, türler, temalar,
@@ -37,8 +37,8 @@ export function okumaProfili(kitaplar: Kitap[] = readLibrary().kitaplar): Profil
     okunuyor: adli.filter(b => b.durum === 'okunuyor').length,
     okundu: adli.filter(b => b.durum === 'bitti').length,
     buYil: adli.filter(b => b.bittiAt && new Date(b.bittiAt).getFullYear() === yil).length,
-    turler: say(adli.map(b => b.jarvis?.tur).filter((x): x is string => !!x), 6),
-    temalar: say(adli.flatMap(b => b.jarvis?.temalar ?? []), 8),
+    turler: say(adli.map(b => b.luxion?.tur).filter((x): x is string => !!x), 6),
+    temalar: say(adli.flatMap(b => b.luxion?.temalar ?? []), 8),
     yazarlar: say(adli.map(b => b.yazar).filter((x): x is string => !!x), 6),
     enCokNot: adli.map(b => ({ ad: b.ad!, n: b.notlar.length + b.alintilar.length })).filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 5),
     sonOkunan: adli.filter(b => b.bittiAt).sort((a, b) => b.bittiAt!.localeCompare(a.bittiAt!)).slice(0, 5).map(b => b.ad!),
@@ -79,7 +79,7 @@ export async function ruhHalineOner(ruhHali: string, adet = 1): Promise<{ oneril
   let adaylar = kitaplar.filter(b => b.durum === 'okunacak');
   if (!adaylar.length) adaylar = kitaplar;
   if (!adaylar.length) return { oneriler: [], aday: 0, not: 'Kitaplık boş.' };
-  const liste = adaylar.slice(0, 220).map(b => `- ${b.ad}${b.yazar ? ` · ${b.yazar}` : ''}${b.jarvis?.tur ? ` · ${b.jarvis.tur}` : ''}${b.jarvis?.temalar?.length ? ` · ${b.jarvis.temalar.slice(0, 3).join(', ')}` : ''}${kisaOzet(b) ? ` · ${kisaOzet(b)}` : ''}`).join('\n');
+  const liste = adaylar.slice(0, 220).map(b => `- ${b.ad}${b.yazar ? ` · ${b.yazar}` : ''}${b.luxion?.tur ? ` · ${b.luxion.tur}` : ''}${b.luxion?.temalar?.length ? ` · ${b.luxion.temalar.slice(0, 3).join(', ')}` : ''}${kisaOzet(b) ? ` · ${kisaOzet(b)}` : ''}`).join('\n');
   const istem = `Kullanıcı şöyle hissettiğini söylüyor: "${ruhHali}".
 Aşağıda kullanıcının kitaplığında henüz okumadığı kitaplar var. Bu ruh haline en iyi gelecek ${adet} kitabı YALNIZCA bu listeden seç.
 Her biri için tek cümlelik, samimi ve somut bir neden yaz (ruh haline nasıl iyi geleceği; kitabın içeriğinden). Kitabı tanımıyorsan seçme.
@@ -104,7 +104,7 @@ export interface YeniOneri { ad: string; yazar: string; neden: string; benzer: s
 export const advisorDeps = {
   async openLibrary(ad: string, yazar: string): Promise<{ var: boolean; kapak: string | null; yil: number | null; key: string | null }> {
     const q = new URLSearchParams({ title: ad, author: yazar, limit: '5', fields: 'title,author_name,cover_i,first_publish_year,key' });
-    const r = await fetch(`https://openlibrary.org/search.json?${q}`, { headers: { 'User-Agent': 'Jarvis kisisel asistan (kitap onerisi)' }, signal: AbortSignal.timeout(8000) });
+    const r = await fetch(`https://openlibrary.org/search.json?${q}`, { headers: { 'User-Agent': 'Luxion kisisel asistan (kitap onerisi)' }, signal: AbortSignal.timeout(8000) });
     if (!r.ok) return { var: false, kapak: null, yil: null, key: null };
     const d = (await r.json()) as { docs?: { title: string; author_name?: string[]; cover_i?: number; first_publish_year?: number; key?: string }[] };
     const soyad = foldTitle(yazar).split(' ').pop() ?? '';
@@ -178,10 +178,10 @@ export function kitapSohbetiNotu(id: string, ilk: boolean): string | null {
     : b.sayfa ? `şu an ${b.sayfa}. sayfada${b.toplamSayfa ? ` (${b.toplamSayfa} sayfanın %${Math.round((b.sayfa / b.toplamSayfa) * 100)}'i)` : ''}`
       : b.durum === 'okunuyor' ? 'okuyor ama kaldığı yer bilinmiyor' : 'henüz başlamadı';
   const satirlar = [
-    `Kitap: ${b.ad}${b.yazar ? ` · ${b.yazar}` : ''}${b.jarvis?.tur ? ` · ${b.jarvis.tur}` : ''}`,
+    `Kitap: ${b.ad}${b.yazar ? ` · ${b.yazar}` : ''}${b.luxion?.tur ? ` · ${b.luxion.tur}` : ''}`,
     `Okuma durumu: ${yer}.`,
-    b.ozet ? `Jarvis'in özeti: ${b.ozet}` : '',
-    b.jarvis?.temalar?.length ? `Temalar: ${b.jarvis.temalar.join(', ')}` : '',
+    b.ozet ? `Luxion'un özeti: ${b.ozet}` : '',
+    b.luxion?.temalar?.length ? `Temalar: ${b.luxion.temalar.join(', ')}` : '',
     b.notlar.length ? `Kullanıcının notları: ${b.notlar.slice(-8).map(n => `"${n}"`).join('; ')}` : '',
     b.alintilar.length ? `Kullanıcının alıntıları: ${b.alintilar.slice(-5).map(n => `"${n}"`).join('; ')}` : '',
   ].filter(Boolean);

@@ -1,5 +1,5 @@
 // Kitaplığım · öneriler: ruh haline göre raftan bir kitap ("bugün yorgunum") ve okuma tarzı analiziyle kitaplıkta
-// olmayan 5 yeni kitap (Open Library'de doğrulanmış). Sesle de olur: "Jarvis, bugün … hissediyorum, bana bir kitap
+// olmayan 5 yeni kitap (Open Library'de doğrulanmış). Sesle de olur: "Luxion, bugün … hissediyorum, bana bir kitap
 // öner", "tarzımı analiz et ve bana 5 güzel kitap öner". Sonuçlar burada kapaklarıyla durur.
 import { useEffect, useState } from 'react';
 import { addSuggestion, analyzeTaste, coverUrl, getSuggestions, suggestForMood, type Kitap, type Oneriler } from '../lib/library';
@@ -35,7 +35,7 @@ export function SuggestionsPanel({ kitaplar, version, onOpenBook, onChange, flas
           <input value={ruh} onChange={e => setRuh(e.target.value)} placeholder="ör. yorgunum, kafamı dağıtacak hafif bir şey" maxLength={300} />
           <button type="submit" disabled={!ruh.trim() || !!mesgul}>{mesgul === 'ruh' ? 'Seçiyor…' : 'Öner'}</button>
         </form>
-        <p className="kp-mini">Sesle: "Jarvis, bugün … hissediyorum, bana bir kitap öner". Jarvis rafındaki okunmamış kitaplardan seçer; El Kontrolü açıksa kitap raftan çıkar.</p>
+        <p className="kp-mini">Sesle: "Luxion, bugün … hissediyorum, bana bir kitap öner". Luxion rafındaki okunmamış kitaplardan seçer; El Kontrolü açıksa kitap raftan çıkar.</p>
         {veri?.ruh && (
           <div className="kp-ruh">
             <em>“{veri.ruh.ruhHali}”</em>
@@ -79,7 +79,7 @@ export function SuggestionsPanel({ kitaplar, version, onOpenBook, onChange, flas
             ))}
           </ol>
         )}
-        {t && <p className="kp-mini">Her öneri Open Library'de ad ve yazarla doğrulandı{t.elenen ? `; doğrulanamayan ${t.elenen} öneri gösterilmedi` : ''}. Sesle: "Jarvis, tarzımı analiz et ve bana 5 güzel kitap öner".</p>}
+        {t && <p className="kp-mini">Her öneri Open Library'de ad ve yazarla doğrulandı{t.elenen ? `; doğrulanamayan ${t.elenen} öneri gösterilmedi` : ''}. Sesle: "Luxion, tarzımı analiz et ve bana 5 güzel kitap öner".</p>}
       </section>
     </div>
   );

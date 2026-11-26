@@ -612,7 +612,7 @@ export default function GokyuzuModu(p: GokyuzuProps) {
             <button className="gk-dugme" onClick={() => { setAsama('giris'); sec(null); }}>Yeni fotoğraf</button>
             {p.onSor && (
               <form className="gk-sor" onSubmit={e => { e.preventDefault(); if (soru.trim()) { p.onSor!(soru.trim()); setSoru(''); } }}>
-                <input value={soru} onChange={e => setSoru(e.target.value)} placeholder="Jarvis'e sor: en parlak yıldız hangisi?" enterKeyHint="send" />
+                <input value={soru} onChange={e => setSoru(e.target.value)} placeholder="Luxion'a sor: en parlak yıldız hangisi?" enterKeyHint="send" />
               </form>
             )}
             {p.onMic && <button className={`gk-mik${p.listening ? ' dinliyor' : ''}`} onClick={p.onMic} aria-label="Mikrofon">●</button>}

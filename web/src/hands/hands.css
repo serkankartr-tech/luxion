@@ -128,7 +128,7 @@
 .lb-f.top, .lb-f.bottom { background: repeating-linear-gradient(0deg, #efe6d2 0 2px, #d9cfb8 2px 3px); }
 .lb-img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
-/* Holografik açık kitap: yarı saydam, hafif parlayan, Jarvis HUD stili */
+/* Holografik açık kitap: yarı saydam, hafif parlayan, Luxion HUD stili */
 .lb-spread { --pw: 300px; --fs: 16px; --holo: 1; font-family: 'Rajdhani', 'Inter', system-ui, sans-serif; color: #e6fdff; }
 .lb-spread::after {
   content: ''; position: absolute; left: calc(var(--pw) - 1px); top: 2%; width: 2px; height: 96%;
@@ -232,7 +232,7 @@
 .el-ayar label em { grid-column: 2; font-style: normal; font-size: 11px; opacity: 0.6; font-family: ui-monospace, Menlo, monospace; }
 .el-ayar p { margin: 6px 2px 0; font-size: 11px; opacity: 0.6; }
 
-/* Jarvis'in kitap defteri sayfaları */
+/* Luxion'un kitap defteri sayfaları */
 .lb-ideas { margin: 0.2em 0 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 0.7em; font-size: 1.04em; line-height: 1.42; }
 .lb-ideas li::marker { color: #5ff2ff; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 .lb-tags { display: flex; flex-wrap: wrap; gap: 0.4em; margin-top: 0.4em; }

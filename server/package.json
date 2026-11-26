@@ -1,5 +1,5 @@
 {
-  "name": "jarvis-server",
+  "name": "luxion-server",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -16,8 +16,8 @@
     "test:bekci": "tsx src/bekci-test.ts",
     "test:toplanti": "tsx src/toplanti-test.ts",
     "eval:toplanti": "tsx src/toplanti-eval.ts",
-    "test:ultron": "tsx src/ultron-test.ts",
-    "ultron:kayit": "tsx src/ultron-kayit.ts"
+    "test:noxion": "tsx src/noxion-test.ts",
+    "noxion:kayit": "tsx src/noxion-kayit.ts"
   },
   "keywords": [],
   "author": "",

@@ -165,7 +165,7 @@ export class LabBrain implements SpaceScene {
   /** Ay kaldırıldı ("Ay'ı kaldır") */
   ayYok = false;
   scan: LifeScan;
-  /** Jarvis'in laboratuvar hafızası: taramalar ve hareketler (samimi, bağlamlı anlatım için) */
+  /** Luxion'un laboratuvar hafızası: taramalar ve hareketler (samimi, bağlamlı anlatım için) */
   hafiza = new LabHafiza();
   planets: LP[] = [];
   /** Kullanıcının kilosu (karşılaştırmada ağırlık hissi) */
@@ -220,7 +220,7 @@ export class LabBrain implements SpaceScene {
   constructor(canvas: HTMLCanvasElement, fx: Fx, sfx: Sfx, hooks: SpaceHooks) {
     this.canvas = canvas; this.fx = fx; this.sfx = sfx; this.hooks = hooks;
     this.g = canvas.getContext('2d')!;
-    try { const k = Number(localStorage.getItem('jarvis.lab.kilo')); if (k >= 20 && k <= 300) this.kg = k; } catch { /* yok */ }
+    try { const k = Number(localStorage.getItem('luxion.lab.kilo')); if (k >= 20 && k <= 300) this.kg = k; } catch { /* yok */ }
     this.date = Date.now();
     this.sim = sistem(new Date(this.date));
     this.sun = new Body('gunes', 0, 0, 20, 0);
@@ -549,7 +549,7 @@ export class LabBrain implements SpaceScene {
     }
   }
 
-  /** Gezegen dairesel yörüngeye oturdu: bant + Jarvis'in hesaptan kurduğu cümle */
+  /** Gezegen dairesel yörüngeye oturdu: bant + Luxion'un hesaptan kurduğu cümle */
   private settled(lp: LP, r: number, now: number): Promise<void> {
     if (now < this.quietUntil) return Promise.resolve();
     const Tc = yuzeyC(lp.g, r), d = durumOf(lp.g, Tc);
@@ -561,7 +561,7 @@ export class LabBrain implements SpaceScene {
     return this.sayP(say);
   }
 
-  /** Jarvis söylesin; cümle bitince çözülür (zincirleme komutlar bunu bekler) */
+  /** Luxion söylesin; cümle bitince çözülür (zincirleme komutlar bunu bekler) */
   private sayP(text: string): Promise<void> {
     const r = this.hooks.say(text);
     return r instanceof Promise ? r : Promise.resolve();
@@ -1030,7 +1030,7 @@ export class LabBrain implements SpaceScene {
       }
       case 'kilo':
         this.kg = cmd.kg;
-        try { localStorage.setItem('jarvis.lab.kilo', String(cmd.kg)); } catch { /* yok */ }
+        try { localStorage.setItem('luxion.lab.kilo', String(cmd.kg)); } catch { /* yok */ }
         say(`Tamam efendim, ${cmd.kg} kilo.`);
         return;
       case 'yaklastir': {
@@ -1126,10 +1126,10 @@ export class LabBrain implements SpaceScene {
   private setBanner(baslik: string, alt: string, renk: string, now: number, dur: number) { this.banner = { baslik, alt, renk, at: now, dur }; }
   private log(e: string) { this.events.push(e); if (this.events.length > 8) this.events.shift(); }
 
-  /** Jarvis'in sohbet aracıyla başlayan taramada cevabın sahne sırası */
+  /** Luxion'un sohbet aracıyla başlayan taramada cevabın sahne sırası */
   drive(i: number, bitti: boolean) { this.scan.driveTo(i, bitti); }
 
-  /** Jarvis'e gönderilen bağlam (sohbet isteğine eklenir) */
+  /** Luxion'a gönderilen bağlam (sohbet isteğine eklenir) */
   context(): object {
     const tarih = new Date(this.date).toISOString().slice(0, 10);
     return {
@@ -1154,7 +1154,7 @@ export class LabBrain implements SpaceScene {
       son_olaylar: this.events,
       yakinlasilan: this.odak ? VERI[this.odak].ad : null,
       ay_kaldirildi: this.ayYok,
-      jarvis_hafizasi: this.hafiza.ozet(),
+      luxion_hafizasi: this.hafiza.ozet(),
       bolge: bolgeCisimleri(this.odak).map(c => VERI[c].ad),
       // Yaşam izi taraması: her cisim için hesaplanmış sonuç (yasam_izi_tara aracı bunu kullanır)
       yasam_taramasi: Object.fromEntries((Object.keys(VERI) as Cisim[]).flatMap(c => {
@@ -1696,7 +1696,7 @@ export class LabBrain implements SpaceScene {
     // Uydu ya da Ay seçili: gezegeninin uzaklığından canlı sıcaklık
     if (sec !== ebeveyn(sec)) {
       const gi = this.girdi(sec), v = VERI[sec], pg = ebeveyn(sec);
-      if (!gi) { H.panel(g, s.x1, s.y0, v.ad.toLocaleUpperCase('tr'), 'laboratuvarda yok', [{ k: 'Geri getirmek', v: '"Jarvis, sıfırla"' }]); return; }
+      if (!gi) { H.panel(g, s.x1, s.y0, v.ad.toLocaleUpperCase('tr'), 'laboratuvarda yok', [{ k: 'Geri getirmek', v: '"Luxion, sıfırla"' }]); return; }
       const yaklasik = sec === 'enceladus' || sec === 'titan';
       H.panel(g, s.x1, s.y0, v.ad.toLocaleUpperCase('tr'), `${VERI[pg].ad} uydusu · canlı hesap`, [
         { k: "Güneş'e uzaklık", v: `${S.sayi(gi.r, 3)} AU` },
@@ -1712,7 +1712,7 @@ export class LabBrain implements SpaceScene {
     if (!lp) return;
     const v = VERI[lp.g];
     if (lp.gone) {
-      H.panel(g, s.x1, s.y0, v.ad.toLocaleUpperCase('tr'), 'simülasyonda yok', [{ k: 'Durum', v: lp.gone === 'kacti' ? 'Güneş sisteminden kaçtı' : lp.gone === 'dustu' ? "Güneş'e düştü" : 'çarpışmada birleşti' }, { k: 'Geri getirmek', v: '"Jarvis, sıfırla"' }]);
+      H.panel(g, s.x1, s.y0, v.ad.toLocaleUpperCase('tr'), 'simülasyonda yok', [{ k: 'Durum', v: lp.gone === 'kacti' ? 'Güneş sisteminden kaçtı' : lp.gone === 'dustu' ? "Güneş'e düştü" : 'çarpışmada birleşti' }, { k: 'Geri getirmek', v: '"Luxion, sıfırla"' }]);
       return;
     }
     const el = lp.heldBy && lp.detached ? null : lp.el;

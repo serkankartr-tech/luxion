@@ -51,8 +51,8 @@ export function demoLabHands(t0: number, W: number, H: number, lab: LabBrain): D
     const q = lab.screenAt('dunya', lerp(0.42, 0.72, smooth((t - 9.2) / 0.9)));
     return { step: "Venüs'ün uzaklığı: 0,72 AU", hands: [pinchAt(R, q.x, q.y + s * 0.12)], loop };
   }
-  if (t < 13.0) return { step: '🖐 yavaş bırak: dairesel yörünge, Jarvis hesabı söyler', hands: [], loop };
-  if (t < 15.0) return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(13, 'sifirla1', { tip: 'sifirla' }) };
+  if (t < 13.0) return { step: '🖐 yavaş bırak: dairesel yörünge, Luxion hesabı söyler', hands: [], loop };
+  if (t < 15.0) return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(13, 'sifirla1', { tip: 'sifirla' }) };
   if (t < 16.4) {
     const p = pos('mars');
     return { step: "🤏 Mars'ı tut", hands: p ? [pinchAt(R, p.x, p.y)] : [], loop };
@@ -69,11 +69,11 @@ export function demoLabHands(t0: number, W: number, H: number, lab: LabBrain): D
     return { step: '↗ fırlat: noktalı yol önceden çizilir', hands: [t < 16.52 ? pinchAt(R, x, y) : openAt(R, x, y)], loop };
   }
   if (t < 21.0) return { step: '⏩ zaman hızlandı: sonuç gerçek N-cisim hesabı', hands: [], loop };
-  if (t < 22.5) return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(21, 'sifirla2', { tip: 'sifirla' }) };
+  if (t < 22.5) return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(21, 'sifirla2', { tip: 'sifirla' }) };
   if (t < 27.5) {
     const a = pos('dunya'), b = pos('mars');
     const hands = [a && pinchAt(R, a.x, a.y), b && pinchAt(L, b.x, b.y, true)].filter(Boolean) as DemoHand[];
-    return { step: t < 24.5 ? '🤏🤏 iki gezegen: ışık ipi' : '🗣 "Jarvis, Mars\'a mesaj gönder"', hands, loop, cmd: cmd(24.5, 'mesaj', { tip: 'mesaj', hedef: 'mars', kaynak: 'dunya' }) };
+    return { step: t < 24.5 ? '🤏🤏 iki gezegen: ışık ipi' : '🗣 "Luxion, Mars\'a mesaj gönder"', hands, loop, cmd: cmd(24.5, 'mesaj', { tip: 'mesaj', hedef: 'mars', kaynak: 'dunya' }) };
   }
   if (t < 32.6) {
     // İki gezegen yaşanabilir bölgede bir noktaya taşınır: yavaşça yaklaşır (karşılaştır), sonra hızla çarpışır
@@ -87,14 +87,14 @@ export function demoLabHands(t0: number, W: number, H: number, lab: LabBrain): D
     return { step: t < 30.6 ? 'yavaşça yaklaştır: karşılaştır' : '💥 hızla çarpıştır', hands: [pinchAt(R, ax, ay), pinchAt(L, bx, by, true)], loop };
   }
   if (t < 34.6) return { step: '🌑 enkaz diski → uydu', hands: [], loop };
-  if (t < 35.2) return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(34.6, 'sifirla3', { tip: 'sifirla' }) };
-  if (t < 44.0) return { step: '🗣 "Jarvis, Dünya\'nın içini aç"', hands: [], loop, cmd: cmd(36, 'kesit', { tip: 'kesit', govde: 'dunya' }) };
+  if (t < 35.2) return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(34.6, 'sifirla3', { tip: 'sifirla' }) };
+  if (t < 44.0) return { step: '🗣 "Luxion, Dünya\'nın içini aç"', hands: [], loop, cmd: cmd(36, 'kesit', { tip: 'kesit', govde: 'dunya' }) };
   if (t < 49.5) {
     const c = cmd(44.5, 'h1', { tip: 'zaman', islem: 'hizlandir' }) ?? cmd(46, 'h2', { tip: 'zaman', islem: 'hizlandir' }) ?? cmd(47.5, 'h3', { tip: 'zaman', islem: 'hizlandir' });
-    return { step: '🗣 "Jarvis, zamanı hızlandır"', hands: [], loop, cmd: c };
+    return { step: '🗣 "Luxion, zamanı hızlandır"', hands: [], loop, cmd: c };
   }
-  if (t < 53.0) return { step: '🗣 "Jarvis, 1 Ocak 2030\'a git"', hands: [], loop, cmd: cmd(49.6, 'tarih', { tip: 'tarih', yil: 2030, ay: 1, gun: 1 }) };
-  return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(53.2, 'sifirla4', { tip: 'sifirla' }) };
+  if (t < 53.0) return { step: '🗣 "Luxion, 1 Ocak 2030\'a git"', hands: [], loop, cmd: cmd(49.6, 'tarih', { tip: 'tarih', yil: 2030, ay: 1, gun: 1 }) };
+  return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(53.2, 'sifirla4', { tip: 'sifirla' }) };
 }
 
 /**
@@ -110,11 +110,11 @@ export function demoLabTara(t0: number, param: string): { step: string; loop: nu
   const at = (s: number, key: string, cmds: SpaceCmd[]) => (t > s && t < s + 0.6 ? { key, cmds } : undefined);
   if (t < 4) return { step: '🪐 bugünkü gökyüzü', loop };
   if (dm) {
-    if (t < sure - 2) return { step: "🗣 \"Jarvis, Dünya'yı Mars'ın yerine koy, sonra yaşam izi tara\"", loop, zincir: at(4, 'zincir', [{ tip: 'tasi', govde: 'dunya', hedef: 'mars', yanina: false }, { tip: 'tara', hedef: 'dunya', hizli: false }]) };
-    return { step: '🗣 "Jarvis, sıfırla"', loop, zincir: at(sure - 1.8, 'sifirla', [{ tip: 'sifirla' }]) };
+    if (t < sure - 2) return { step: "🗣 \"Luxion, Dünya'yı Mars'ın yerine koy, sonra yaşam izi tara\"", loop, zincir: at(4, 'zincir', [{ tip: 'tasi', govde: 'dunya', hedef: 'mars', yanina: false }, { tip: 'tara', hedef: 'dunya', hizli: false }]) };
+    return { step: '🗣 "Luxion, sıfırla"', loop, zincir: at(sure - 1.8, 'sifirla', [{ tip: 'sifirla' }]) };
   }
-  if (t < sure - 2) return { step: "🗣 \"Jarvis, Europa'da yaşam izi tara\"", loop, zincir: at(4, 'tara', [{ tip: 'tara', hedef: 'europa', hizli: false }]) };
-  return { step: '🗣 "Jarvis, sıfırla"', loop, zincir: at(sure - 1.8, 'sifirla', [{ tip: 'sifirla' }]) };
+  if (t < sure - 2) return { step: "🗣 \"Luxion, Europa'da yaşam izi tara\"", loop, zincir: at(4, 'tara', [{ tip: 'tara', hedef: 'europa', hizli: false }]) };
+  return { step: '🗣 "Luxion, sıfırla"', loop, zincir: at(sure - 1.8, 'sifirla', [{ tip: 'sifirla' }]) };
 }
 
 /**
@@ -174,7 +174,7 @@ export function demoLabJest(t0: number, W: number, H: number, lab: LabBrain): De
     const x = lerp(e0.x, m.x, k), y = lerp(e0.y, m.y, k) + dy;
     return { step: "🤏 Dünya'yı Mars'ın üstüne bırak: yer değiştir", hands: [t < 20 ? acik(R, e0.x, e0.y + dy) : t < 23.3 ? pinch(R, x, y) : acik(R, x, y)], loop };
   }
-  if (t < 26.5) return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(24.8, 'sifirla', { tip: 'sifirla' }) };
+  if (t < 26.5) return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(24.8, 'sifirla', { tip: 'sifirla' }) };
   if (t < 33) {
     // Mars'ı tut, Dünya'ya doğru götür, son anda hızla vur: çarpışma
     const m0 = once(loop, 'm0', () => pos('mars'));
@@ -188,5 +188,5 @@ export function demoLabJest(t0: number, W: number, H: number, lab: LabBrain): De
     else { const k = (t - 29.5) / 0.14; x = lerp(P1.x, e.x - (ox / od) * 20, k); y = lerp(P1.y, e.y - (oy / od) * 20, k) + dy; }
     return { step: t < 29.5 ? "🤏 Mars'ı Dünya'ya götür" : '💥 hızla vur: çarpıştır', hands: [t < 27.2 ? acik(R, m0.x, m0.y + dy) : pinch(R, x, y)], loop };
   }
-  return { step: '🗣 "Jarvis, sıfırla"', hands: [], loop, cmd: cmd(36.5, 'sifirla2', { tip: 'sifirla' }) };
+  return { step: '🗣 "Luxion, sıfırla"', hands: [], loop, cmd: cmd(36.5, 'sifirla2', { tip: 'sifirla' }) };
 }

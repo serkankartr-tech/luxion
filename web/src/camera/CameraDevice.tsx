@@ -1,8 +1,8 @@
-// Kamera cihazı modu (eski iPhone): Jarvis'in gözü.
+// Kamera cihazı modu (eski iPhone): Luxion'un gözü.
 // - İzleyici yokken düşük çözünürlük (yalnızca hareket algılama); izleyici gelince 720p/15 fps; ısınırsa 480p.
 // - Her izleyiciye ayrı WebRTC bağlantısı (en fazla 3); görüntü sunucudan geçmez.
 // - Aralıklı kare modu: sunucu "kare izleyicisi var" derse saniyede 1 JPEG (960 px, 0,6).
-// - Jarvis "kameraya_bak" deyince tek anlık kare (1280 px, 0,8).
+// - Luxion "kameraya_bak" deyince tek anlık kare (1280 px, 0,8).
 import { useEffect, useRef, useState } from 'react';
 import { clientId, detectDevice, subscribe } from '../lib/api';
 import {
@@ -27,7 +27,7 @@ export default function CameraDevice() {
   const pcs = useRef(new Map<string, RTCPeerConnection>());
   const ice = useRef<Ice>([{ urls: 'stun:stun.l.google.com:19302' }]);
   const [running, setRunning] = useState(false);
-  /** Kullanıcı durdurdu: izleyiciler ya da Jarvis kamerayı uzaktan yeniden açamaz */
+  /** Kullanıcı durdurdu: izleyiciler ya da Luxion kamerayı uzaktan yeniden açamaz */
   const [stopped, setStopped] = useState(false);
   const stoppedRef = useRef(stopped);
   stoppedRef.current = stopped;

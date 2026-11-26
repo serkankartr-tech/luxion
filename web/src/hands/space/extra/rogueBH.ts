@@ -26,7 +26,7 @@ type Sonuc = { tip: 'yorunge'; e0: number; e: number } | { tip: 'yakalandi' } | 
 
 export class RogueBH implements ExtraNumara {
   ad = 'GEZGİN KARA DELİK';
-  ipucu = '"Jarvis, kara deliği yakından / uzaktan geçir"   ·   ✊ 1 sn: durdur   ·   "sıfırla"';
+  ipucu = '"Luxion, kara deliği yakından / uzaktan geçir"   ·   ✊ 1 sn: durdur   ·   "sıfırla"';
   private sim: Sim | null = null;
   private view = new Olcek();
   private bh: BlackHole | null = null;

@@ -35,7 +35,7 @@ oynat(v, 3000, () => 0.004 + Math.random() * 0.001, () => false);
   ok('sessizlik 700 ms → tur biter', !!b && b.t - 5000 >= 690 && b.t - 5000 <= 760 && Math.abs(b.r.sustu - 5010) <= 30, b ? `${b.t - 5000} ms sonra · sustu ${b.r.sustu}` : 'yok');
 }
 // 4) Yankı süzgeci: tanıma son çalınan cümleyi yakaladıysa atılır
-ok('yankı süzgeci', yankiMi('maaşı brüt konuşuyorsun ama yol öğle yemeği', ['Jarvis, maaşı brüt konuşuyorsun ama yol, öğle yemeği ve trafik net kazancı eritir.']) && !yankiMi('Friday sence hibrit nasıl olur', ['Jarvis, maaşı brüt konuşuyorsun.']), `${benzerlik('maaşı brüt konuşuyorsun ama yol öğle yemeği', 'Jarvis, maaşı brüt konuşuyorsun ama yol, öğle yemeği ve trafik net kazancı eritir.').toFixed(2)}`);
+ok('yankı süzgeci', yankiMi('maaşı brüt konuşuyorsun ama yol öğle yemeği', ['Luxion, maaşı brüt konuşuyorsun ama yol, öğle yemeği ve trafik net kazancı eritir.']) && !yankiMi('Iris sence hibrit nasıl olur', ['Luxion, maaşı brüt konuşuyorsun.']), `${benzerlik('maaşı brüt konuşuyorsun ama yol öğle yemeği', 'Luxion, maaşı brüt konuşuyorsun ama yol, öğle yemeği ve trafik net kazancı eritir.').toFixed(2)}`);
 // 5) İlk söz: kullanıcı sustuğunda tanıma metni henüz yoksa atılmaz, gelince gönderilir
 {
   const bekle = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -64,11 +64,11 @@ ok('yankı süzgeci', yankiMi('maaşı brüt konuşuyorsun ama yol öğle yemeğ
   // Karakter konuşurken gelen (hoparlör) metni sonraki söze karışmaz; tanıma yeniden başlarsa toplanan metin korunur
   const tp2 = new SozToplayici((m, s) => giden.push([m, s]), 120, 20);
   tp2.sonuc(sr(['maaşı brüt konuşuyorsun', true]), true);
-  tp2.sonuc(sr(['maaşı brüt konuşuyorsun', true], ['Friday', false]));
+  tp2.sonuc(sr(['maaşı brüt konuşuyorsun', true], ['Iris', false]));
   tp2.yenidenBasladi();
   tp2.sonuc(sr(['sence hibrit olur mu', true]));
   tp2.sustu(9000);
-  ok('hoparlör metni atılır, yeniden başlatmada metin korunur', giden.length === 4 && giden[3][0] === 'Friday sence hibrit olur mu', JSON.stringify(giden[3]));
+  ok('hoparlör metni atılır, yeniden başlatmada metin korunur', giden.length === 4 && giden[3][0] === 'Iris sence hibrit olur mu', JSON.stringify(giden[3]));
   // VAD konuşmayı hiç yakalamasa (sessiz mikrofon / gürültüde takılı) da söz kaybolmaz
   const tp3 = new SozToplayici((m, s) => giden.push([m, s]), 120, 20, 60, 100);
   tp3.sonuc(sr(['ışığı', false]), false, 100);

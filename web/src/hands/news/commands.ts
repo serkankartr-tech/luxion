@@ -58,7 +58,7 @@ const KATEGORI: [Kategori, RegExp][] = [
 
 /** Haber Modu komutu; yoksa null */
 export function matchNewsCommand(text: string): HaberCmd | null {
-  const t = fold(text).replace(/^(hey |ok )?(jarvis|carvis|cervis|jarvi|jarviz)\b\s*/, '');
+  const t = fold(text).replace(/^(hey |ok )?(luxion|luksiyon|luksyon|luksion|laksiyon|laksion|luxyon|lukson|luxon|loksiyon|luksin|laksin)\b\s*/, '');
   if (!t) return null;
   // Mod
   // "haber modu", "haber merkezi" ya da "haber ajansı"

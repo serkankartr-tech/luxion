@@ -1,4 +1,4 @@
-// Uzay Laboratuvarı · Jarvis'in cümleleri. Hepsi o anki hesaplardan kurulur (modele gitmez, gecikme olmaz).
+// Uzay Laboratuvarı · Luxion'un cümleleri. Hepsi o anki hesaplardan kurulur (modele gitmez, gecikme olmaz).
 // Seste sayılar konuşma diline çevrilir: AU yerine milyon kilometre, ondalık virgülle, eksi sayılar "eksi".
 import { AU_KM, VERI, YB_DIS, YB_IC, type Cisim, type Gezegen } from './data';
 import type { Elements } from './physics';

@@ -1,4 +1,4 @@
-// Haber Modu · olay takibi ("Jarvis, bunu takibe al"). Takipteki olaylar server/data/haber-takip.json'da (git'e girmez).
+// Haber Modu · olay takibi ("Luxion, bunu takibe al"). Takipteki olaylar server/data/haber-takip.json'da (git'e girmez).
 // Her haber taramasında (10 dk) takipteki olayın kümesi aranır: aynı kimlik ya da kök benzerliği yüksek yeni bir küme.
 // Yeni bir kaynak o olayı vermişse ya da olayın yeni bir kümesi (gelişmesi) çıkmışsa bildirilir; haber modu kapalıyken
 // bile ekranda "SON GELİŞME" uyarısı çıkar. Takip 7 gün sonra kendiliğinden biter.

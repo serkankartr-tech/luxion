@@ -1,4 +1,4 @@
-// Uzay Laboratuvarı · mekanik HUD parçaları (Jarvis havası). İşlevsel değil, görsel: kendini çizen çerçeveler,
+// Uzay Laboratuvarı · mekanik HUD parçaları (Luxion havası). İşlevsel değil, görsel: kendini çizen çerçeveler,
 // köşe kıskaçları, dönen dişli halkalar, harf harf çözülen yazılar, kayan veri sütunları, damgalar.
 // Hepsi saf çizim fonksiyonları; zamanı (ms) dışarıdan alırlar, durum tutmazlar.
 

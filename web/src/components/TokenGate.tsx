@@ -9,14 +9,14 @@ export function TokenGate({ wrong }: { wrong: boolean }) {
   const save = () => {
     const t = v.trim();
     if (!t) return;
-    try { localStorage.setItem('jarvis.token', t); } catch { /* yok say */ }
+    try { localStorage.setItem('luxion.token', t); } catch { /* yok say */ }
     location.reload();
   };
   return (
     <div className="tokengate">
       <div className="tg-box">
-        <div className="tg-title">JARVIS · ERİŞİM ANAHTARI</div>
-        <p>{wrong ? 'Bu cihazdaki anahtar geçersiz (değişmiş olabilir).' : 'Bu Jarvis bir erişim anahtarıyla korunuyor.'} Anahtarı yapıştırın; bu cihazda saklanır.</p>
+        <div className="tg-title">LUXION · ERİŞİM ANAHTARI</div>
+        <p>{wrong ? 'Bu cihazdaki anahtar geçersiz (değişmiş olabilir).' : 'Bu Luxion bir erişim anahtarıyla korunuyor.'} Anahtarı yapıştırın; bu cihazda saklanır.</p>
         <form onSubmit={e => { e.preventDefault(); save(); }}>
           <input value={v} onChange={e => setV(e.target.value)} placeholder="anahtar" autoFocus autoCapitalize="off" autoCorrect="off" spellCheck={false} type="password" />
           <button type="submit" disabled={!v.trim()}>Giriş</button>

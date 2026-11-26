@@ -163,7 +163,7 @@ for (const [ad, metin] of MESRU) {
   delete process.env.NTFY_TOPIC;
 }
 // 13) Sesli komut niyetleri
-ok('niyet: güvenli mi', bekciNiyet('Jarvis bu mesaj güvenli mi')?.istek === 'kontrol' && bekciNiyet('son mesajı kontrol et')?.istek === 'kontrol');
+ok('niyet: güvenli mi', bekciNiyet('Luxion bu mesaj güvenli mi')?.istek === 'kontrol' && bekciNiyet('son mesajı kontrol et')?.istek === 'kontrol');
 ok('niyet: tıklasaydım', bekciNiyet('tıklasaydım ne olacaktı')?.istek === 'tiklasaydim' && bekciNiyet('hava nasıl') === null);
 ok('kural tabanlı taktikler (Türkçe karaktersiz)', kuralTaktikleri('24 saat icinde odeme yapmazsaniz gonderiniz iade edilecek').length >= 3);
 

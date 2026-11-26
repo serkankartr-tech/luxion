@@ -1,6 +1,6 @@
 // Haber Modu · kaynak karşılaştırması: aynı olay için her kaynağın kartı yelpaze gibi açılıp duvara dizilir.
 // Altta tarafsız, renk kodlu şerit: ortak bilgi · farklı vurgu · sadece bazı kaynaklarda · farklı sayılar.
-// Bir karta dokununca (☝️) o kaynağın metninde ilgili alıntılar vurgulanır. Jarvis 2-3 cümleyle, yorumsuz anlatır.
+// Bir karta dokununca (☝️) o kaynağın metninde ilgili alıntılar vurgulanır. Luxion 2-3 cümleyle, yorumsuz anlatır.
 import { alanAdi, esc, saatYaz } from './channel';
 import type { Analiz, KarsilastirmaMadde, MaddeTur } from './types';
 

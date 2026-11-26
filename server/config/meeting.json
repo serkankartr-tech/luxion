@@ -1,8 +1,8 @@
 {
-  "aciklama": "Toplantı Odası ayarları. Modeller, Friday'in sesi ve sınırlar .env'de (MEETING_*, JARVIS_MODEL, FRIDAY_MODEL, JUDGE_MODEL, FRIDAY_VOICE_ID).",
+  "aciklama": "Toplantı Odası ayarları. Modeller, Iris'in sesi ve sınırlar .env'de (MEETING_*, LUXION_MODEL, IRIS_MODEL, JUDGE_MODEL, IRIS_VOICE_ID).",
   "karakterler": {
-    "jarvis": { "ad": "Jarvis", "hitap": "efendim", "renk": "#4de1ff" },
-    "friday": { "ad": "Friday", "hitap": "patron", "renk": "#ff9d4d" }
+    "luxion": { "ad": "Luxion", "hitap": "efendim", "renk": "#4de1ff" },
+    "iris": { "ad": "Iris", "hitap": "patron", "renk": "#ff9d4d" }
   },
   "cumle_siniri": 3,
   "uzlasma_esigi": 80,

@@ -1,4 +1,4 @@
-// Uzay Modu · gök cisimleri ve Jarvis'in hazır cümleleri. Cümleler seçili seslendiriciyle çalınır; uzay modu açılınca
+// Uzay Modu · gök cisimleri ve Luxion'un hazır cümleleri. Cümleler seçili seslendiriciyle çalınır; uzay modu açılınca
 // hepsi önceden yüklenir (voice.preload), komut gelince ses beklemeden başlar.
 // Zamanla değişen sayılar (uydu sayısı gibi) bilerek yok.
 import { labCumleleri } from './labText';

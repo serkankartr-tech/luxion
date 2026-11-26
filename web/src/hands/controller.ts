@@ -1,4 +1,4 @@
-// El Kontrolü · beyin: jestleri efektlere ve Jarvis komutlarına çevirir.
+// El Kontrolü · beyin: jestleri efektlere ve Luxion komutlarına çevirir.
 import { Fx, GEZEGENLER, Planet, type GezegenTur, type HoldState, type SigilState } from './fx';
 import { TrackedHand, type Gesture, type P } from './gestures';
 import type { Library } from './library';
@@ -7,18 +7,18 @@ import { VARSAYILAN, type ElAyar } from './settings';
 import type { Sfx } from './sfx';
 import type { RawHand } from './tracker';
 
-// ------------------------------------------------------------------ Jarvis kontrolleri (basılı tut)
+// ------------------------------------------------------------------ Luxion kontrolleri (basılı tut)
 
 export type Eylem =
-  | { tip: 'komut'; metin: string } // Jarvis'e sesli komut gibi gider (kendi cevabını seslendirir)
+  | { tip: 'komut'; metin: string } // Luxion'a sesli komut gibi gider (kendi cevabını seslendirir)
   | { tip: 'isik'; id: string } // akıllı ev ışığını aç/kapat (anında)
-  | { tip: 'sustur' }; // Jarvis konuşuyorsa susturur
+  | { tip: 'sustur' }; // Luxion konuşuyorsa susturur
 
 export interface Kontrol { jest: Gesture; ad: string; sure: number; eylem: Eylem }
 
-/** Jest → Jarvis eylemi. Değiştirmek için bu listeyi düzenleyin. `sure`: kaç ms basılı tutulmalı. */
+/** Jest → Luxion eylemi. Değiştirmek için bu listeyi düzenleyin. `sure`: kaç ms basılı tutulmalı. */
 export const KONTROLLER: Kontrol[] = [
-  { jest: 'basparmak', ad: '☕ TÜRK KAHVESİ', sure: 1000, eylem: { tip: 'komut', metin: 'Jarvis, bana bol köpüklü bir Türk kahvesi yap' } },
+  { jest: 'basparmak', ad: '☕ TÜRK KAHVESİ', sure: 1000, eylem: { tip: 'komut', metin: 'Luxion, bana bol köpüklü bir Türk kahvesi yap' } },
   { jest: 'zafer', ad: '💡 SALON IŞIĞI', sure: 900, eylem: { tip: 'isik', id: 'salon_isik' } },
   { jest: 'yumruk', ad: '■ SUSTUR', sure: 1800, eylem: { tip: 'sustur' } },
 ];
@@ -72,7 +72,7 @@ export class Controller {
     return GEZEGENLER[this.planetCycle++ % GEZEGENLER.length].tur;
   }
 
-  /** "Jarvis, Mars yap": eldeki gezegen dönüşür; gezegen yoksa sonraki çimdikte o gelir. true: dönüştü */
+  /** "Luxion, Mars yap": eldeki gezegen dönüşür; gezegen yoksa sonraki çimdikte o gelir. true: dönüştü */
   setPlanet(tur: GezegenTur, now: number): boolean {
     const pl = this.fx.planet;
     if (pl) { pl.setTur(tur, now); this.sfx.form(); return true; }

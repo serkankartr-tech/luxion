@@ -1,0 +1,66 @@
+LUXION · macOS KURULUM REHBERİ
+================================
+
+Gereksinim: macOS 13.5 (Ventura) veya üstü · Apple Silicon (M1–M4) ya da Intel Mac.
+Node.js ya da başka bir şey kurmanız gerekmez; her şey uygulamanın içinde.
+Önerilen tarayıcı: Google Chrome (ses tanıma, el kontrolü ve kamera en iyi Chrome'da çalışır).
+
+
+1) KURULUM
+----------
+1. Luxion.app'i "Uygulamalar" (Applications) klasörüne sürükleyin.
+2. Uygulama imzasız olduğu için ilk açılışta macOS uyarı verir. Bir kez izin verin:
+
+   macOS 15 (Sequoia) ve sonrası:
+     - Luxion'u açın → uyarıda "Bitti"ye basın.
+     - Sistem Ayarları → Gizlilik ve Güvenlik → en altta "Luxion engellendi" → "Yine de Aç".
+     - Parolanızı girin → "Yine de Aç".
+
+   macOS 13–14:
+     - Luxion'a sağ tıklayın (Control + tık) → "Aç" → "Aç".
+
+   Kısa yol (Terminal'e yapıştırın, aynı işi görür):
+     xattr -cr /Applications/Luxion.app
+
+3. Luxion'u açın. İlk açılışta size nasıl hitap etmesini sorar, ardından arayüz açılır.
+
+
+2) BEYİN (YAPAY ZEKÂ) EKLEME
+----------------------------
+İlk açılışta "Beyin" ekranı gelir. Ücretsiz seçenekler:
+  - Google Gemini: aistudio.google.com → "Get API key" (kart istemez)
+  - Groq:          console.groq.com → API Keys
+Anahtarı yapıştırın, bitti. Anahtarsız "demo modu" da gerçek hava/döviz/gündem verisiyle çalışır.
+
+
+3) KULLANIM
+-----------
+  - Luxion'u açmak:   Dock'tan ya da Uygulamalar'dan Luxion.
+  - Durdurmak:        Luxion çalışırken simgesine tekrar tıklayın → "Durdur".
+  - Konuşmak:         Mikrofon düğmesi ya da boşluk tuşu. "Luxion, aydınlat beni" → gündem brifingi.
+  - Telefon/tablet:   Aynı Wi-Fi'da http://<Mac'in-IP-adresi>:8787 (mikrofon için HTTPS tüneli gerekir,
+                      README'deki "Telefon ve tablette kullanmak" bölümüne bakın).
+
+
+4) AYARLAR VE VERİLER
+---------------------
+  Ayar dosyası : ~/Library/Application Support/Luxion/.env
+                 (USER_NAME, USER_ABOUT, hava durumu şehri, ElevenLabs, YouTube anahtarları…)
+                 Değiştirdikten sonra Luxion'u Durdurup yeniden açın.
+  Veriler      : ~/Library/Application Support/Luxion/data
+  Kayıt (log)  : ~/Library/Logs/Luxion/sunucu.log
+
+  Uygulamayı güncellemek: yeni Luxion.app'i eskisinin üzerine sürükleyin; ayarlar ve veriler korunur.
+
+  Tamamen kaldırmak:
+    1. Luxion → Durdur
+    2. Luxion.app'i Çöp Sepeti'ne atın
+    3. Terminal: rm -rf ~/Library/Application\ Support/Luxion ~/Library/Logs/Luxion
+
+
+5) SORUN GİDERME
+----------------
+  "Luxion hasarlı, açılamıyor"  → Terminal: xattr -cr /Applications/Luxion.app
+  Arayüz açılmıyor              → Tarayıcıda http://localhost:8787 adresini açın.
+  Başka bir uygulama 8787'yi kullanıyor → kayıt dosyasına bakın; o uygulamayı kapatın.
+  Ağ izni sorusu (Güvenlik Duvarı)      → "İzin Ver" deyin; yalnızca telefon/tabletten bağlanmak için gerekir.

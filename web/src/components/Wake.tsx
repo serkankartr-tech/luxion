@@ -75,9 +75,9 @@ export function WakeChecks({ health, failed }: { health: Health | null; failed: 
 export const calibBus: { sink: ClapEvents | null } = { sink: null };
 
 const MODES: { id: WakeMode; label: string }[] = [
-  { id: 'clap+voice', label: 'Alkış + “uyan Jarvis”' },
+  { id: 'clap+voice', label: 'Alkış + “uyan Luxion”' },
   { id: 'clap', label: 'Yalnızca alkış' },
-  { id: 'voice', label: 'Yalnızca “uyan Jarvis”' },
+  { id: 'voice', label: 'Yalnızca “uyan Luxion”' },
 ];
 const PERIODS: { id: GreetingPeriod; label: string }[] = [
   { id: 'sabah', label: '05–12' },
@@ -112,7 +112,7 @@ export function WakeSettings({ cfg, device, calibrating, onCalibrate, onSave, on
         {MODES.map(m => <button key={m.id} className={cfg.mode === m.id ? 'on' : ''} onClick={() => onSave({ mode: m.id })}>{m.label}</button>)}
       </div>
       <p className="muted small">
-        Alkış + ses: çift alkıştan sonra 4 sn içinde “uyan Jarvis” denmezse uykuya döner. Tek alkış, konuşma, müzik, kapı ve Jarvis’in kendi sesi tetiklemez.
+        Alkış + ses: çift alkıştan sonra 4 sn içinde “uyan Luxion” denmezse uykuya döner. Tek alkış, konuşma, müzik, kapı ve Luxion’un kendi sesi tetiklemez.
       </p>
       <label>Dinleyici cihaz (mikrofon yalnızca bunda açılır)</label>
       <div className="seg">

@@ -2,7 +2,7 @@
 //  🌙 Kafanızın etrafında Ay (extra/arMoon.ts) · ☄️ Dünya'ya asteroit (extra/asteroid.ts)
 //  ☀️ Güneş'in son günleri (extra/redGiant.ts) · 🕳 Gezgin kara delik (extra/rogueBH.ts)
 //  ⚫ Ay yerine kara delik (extra/moonHole.ts)
-// Numara sesle ("Jarvis, asteroit fırlat"), 1-5 tuşlarıyla ya da üst şeritteki düğmelerle seçilir.
+// Numara sesle ("Luxion, asteroit fırlat"), 1-5 tuşlarıyla ya da üst şeritteki düğmelerle seçilir.
 import type { Fx, HoldState } from '../fx';
 import type { FaceBox } from '../face';
 import type { TrackedHand } from '../gestures';

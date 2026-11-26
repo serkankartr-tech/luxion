@@ -1,4 +1,4 @@
-// Kitaplığım · kitap sayfası: kapak, durum, sayfa, bölüm, Jarvis'in kitap defteri, notlar ve alıntılar, kayıt zaman
+// Kitaplığım · kitap sayfası: kapak, durum, sayfa, bölüm, Luxion'un kitap defteri, notlar ve alıntılar, kayıt zaman
 // çizelgesi. Sesle eklenen not ya da alıntı (kalemKaydi) burada da kalemle yazılır gibi harf harf belirir.
 import { useEffect, useRef, useState } from 'react';
 import { shrinkImage } from '../lib/image';
@@ -42,8 +42,8 @@ export function BookSheet({ k, bolumler, yeni, onChange, onDelete, onClose, flas
   const del = (key: 'notlar' | 'alintilar', i: number) => save({ [key]: k[key].filter((_, j) => j !== i) });
   const fill = () => {
     setBusy(true);
-    fillBook(k.id, !!k.jarvis)
-      .then(r => { onChange(r.kitap); if (r.bilinmiyor) flash('Jarvis bu kitabı tanımadı; sayfa uydurulmadı. Adı doğru mu?'); })
+    fillBook(k.id, !!k.luxion)
+      .then(r => { onChange(r.kitap); if (r.bilinmiyor) flash('Luxion bu kitabı tanımadı; sayfa uydurulmadı. Adı doğru mu?'); })
       .catch(e => flash(e.message))
       .finally(() => setBusy(false));
   };
@@ -91,11 +91,11 @@ export function BookSheet({ k, bolumler, yeni, onChange, onDelete, onClose, flas
         </header>
 
         <section className="kp-blok">
-          <h4>JARVIS · ÖZET</h4>
-          {k.ozet ? <p>{k.ozet}</p> : <p className="kp-soluk">{k.jarvis?.bilinmiyor ? 'Jarvis bu kitabı tanımıyor; sayfa uydurmadı.' : 'Özet yok.'}</p>}
-          {k.jarvis && !k.jarvis.bilinmiyor && k.jarvis.anaFikirler.length > 0 && <ol className="kp-fikirler">{k.jarvis.anaFikirler.map((x, i) => <li key={i}>{x}</li>)}</ol>}
-          {k.jarvis?.benzer.length ? <p className="kp-soluk">Rafınızdan benzerler: {k.jarvis.benzer.join(' · ')}</p> : null}
-          <button className="kp-btn" disabled={busy || !k.ad} onClick={fill}>{busy ? 'Jarvis yazıyor…' : k.jarvis ? 'Jarvis sayfalarını yeniden yaz' : 'Jarvis doldursun'}</button>
+          <h4>LUXION · ÖZET</h4>
+          {k.ozet ? <p>{k.ozet}</p> : <p className="kp-soluk">{k.luxion?.bilinmiyor ? 'Luxion bu kitabı tanımıyor; sayfa uydurmadı.' : 'Özet yok.'}</p>}
+          {k.luxion && !k.luxion.bilinmiyor && k.luxion.anaFikirler.length > 0 && <ol className="kp-fikirler">{k.luxion.anaFikirler.map((x, i) => <li key={i}>{x}</li>)}</ol>}
+          {k.luxion?.benzer.length ? <p className="kp-soluk">Rafınızdan benzerler: {k.luxion.benzer.join(' · ')}</p> : null}
+          <button className="kp-btn" disabled={busy || !k.ad} onClick={fill}>{busy ? 'Luxion yazıyor…' : k.luxion ? 'Luxion sayfalarını yeniden yaz' : 'Luxion doldursun'}</button>
         </section>
 
         <section className="kp-blok">

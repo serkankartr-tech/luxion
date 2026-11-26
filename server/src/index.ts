@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runJarvis } from './agent.js';
+import { runLuxion } from './agent.js';
 import { BRIEF_OPENING, BRIEF_TRIGGER } from './brief.js';
 import { buildDashboard } from './dashboard.js';
 import { IMG_DIR } from './imagegen.js';
@@ -14,7 +14,7 @@ import { beyinRouter } from './beyin.js';
 import { gokNote, gokRouter, initGok, setGokRequest, type GokBaglam } from './gok.js';
 import { bekciRouter, initBekci } from './bekci/index.js';
 import { baslat as toplantiBaslat, initToplanti, otomatikTartisma, toplantiBeyinDegisti, toplantiRouter } from './toplanti/index.js';
-import { initUltron, ultronRouter } from './ultron/index.js';
+import { initNoxion, noxionRouter } from './noxion/index.js';
 import {
   BROWSER, DEFAULT_RATE, clampRate, defaultVoice, isRoutedModel, loadCatalog, preview, providerVoices, synthesize, ttsEnabled, voiceId, warmOpening,
   type VoiceSel,
@@ -49,7 +49,7 @@ interface State {
   lastDevice: Device | null;
   /** Seslendiren: Ayarlar'dan seçilir, tüm cihazlarda ortak. .env yalnızca varsayılan. */
   voice?: VoiceSel;
-  /** "Jarvis efekti": sahne geçiş sesi */
+  /** "Luxion efekti": sahne geçiş sesi */
   sfx?: boolean;
   /** İki alkışla uyanma ayarları (tüm cihazlarda ortak) */
   wake?: WakeConfig;
@@ -99,7 +99,7 @@ function warmGreetings(v: VoiceSel = currentVoice()) {
 }
 
 // ---------- SSE: cihazlar arası anlık senkron ----------
-/** role 'camera': Jarvis'in gözü olan cihaz (eski iPhone); ekran cihazı sayılmaz (presence, karşılama vb.) */
+/** role 'camera': Luxion'un gözü olan cihaz (eski iPhone); ekran cihazı sayılmaz (presence, karşılama vb.) */
 interface Client { id: string; device: Device; role: 'screen' | 'camera'; res: Response }
 const clients = new Map<string, Client>();
 function broadcast(event: object) {
@@ -121,8 +121,8 @@ initHome(broadcast);
 initLab(broadcast);
 initGok(broadcast);
 initBekci(broadcast);
-initToplanti(broadcast, { jarvisSes: () => currentVoice() });
-initUltron({ jarvisSes: () => currentVoice() });
+initToplanti(broadcast, { luxionSes: () => currentVoice() });
+initNoxion({ luxionSes: () => currentVoice() });
 initNewsCenter(broadcast);
 initAdvisor(broadcast);
 initLibrary(broadcast);
@@ -133,7 +133,7 @@ app.use(express.json({ limit: '12mb' })); // kamera fotoğrafı (istemci ~1280 p
 // İsteğe bağlı erişim koruması (tünel/deploy için önerilir)
 app.use('/api', (req: Request, res: Response, next: NextFunction) => {
   if (!ACCESS_TOKEN) return next();
-  const t = req.header('x-jarvis-token') || (req.query.token as string);
+  const t = req.header('x-luxion-token') || (req.query.token as string);
   if (t === ACCESS_TOKEN) return next();
   res.status(401).json({ error: 'yetkisiz' });
 });
@@ -269,7 +269,7 @@ app.use(cameraRouter());
 app.use(gokRouter());
 app.use(bekciRouter());
 app.use(toplantiRouter());
-app.use(ultronRouter());
+app.use(noxionRouter());
 app.use(beyinRouter({
   korumali: !!ACCESS_TOKEN,
   degisti: () => {
@@ -321,7 +321,7 @@ app.delete('/api/memory/:id', (req, res) => {
 app.post('/api/video-blocked', (req, res) => {
   const id = String(req.body?.id ?? '');
   markBlocked(id);
-  console.log(`[youtube] Jarvis içinde oynamıyor (kod ${req.body?.code ?? '?'}): ${id}`);
+  console.log(`[youtube] Luxion içinde oynamıyor (kod ${req.body?.code ?? '?'}): ${id}`);
   res.json({ ok: true });
 });
 
@@ -374,7 +374,7 @@ app.post('/api/clear', (_req, res) => {
 // ---------- Sohbet: sahneler hazır oldukça akar ----------
 let busy = false;
 app.post('/api/chat', async (req, res) => {
-  // Tarayıcının ses tanımasından gelen metinde de yanlış duyulmuş hitap düzelir ("Cervis" → "Jarvis")
+  // Tarayıcının ses tanımasından gelen metinde de yanlış duyulmuş hitap düzelir ("Lüksiyon" → "Luxion")
   const text = hitapDuzelt(String(req.body.text || '').trim().slice(0, 2000));
   const image = typeof req.body.image === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(req.body.image) ? req.body.image : undefined;
   const client = String(req.body.client || '');
@@ -386,7 +386,7 @@ app.post('/api/chat', async (req, res) => {
   const gokRaw = req.body.gok && typeof req.body.gok === 'object' ? JSON.stringify(req.body.gok) : '';
   const gokOk = !!gokRaw && gokRaw.length <= 32_000 && Array.isArray(req.body.gok.yildizlar);
   if (!text && !image) return res.status(400).json({ error: 'boş mesaj' });
-  // Karar sorusu ("Bu iş teklifini kabul edeyim mi?") → Jarvis ve Friday tartışır (Toplantı Odası)
+  // Karar sorusu ("Bu iş teklifini kabul edeyim mi?") → Luxion ve Iris tartışır (Toplantı Odası)
   if (!image && otomatikTartisma(text)) {
     const m: StoredMessage = { role: 'user', text, device, at: new Date().toISOString() };
     state.messages.push(m);
@@ -394,7 +394,7 @@ app.post('/api/chat', async (req, res) => {
     void toplantiBaslat({ mod: 'tartisma', konu: text, origin: client }).catch(e => console.warn('[toplantı]', e));
     return res.json({ ok: true, toplanti: true });
   }
-  if (busy) return res.status(409).json({ error: 'Jarvis şu an başka bir cevabı hazırlıyor' });
+  if (busy) return res.status(409).json({ error: 'Luxion şu an başka bir cevabı hazırlıyor' });
   busy = true;
   const t0 = Date.now();
 
@@ -412,7 +412,7 @@ app.post('/api/chat', async (req, res) => {
   const history = state.messages.slice();
   state.messages.push(userMsg);
   broadcast({ type: 'user', message: userMsg, origin: client });
-  // Açılışın sesi diskte hazır: brifing yazılmayı beklemeden Jarvis hemen cevap versin.
+  // Açılışın sesi diskte hazır: brifing yazılmayı beklemeden Luxion hemen cevap versin.
   if (BRIEF_TRIGGER.test(text)) broadcast({ type: 'opening', text: BRIEF_OPENING, voice, origin: client });
 
   let total = 0;
@@ -425,7 +425,7 @@ app.post('/api/chat', async (req, res) => {
   const ks = req.body.kitapSohbeti;
   const kitapNotu = ks && typeof ks.id === 'string' ? kitapSohbetiNotu(ks.id, ks.ilk === true) ?? undefined : undefined;
   try {
-    const reply = await runJarvis({
+    const reply = await runLuxion({
       text,
       image,
       lab,
@@ -543,7 +543,7 @@ if (fs.existsSync(dist)) {
 
 app.listen(PORT, () => {
   const v = currentVoice();
-  console.log(`Jarvis sunucusu: http://localhost:${PORT}  ${MOCK ? '(DEMO MODU — beyin yok; Ayarlar → Beyin)' : `(beyin: ${PROVIDER.ad} · ${CHAT_MODEL})`}`);
+  console.log(`Luxion sunucusu: http://localhost:${PORT}  ${MOCK ? '(DEMO MODU — beyin yok; Ayarlar → Beyin)' : `(beyin: ${PROVIDER.ad} · ${CHAT_MODEL})`}`);
   console.log(`[tts] seslendiren: ${voiceId(v)} · STT: ${STT_MODEL || 'tarayıcı'}`);
   if (PROVIDER.tts === 'chat-audio' && !MOCK && !providerVoices().length) console.warn('[tts] Doğrulanmış ses kataloğu yok: `npm run voices` çalıştırın.');
   warmOpening(v).catch(e => console.warn('Açılış sesi hazırlanamadı:', e));

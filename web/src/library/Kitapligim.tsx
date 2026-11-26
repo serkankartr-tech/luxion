@@ -14,7 +14,7 @@ type Filtre = 'hepsi' | Durum;
 
 export interface KitapligimProps {
   version: number;
-  /** Jarvis yeni öneri yaptı (sesle): Öneriler sekmesi yenilenir */
+  /** Luxion yeni öneri yaptı (sesle): Öneriler sekmesi yenilenir */
   oneriVersion: number;
   flash(t: string): void;
   onClose(): void;

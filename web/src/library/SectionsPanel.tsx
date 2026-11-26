@@ -48,7 +48,7 @@ export function SectionsPanel({ bolumler, kitaplar, onChange, onOpenBook, flash 
   return (
     <div className="kp-bolumler">
       <div className="kp-bolum-ust">
-        <p>Her bölümü telefonla <b>yakından</b> çekin (bir fotoğrafta bir iki raf). Jarvis kitapları raf raf, soldan sağa sırayla okur. Kamera taraması okuyamadığı sırtları bu listelerden tamamlar; bunun için El Kontrolü'nde <b>K</b> ile her bölümün kameradaki alanını bir kez çizin.</p>
+        <p>Her bölümü telefonla <b>yakından</b> çekin (bir fotoğrafta bir iki raf). Luxion kitapları raf raf, soldan sağa sırayla okur. Kamera taraması okuyamadığı sırtları bu listelerden tamamlar; bunun için El Kontrolü'nde <b>K</b> ile her bölümün kameradaki alanını bir kez çizin.</p>
         <button className="kp-btn ana" disabled={!!busy} onClick={() => toplu.current?.click()}>⇪ Toplu yükle (birden çok fotoğraf)</button>
         <input ref={toplu} type="file" accept="image/*" multiple hidden onChange={e => { topluSec(e.target.files); e.target.value = ''; }} />
         <input ref={tekil} type="file" accept="image/*" multiple hidden onChange={e => { const f = [...(e.target.files ?? [])]; e.target.value = ''; if (f.length) void yukle(f.map(file => ({ file, bolum: hedef.current }))); }} />

@@ -1,6 +1,6 @@
 // İzleyici paneli (PC/tablet): köşede küçük pencere, tıklayınca tam ekran.
 // Önce doğrudan WebRTC (P2P); 7 sn'de kurulamazsa aralıklı kare (KARE). Panel kapalıyken bağlantı yok.
-// Jarvis kameraya bakınca panel öne gelir, tarama oynar ve analiz edilen kare 3 sn donar.
+// Luxion kameraya bakınca panel öne gelir, tarama oynar ve analiz edilen kare 3 sn donar.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cameraBus, frameUrl, getCameras, hhmm, onCamera, signal, watchFrames, type CameraInfo, type Ice } from '../lib/camera';
 import { serverNow } from '../lib/wake';
@@ -57,7 +57,7 @@ export function CameraPanel() {
     if (e.type === 'camera_frame') { if (e.camId === selRef.current && modeRef.current === 'KARE') setFrameAt(e.at); return; }
     if (e.type === 'camera_look') {
       if (e.phase === 'scan') { scanAt.current = performance.now(); setSel(e.camId); setView(v => (v === 'min' ? 'win' : v)); setLook({ phase: 'scan' }); return; }
-      // Tarama en az 0,8 sn görünsün (kare çok hızlı gelse de videoda Jarvis'in baktığı anlaşılsın), sonra kare 3 sn donar
+      // Tarama en az 0,8 sn görünsün (kare çok hızlı gelse de videoda Luxion'un baktığı anlaşılsın), sonra kare 3 sn donar
       const wait = Math.max(0, 800 - (performance.now() - scanAt.current));
       setTimeout(() => {
         if (e.phase !== 'frozen') { setLook(null); return; }
@@ -183,7 +183,7 @@ export function CameraPanel() {
           </>
         )}
         {look?.phase === 'frozen' && look.at && cam && <img className="cp-frozen" src={frameUrl(cam.id, look.at)} alt="" />}
-        {look && <div className="cp-scan"><span>{look.phase === 'scan' ? 'JARVIS BAKIYOR' : 'ANALİZ EDİLEN KARE'}</span></div>}
+        {look && <div className="cp-scan"><span>{look.phase === 'scan' ? 'LUXION BAKIYOR' : 'ANALİZ EDİLEN KARE'}</span></div>}
         <i className="corner tl" /><i className="corner tr" /><i className="corner bl" /><i className="corner br" />
       </div>
       <footer className="cp-foot">{cam ? `${cam.viewers} izleyici${cam.quality ? ` · ${cam.quality}` : ''}${cam.state ? ` · ${cam.state}` : ''}` : ''}</footer>

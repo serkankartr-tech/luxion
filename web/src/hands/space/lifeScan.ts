@@ -1,7 +1,7 @@
 // Uzay Laboratuvarı · yaşam izi taraması: animasyon. Hesap life.ts'te; burada yalnızca sahne ve zamanlama.
-// 8 adım (her biri Jarvis'in bir cümlesiyle): odak → yüzey taraması → spektrum → yer altı → kontrol listesi → ESI →
-// bugüne kadar bulunanlar → sonuç. Adım, en kısa süresi dolup Jarvis cümlesini bitirince ilerler (cümleler önceden
-// yüklenir). Jarvis'in sohbet aracıyla başlarsa (sürücü modu) adımları cevabın sahneleri ilerletir; yerel ses yok.
+// 8 adım (her biri Luxion'un bir cümlesiyle): odak → yüzey taraması → spektrum → yer altı → kontrol listesi → ESI →
+// bugüne kadar bulunanlar → sonuç. Adım, en kısa süresi dolup Luxion cümlesini bitirince ilerler (cümleler önceden
+// yüklenir). Luxion'un sohbet aracıyla başlarsa (sürücü modu) adımları cevabın sahneleri ilerletir; yerel ses yok.
 // Ekranda kalıcı not: tarama yaşam bulunduğunu değil, koşulların uygunluğunu gösterir.
 import type { Sfx } from '../sfx';
 import { VERI } from './data';
@@ -85,7 +85,7 @@ export class LifeScan {
 
   stop() { this.active = false; this.cur = null; this.resolve?.(); this.resolve = null; }
 
-  /** Sürücü modu: Jarvis'in cevabındaki sahne sırası adımı belirler */
+  /** Sürücü modu: Luxion'un cevabındaki sahne sırası adımı belirler */
   driveTo(i: number, bitti: boolean) {
     if (i >= 0 && !bitti) this.driveSeen = true;
     this.drive = i;

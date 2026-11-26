@@ -2,7 +2,7 @@
 // 1) Karşılaştırma: her "farklı vurgu" ve "farklı sayı" alıntısı kaynak metinde birebir; uydurma alıntı atılır
 // 2) İddia kontrolü: her etiketin kaynak bağlantısı ve tarihi var; veri yoksa "DOĞRULANAMADI"
 // 3) Sorular: her soru kaynaklardaki somut bir boşluğa dayanıyor
-// 4) Değerlendirici dil: Jarvis'in hiçbir cümlesinde "propaganda", "yalan", "taraflı" … yok
+// 4) Değerlendirici dil: Luxion'un hiçbir cümlesinde "propaganda", "yalan", "taraflı" … yok
 // 5) Kümeleme ve tam metin çıkarma
 import fs from 'node:fs';
 import os from 'node:os';
@@ -114,9 +114,9 @@ const takip = A.bosluklar(km, 'gundem', [{ tarih: '2026-10-01', baslik: 'x', ben
 ok('arşivde verilen ve bugün geçmeyen söz: "takip" boşluğu', takip.some(b => b.tur === 'takip' && b.onceki?.url === 'https://a.example/eski'));
 
 // ———————————————— 4) Değerlendirici dil ————————————————
-const jarvis = [...s.ozet, ...s.maddeler.map(m => m.baslik), ...A.anlatim(km, maddeler), ...s.sorular.map(x => x.soru), ...bos.map(b => b.not + ' ' + A.sablonSoru(b)), ...sonuc.map(r => r.aciklama), ...celisen.map(r => r.aciklama)];
+const luxion = [...s.ozet, ...s.maddeler.map(m => m.baslik), ...A.anlatim(km, maddeler), ...s.sorular.map(x => x.soru), ...bos.map(b => b.not + ' ' + A.sablonSoru(b)), ...sonuc.map(r => r.aciklama), ...celisen.map(r => r.aciklama)];
 const yasak = /propaganda|\byalan\b|manipülasyon|taraflı|doğru söylüyor|yanlış söylüyor/i;
-ok('Jarvis çıktısında değerlendirici ifade yok', jarvis.every(x => !yasak.test(x)), `${jarvis.length} cümle`);
+ok('Luxion çıktısında değerlendirici ifade yok', luxion.every(x => !yasak.test(x)), `${luxion.length} cümle`);
 ok('filtre: "propaganda", "yalan", "taraflı" yakalanıyor', ['Bu propaganda.', 'Bu bir yalan.', 'Kaynak taraflı.', 'X doğru söylüyor.', 'Manipülasyon var.'].every(x => !A.temizMi(x)));
 ok('filtre: tarafsız cümleler geçiyor ("yalanladı" fiili alıntılarda olabilir)', ['Yedi kaynak bu olayı veriyor.', 'Bakanlık iddiaları yalanladı.'].every(A.temizMi));
 

@@ -5,7 +5,7 @@ import {
 } from '../lib/api';
 
 const ROL_AD: Record<Rol, string> = { chat: 'Sohbet', vision: 'Görüntü (kamera, kitaplık)', stt: 'Ses tanıma', tts: 'Seslendirme' };
-export const DEMO_ANAHTARI = 'jarvis.demoTamam';
+export const DEMO_ANAHTARI = 'luxion.demoTamam';
 
 /**
  * Beyin kurulumu: sağlayıcı seç → anahtarı yapıştır → bağlantıyı test et → kaydet. İlk açılışta (hiç ayar yokken) ve
@@ -89,11 +89,11 @@ export function BeyinKurulum({ ilk, onClose, flash }: { ilk: boolean; onClose: (
     <div className="bk" role="dialog" aria-label="Beyin kurulumu">
       <div className="bk-box">
         <div className="bk-head">
-          <div className="tg-title">JARVIS · BEYİN</div>
+          <div className="tg-title">LUXION · BEYİN</div>
           {!ilk && <button className="bk-x" onClick={onClose} aria-label="Kapat">✕</button>}
         </div>
         <p className="bk-lead">
-          {ilk ? 'Hoş geldiniz efendim. ' : ''}Jarvis'in beyni bir yapay zekâ servisidir. <b>Google Gemini</b> ya da <b>Groq</b> ile kart bilgisi vermeden,
+          {ilk ? 'Hoş geldiniz efendim. ' : ''}Luxion'un beyni bir yapay zekâ servisidir. <b>Google Gemini</b> ya da <b>Groq</b> ile kart bilgisi vermeden,
           ücretsiz bir anahtarla iki dakikada kurulur. Anahtarınız yoksa demo ile başlayabilirsiniz: hava, döviz, gündem ve haber merkezi gerçek verilerle çalışır.
         </p>
         {d && !ilk && (
@@ -124,7 +124,7 @@ export function BeyinKurulum({ ilk, onClose, flash }: { ilk: boolean; onClose: (
             {sec.adresGirilir && (
               <input value={adres} onChange={e => { setAdres(e.target.value); setTest(null); }} placeholder="https://api.deepseek.com/v1" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
             )}
-            <div className="bk-step"><span className="bk-n">2</span><span>Anahtarı buraya yapıştırın (yalnızca bu bilgisayardaki Jarvis sunucusunda saklanır).</span></div>
+            <div className="bk-step"><span className="bk-n">2</span><span>Anahtarı buraya yapıştırın (yalnızca bu bilgisayardaki Luxion sunucusunda saklanır).</span></div>
             <input
               type="password" value={anahtar} onChange={e => { setAnahtar(e.target.value); setTest(null); }}
               placeholder={ayniSaglayici ? `kayıtlı anahtar ${d?.aktif.anahtar} · boş bırakırsanız aynı kalır` : 'API anahtarı'}
@@ -133,7 +133,7 @@ export function BeyinKurulum({ ilk, onClose, flash }: { ilk: boolean; onClose: (
             {sec.adresGirilir && (
               <input value={modeller.chat ?? ''} onChange={e => setModeller(m => ({ ...m, chat: e.target.value }))} placeholder="sohbet modeli (ör. deepseek-chat)" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
             )}
-            <div className="bk-step"><span className="bk-n">3</span><span>Bağlantıyı test edin: Jarvis gerçek bir soru sorar ve en uygun modelleri seçer.</span></div>
+            <div className="bk-step"><span className="bk-n">3</span><span>Bağlantıyı test edin: Luxion gerçek bir soru sorar ve en uygun modelleri seçer.</span></div>
             <div className="bk-actions">
               <button onClick={dene} disabled={!!mesgul || (!anahtar.trim() && !ayniSaglayici)}>{mesgul === 'test' ? 'Test ediliyor…' : 'Bağlantıyı test et'}</button>
               <button className="bk-primary" onClick={kaydet} disabled={!!mesgul || !test?.ok}>{mesgul === 'kayit' ? 'Kaydediliyor…' : 'Kaydet ve başla'}</button>
@@ -152,7 +152,7 @@ export function BeyinKurulum({ ilk, onClose, flash }: { ilk: boolean; onClose: (
                   </label>
                 ))}
                 {!sec.stt && <div className="muted small">Bu serviste ses tanıma yok: mikrofon tarayıcının ses tanımasını kullanır (Chrome önerilir).</div>}
-                {!sec.tts && <div className="muted small">Bu serviste seslendirme yok: Jarvis tarayıcının Türkçe sesiyle konuşur (ElevenLabs anahtarı varsa o).</div>}
+                {!sec.tts && <div className="muted small">Bu serviste seslendirme yok: Luxion tarayıcının Türkçe sesiyle konuşur (ElevenLabs anahtarı varsa o).</div>}
               </div>
             )}
           </div>

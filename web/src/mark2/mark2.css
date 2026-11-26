@@ -2,7 +2,7 @@
 /* Mark 2 — yoğun HUD. Yalnızca .mk2 altında geçerli (Mark 1'e dokunmaz). */
 /* =================================================================== */
 .mk2 {
-  --m2: #3fb8ff;
+  --m2: #ffb84d;
   --m2-hi: #c8f1ff;
   --m2-dim: rgba(63, 184, 255, 0.28);
   --m2-faint: rgba(63, 184, 255, 0.1);
@@ -177,7 +177,7 @@
 .m2-photo { aspect-ratio: 4 / 3; overflow: hidden; }
 .m2-globe { width: 100%; height: 100%; display: block; }
 .m2-photo img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.6) brightness(0.85) sepia(0.25) hue-rotate(170deg); }
-.m2-scan { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0 45%, rgba(120, 220, 255, 0.35) 50%, transparent 55%); background-size: 100% 300%; animation: m2-scanline 3s linear infinite; mix-blend-mode: screen; }
+.m2-scan { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0 45%, rgba(255, 214, 140, 0.35) 50%, transparent 55%); background-size: 100% 300%; animation: m2-scanline 3s linear infinite; mix-blend-mode: screen; }
 @keyframes m2-scanline { from { background-position: 0 100%; } to { background-position: 0 -200%; } }
 .m2-logl { font-family: var(--mono); font-size: 10.5px; color: var(--m2-warn); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .m2-logl.dim { color: rgba(150, 215, 255, 0.45); }

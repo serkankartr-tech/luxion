@@ -15,7 +15,7 @@ import { isEmbeddable, isShort } from './youtube.js';
 import { FAL_SON, findScripted, isFalTurn } from './scripted.js';
 import { cameraList } from './camera.js';
 import { BRIEF_OPENING, BRIEF_TRIGGER } from './brief.js';
-import type { Device, Gorsel, GorselWithPhoto, JarvisReply, Photo, Sahne, StoredMessage } from './types.js';
+import type { Device, Gorsel, GorselWithPhoto, LuxionReply, Photo, Sahne, StoredMessage } from './types.js';
 
 const MAX_ROUNDS = 5;
 
@@ -228,12 +228,12 @@ export interface RunOptions {
 }
 
 // Yapay zeka görseli yalnızca kart/adımlar/liste sahnelerine: "ikon" sahnesinde ikonun kendisi görsel ve tek sahnelik
-// sohbette ~9 sn'lik görsel, Jarvis konuşmayı bitirdikten sonra geliyordu (ölçüldü) — görünmeyen görsele kredi harcanmasın.
+// sohbette ~9 sn'lik görsel, Luxion konuşmayı bitirdikten sonra geliyordu (ölçüldü) — görünmeyen görsele kredi harcanmasın.
 const SYMBOLIC = new Set(['kart', 'adimlar', 'liste']);
 /** Falın sunucudan eklenen son sahnesi (sesi önceden hazır) */
 const FAL_FINAL = { __falSon: true, ses: FAL_SON, gorsel: { tip: 'ikon', ikon: 'users', baslik: '100 bin takipçi', alt: 'Falınızda görünen' } };
 
-export async function runJarvis(opts: RunOptions): Promise<JarvisReply> {
+export async function runLuxion(opts: RunOptions): Promise<LuxionReply> {
   const { text, device, prevDevice, history, photoMode, progress } = opts;
   const t0 = Date.now();
   const since = () => `${Date.now() - t0} ms`;
@@ -283,7 +283,7 @@ export async function runJarvis(opts: RunOptions): Promise<JarvisReply> {
       }
     });
   };
-  const finish = async (detay: string): Promise<JarvisReply> => {
+  const finish = async (detay: string): Promise<LuxionReply> => {
     await chain;
     opts.onScenesDone?.(emitted.length);
     console.log(`[zaman] tüm sahneler · ${emitted.length} sahne · ${since()}`);
@@ -379,7 +379,7 @@ export async function runJarvis(opts: RunOptions): Promise<JarvisReply> {
   ];
   const model = opts.image ? PHOTO_MODEL : CHAT_MODEL;
 
-  // Komut yoksa haber aracı hiç sunulmaz: Jarvis kendiliğinden gündem anlatamaz. Diğer araçlar her zaman açık.
+  // Komut yoksa haber aracı hiç sunulmaz: Luxion kendiliğinden gündem anlatamaz. Diğer araçlar her zaman açık.
   // Her aracın çıktısı toolText'e eklenir; verifyVisual sayı/grafik/harita/alıntı görsellerini bu gerçek veriyle doğrular.
   const tools = isBrief ? TOOLS : TOOLS.filter(t => t.function.name !== 'get_news');
   let forceNews = isBrief;
@@ -451,7 +451,7 @@ export async function runJarvis(opts: RunOptions): Promise<JarvisReply> {
         continue;
       }
       // Son çare: düz metni tek sahne olarak göster.
-      enqueue({ ses: content.slice(0, 400), gorsel: { tip: 'ikon', ikon: 'sparkles', baslik: 'Jarvis' } });
+      enqueue({ ses: content.slice(0, 400), gorsel: { tip: 'ikon', ikon: 'sparkles', baslik: 'Luxion' } });
       if (fal) enqueue(FAL_FINAL);
       return finish(content);
     }

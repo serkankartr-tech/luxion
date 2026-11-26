@@ -1,7 +1,7 @@
 // Haber Modu · haber merkezi komutlarının ekranları:
 //   canlı yayın (ana haber bülteni) katmanı ve kapanış jeneriği · son dakika geçişi · manşet geri sayımı ·
 //   "dünyada bugün" küresi · basın özeti duvarı · bölünmüş ekran (3×3 haber duvarı).
-// Sıralamayı ve Jarvis'in anlatımını sahne (scene.ts) yönetir; burada yalnızca görüntü var. Bütün içerik sunucudan
+// Sıralamayı ve Luxion'un anlatımını sahne (scene.ts) yönetir; burada yalnızca görüntü var. Bütün içerik sunucudan
 // gelen gerçek olaylardır (server/src/newsCenter.ts).
 import type { Sfx } from '../sfx';
 import { imgUrl } from './api';
@@ -34,7 +34,7 @@ export class YayinKatmani {
   /** Kapanış jeneriği: bültende taranan kaynaklar aşağıdan yukarı akar */
   async jenerik(kaynaklar: string[]) {
     this.sira.innerHTML = '';
-    this.jenerikEl.innerHTML = `<div><h3>JARVIS HABER MERKEZİ</h3><p>Bu bültende taranan kaynaklar</p><ul>${kaynaklar.map(k => `<li>${esc(k)}</li>`).join('')}</ul><em>Propagandayı değil, gerçeği arayan…</em></div>`;
+    this.jenerikEl.innerHTML = `<div><h3>LUXION HABER MERKEZİ</h3><p>Bu bültende taranan kaynaklar</p><ul>${kaynaklar.map(k => `<li>${esc(k)}</li>`).join('')}</ul><em>Propagandayı değil, gerçeği arayan…</em></div>`;
     this.el.classList.add('jenerik');
     await bekle(7500);
   }

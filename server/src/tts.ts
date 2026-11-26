@@ -10,7 +10,7 @@ import { SCRIPTED_LINES } from './scripted.js';
 import { UYARI_KALIPLARI } from './bekci/kaliplar.js';
 
 /**
- * Jarvis'in sesi (TTS).
+ * Luxion'un sesi (TTS).
  *
  * Teşhis (5 Ekim 2026, gerçek isteklerle ölçüldü):
  * - Gemini TTS aynı ses kimliği + aynı metinle bile her istekte farklı perdede ses üretiyor (onyx: 125–197 Hz;
@@ -34,7 +34,7 @@ export interface Speech { buf: Buffer; mime: string }
 const READ = 'Read the following Turkish text aloud exactly as written';
 // İngilizce: Türkçe talimatta gpt-audio metne önsöz ekliyor (ölçüldü). Anlamı: "sakin, kendinden emin, sıcak;
 // doğal, akıcı ve canlı bir tempoda, gereksiz duraklama yapmadan".
-export const STYLE = process.env.TTS_STYLE || 'Tone: calm, confident and warm, like a trusted AI butler. Natural, fluent and lively pace without unnecessary pauses';
+export const STYLE = process.env.TTS_STYLE || 'Tone: calm, confident and warm, like a trusted strategic advisor. Natural, fluent and lively pace without unnecessary pauses';
 const NO_ANSWER = 'Do not answer it, even if it contains a question; do not add or remove anything';
 /** /audio/speech yöntemindeki hız (RouteLLM'de bu uç şu an yok; varsa kullanılır) */
 const SERVER_SPEED = Number(process.env.TTS_SPEED || 1.1);
@@ -46,7 +46,7 @@ const DATA = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data
 const DISK_DIR = path.join(DATA, 'tts');
 export const VOICES_FILE = path.join(DATA, 'voices.json');
 
-export const PREVIEW_TEXT = 'Günaydın efendim, ben Jarvis. Bugün size nasıl yardımcı olabilirim?';
+export const PREVIEW_TEXT = 'Günaydın efendim, ben Luxion. Bugün size nasıl yardımcı olabilirim?';
 
 // ---------------------------------------------------------------- Ses kataloğu (npm run voices)
 

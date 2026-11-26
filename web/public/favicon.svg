@@ -1,1 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#04070c"/><circle cx="32" cy="32" r="20" fill="none" stroke="#4de1ff" stroke-width="3" stroke-dasharray="10 4"/><circle cx="32" cy="32" r="11" fill="none" stroke="#ffb547" stroke-width="2.5"/><circle cx="32" cy="32" r="5" fill="#bff4ff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c1233"/>
+      <stop offset="1" stop-color="#07060d"/>
+    </linearGradient>
+    <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="56" y2="56">
+      <stop offset="0" stop-color="#fff1cc"/>
+      <stop offset=".55" stop-color="#ffcc66"/>
+      <stop offset="1" stop-color="#e8962e"/>
+    </linearGradient>
+    <linearGradient id="prism" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8ec"/>
+      <stop offset=".5" stop-color="#ffcc66"/>
+      <stop offset="1" stop-color="#b48cff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffcc66" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffcc66" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <circle cx="32" cy="32" r="24" fill="url(#glow)"/>
+  <g stroke="url(#gold)" stroke-linecap="round" stroke-width="2.2">
+    <line x1="32" y1="5" x2="32" y2="10"/><line x1="32" y1="54" x2="32" y2="59"/>
+    <line x1="5" y1="32" x2="10" y2="32"/><line x1="54" y1="32" x2="59" y2="32"/>
+    <line x1="12.9" y1="12.9" x2="16.4" y2="16.4"/><line x1="47.6" y1="47.6" x2="51.1" y2="51.1"/>
+    <line x1="51.1" y1="12.9" x2="47.6" y2="16.4"/><line x1="16.4" y1="47.6" x2="12.9" y2="51.1"/>
+  </g>
+  <circle cx="32" cy="32" r="18" fill="none" stroke="url(#gold)" stroke-width="2.6"/>
+  <circle cx="32" cy="32" r="13.5" fill="none" stroke="#b48cff" stroke-width="1" stroke-opacity=".7" stroke-dasharray="3 2.5"/>
+  <path d="M32 20 L40 32 L32 44 L24 32 Z" fill="url(#prism)"/>
+  <path d="M32 20 L32 44 L24 32 Z" fill="#07060d" fill-opacity=".18"/>
+  <circle cx="32" cy="32" r="2.6" fill="#fff8ec"/>
+</svg>

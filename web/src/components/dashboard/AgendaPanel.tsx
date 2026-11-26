@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { voice } from '../../lib/speech';
-import type { JarvisReply } from '../../lib/types';
+import type { LuxionReply } from '../../lib/types';
 import type { AgendaItem } from './agenda';
 import { DashPanel } from './common';
 
 /** Konuşurken sağ sütundaki "Bugünün akışı". Aktif madde parlar, solundaki çubuk anlatıldıkça dolar. */
-export function AgendaPanel({ reply, items, sceneIdx }: { reply: JarvisReply; items: AgendaItem[]; sceneIdx: number }) {
+export function AgendaPanel({ reply, items, sceneIdx }: { reply: LuxionReply; items: AgendaItem[]; sceneIdx: number }) {
   const barRef = useRef<HTMLElement | null>(null);
   const active = useMemo(() => items.findIndex(it => sceneIdx >= it.start && sceneIdx < it.end), [items, sceneIdx]);
 

@@ -1,4 +1,4 @@
-// Toplantı Odası: Jarvis (cyan) ve Friday (turuncu) yan yana iki reaktör. Konuşanın reaktörü sesin seviyesiyle atar;
+// Toplantı Odası: Luxion (cyan) ve Iris (turuncu) yan yana iki reaktör. Konuşanın reaktörü sesin seviyesiyle atar;
 // itiraz anında aralarında kıvılcım çakar. Canlı modda mikrofon sürekli açıktır (panel kapanınca kapanır).
 // Tuşlar: Esc kapat · G geliştirici (gecikme) · M mikrofon · Boşluk konuşanı durdur
 import { useEffect, useRef, useState } from 'react';
@@ -18,7 +18,7 @@ export interface ToplantiProps {
   canli?: boolean;
 }
 
-const DURUM: Record<string, string> = { dinliyor: 'DİNLİYOR', jarvis: 'JARVIS KONUŞUYOR', friday: 'FRIDAY KONUŞUYOR', uzlasma: 'UZLAŞMA', tutanak: 'TUTANAK', bitti: 'TARTIŞMA BİTTİ', hazirlaniyor: 'DÜŞÜNÜYOR…', kapandi: 'KAPANDI' };
+const DURUM: Record<string, string> = { dinliyor: 'DİNLİYOR', luxion: 'LUXION KONUŞUYOR', iris: 'IRIS KONUŞUYOR', uzlasma: 'UZLAŞMA', tutanak: 'TUTANAK', bitti: 'TARTIŞMA BİTTİ', hazirlaniyor: 'DÜŞÜNÜYOR…', kapandi: 'KAPANDI' };
 /** Sessizlik süresi: ?vad=500 > .env VAD_SILENCE_MS (sunucudan) > 700 ms */
 const VAD_PARAM = Number(new URLSearchParams(location.search).get('vad')) || 0;
 
@@ -118,7 +118,7 @@ export default function ToplantiOdasi(p: ToplantiProps) {
   // Reaktörler ve kıvılcım (tuval)
   useEffect(() => {
     let raf = 0;
-    const seviye: Record<Karakter, number> = { jarvis: 0, friday: 0 };
+    const seviye: Record<Karakter, number> = { luxion: 0, iris: 0 };
     const ciz = (now: number) => {
       raf = requestAnimationFrame(ciz);
       const c = tuval.current;
@@ -130,11 +130,11 @@ export default function ToplantiOdasi(p: ToplantiProps) {
       x.setTransform(dpr, 0, 0, dpr, 0, 0);
       x.clearRect(0, 0, r.width, r.height);
       const G = gRef.current;
-      const renk = { jarvis: G.karakterler?.jarvis.renk ?? '#4de1ff', friday: G.karakterler?.friday.renk ?? '#ff9d4d' };
+      const renk = { luxion: G.karakterler?.luxion.renk ?? '#ffcc66', iris: G.karakterler?.iris.renk ?? '#ff9d4d' };
       const lv = voice.level();
-      for (const k of ['jarvis', 'friday'] as Karakter[]) seviye[k] += ((G.konusan === k ? lv : 0) - seviye[k]) * 0.3;
+      for (const k of ['luxion', 'iris'] as Karakter[]) seviye[k] += ((G.konusan === k ? lv : 0) - seviye[k]) * 0.3;
       const R = Math.min(r.height * 0.27, r.width * 0.12);
-      const merkez = { jarvis: { x: r.width * 0.27, y: r.height * 0.5 }, friday: { x: r.width * 0.73, y: r.height * 0.5 } };
+      const merkez = { luxion: { x: r.width * 0.27, y: r.height * 0.5 }, iris: { x: r.width * 0.73, y: r.height * 0.5 } };
       // Kıvılcım: itiraz anında iki reaktör arasında titreşen çizgi
       const kv = (now - G.kivilcim) / 900;
       if (G.kivilcim && kv < 1) {
@@ -142,14 +142,14 @@ export default function ToplantiOdasi(p: ToplantiProps) {
         x.strokeStyle = `rgba(255, 230, 180, ${1 - kv})`;
         x.shadowColor = '#ffb547'; x.shadowBlur = 18; x.lineWidth = 2.5;
         x.beginPath();
-        const a = merkez.jarvis, b = merkez.friday, n = 14;
+        const a = merkez.luxion, b = merkez.iris, n = 14;
         x.moveTo(a.x + R, a.y);
         for (let i = 1; i < n; i++) { const t = i / n; x.lineTo(a.x + R + (b.x - R - a.x - R) * t, a.y + (Math.random() - 0.5) * 34 * (1 - kv)); }
         x.lineTo(b.x - R, b.y);
         x.stroke();
         x.restore();
       }
-      for (const k of ['jarvis', 'friday'] as Karakter[]) {
+      for (const k of ['luxion', 'iris'] as Karakter[]) {
         const m = merkez[k], s = seviye[k], aktif = G.konusan === k;
         x.save();
         x.globalAlpha = aktif ? 1 : G.konusan ? 0.35 : 0.6;
@@ -209,9 +209,9 @@ export default function ToplantiOdasi(p: ToplantiProps) {
       <div className="tp-govde">
         <div className="tp-sahne">
           <canvas ref={tuval} className="tp-tuval" />
-          <div className="tp-ad j"><b style={{ color: k?.jarvis.renk }}>JARVIS</b><span>{g.modeller?.jarvis ?? '…'}</span></div>
-          <div className="tp-ad f"><b style={{ color: k?.friday.renk }}>FRIDAY</b><span>{g.modeller?.friday ?? '…'}</span></div>
-          {g.modeller?.ayniAile && <div className="tp-uyari">Jarvis ve Friday aynı model ailesinde: JARVIS_MODEL / FRIDAY_MODEL ile farklı iki model seçin, tartışma daha gerçek olur.</div>}
+          <div className="tp-ad j"><b style={{ color: k?.luxion.renk }}>LUXION</b><span>{g.modeller?.luxion ?? '…'}</span></div>
+          <div className="tp-ad f"><b style={{ color: k?.iris.renk }}>IRIS</b><span>{g.modeller?.iris ?? '…'}</span></div>
+          {g.modeller?.ayniAile && <div className="tp-uyari">Luxion ve Iris aynı model ailesinde: LUXION_MODEL / IRIS_MODEL ile farklı iki model seçin, tartışma daha gerçek olur.</div>}
           <div className={`tp-kullanici${mik ? ' acik' : ''}`}>
             <canvas ref={dalga} />
             <span>{mik ? (ara || 'mikrofon açık · konuşun ya da sözü kesin') : 'mikrofon kapalı (M)'}</span>
@@ -220,7 +220,7 @@ export default function ToplantiOdasi(p: ToplantiProps) {
         <div className="tp-dokum" ref={liste}>
           {g.satirlar.map(s => (
             <div key={s.id} className={`tp-satir k-${s.kim}${s.tamam ? '' : ' canli'}`}>
-              <b style={s.kim !== 'user' ? { color: k?.[s.kim].renk } : undefined}>{s.kim === 'user' ? 'SİZ' : s.kim === 'jarvis' ? 'JARVIS' : 'FRIDAY'}</b>
+              <b style={s.kim !== 'user' ? { color: k?.[s.kim].renk } : undefined}>{s.kim === 'user' ? 'SİZ' : s.kim === 'luxion' ? 'LUXION' : 'IRIS'}</b>
               <span>{s.metin || '…'}</span>
             </div>
           ))}
@@ -261,7 +261,7 @@ export default function ToplantiOdasi(p: ToplantiProps) {
       <footer className="tp-alt">
         <button className={`tp-mik${mik ? ' acik' : ''}`} onClick={() => (mik ? mikKapat() : void mikAc())} title="Mikrofon (M)">{mik ? '● CANLI' : '○ MİKROFON'}</button>
         <form className="tp-yaz" onSubmit={e => { e.preventDefault(); if (yazi.trim()) { gonder(yazi.trim()); setYazi(''); } }}>
-          <input value={yazi} onChange={e => setYazi(e.target.value)} placeholder='Yazın ya da konuşun: "Friday, sen ne düşünüyorsun?"' enterKeyHint="send" />
+          <input value={yazi} onChange={e => setYazi(e.target.value)} placeholder='Yazın ya da konuşun: "Iris, sen ne düşünüyorsun?"' enterKeyHint="send" />
         </form>
         <button className="tp-dugme" onClick={() => { const son = oyn.current?.durdur(); void toplantiKes(son ?? null); }} title="Konuşanı durdur (Boşluk)">Dur</button>
         <button className="tp-dugme ana" onClick={bitir} disabled={!g.id || g.durum === 'kapandi' || g.durum === 'tutanak'}>Toplantıyı bitir</button>

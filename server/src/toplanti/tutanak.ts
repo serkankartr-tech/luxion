@@ -20,7 +20,7 @@ export interface Tutanak {
   summary: string;
 }
 
-const AD = { user: 'Kullanıcı', jarvis: 'Jarvis', friday: 'Friday' } as const;
+const AD = { user: 'Kullanıcı', luxion: 'Luxion', iris: 'Iris' } as const;
 export const dokum = (o: DebateSession) => o.transcript.map(s => `${AD[s.konusan]}: ${s.metin}`).join('\n');
 
 export function tutanakDogrula(ham: string): Tutanak | null {
@@ -30,7 +30,7 @@ export function tutanakDogrula(ham: string): Tutanak | null {
   return {
     title: String(j.title || 'Toplantı').trim().slice(0, 80),
     date: String(j.date || '').trim(),
-    participants: d(j.participants).length ? d(j.participants) : ['Kullanıcı', 'Jarvis', 'Friday'],
+    participants: d(j.participants).length ? d(j.participants) : ['Kullanıcı', 'Luxion', 'Iris'],
     decisions: d(j.decisions), open_questions: d(j.open_questions),
     action_items: Array.isArray(j.action_items) ? j.action_items.map((a: any) => ({ who: String(a?.who ?? '').trim(), what: String(a?.what ?? '').trim(), when: String(a?.when ?? '').trim() })).filter((a: any) => a.what) : [],
     summary: j.summary.trim(),
@@ -46,7 +46,7 @@ export async function tutanakCikar(o: DebateSession, model: string, maliyet: (m:
   const r = await routellmStream({ model, messages: mesajlar, temperature: 0.1, max_tokens: 900 }).catch(() => null);
   maliyet(mesajlar, r?.content ?? '');
   return tutanakDogrula(r?.content ?? '') ?? {
-    title: o.topic.slice(0, 60) || 'Toplantı', date: tarih, participants: ['Kullanıcı', 'Jarvis', 'Friday'],
+    title: o.topic.slice(0, 60) || 'Toplantı', date: tarih, participants: ['Kullanıcı', 'Luxion', 'Iris'],
     decisions: o.uzlasma ? [o.uzlasma.recommendation] : [], open_questions: o.uzlasma?.disagreed ?? [], action_items: [],
     summary: o.uzlasma ? `Önerimiz: ${o.uzlasma.recommendation}.` : 'Toplantı kaydedildi; tutanak özeti çıkarılamadı.',
   };
@@ -54,13 +54,13 @@ export async function tutanakCikar(o: DebateSession, model: string, maliyet: (m:
 
 const dosyaAdi = (t: string) => t.toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'toplanti';
 
-export function tutanakMd(t: Tutanak, o: DebateSession, ek: { modeller: { jarvis: string; friday: string }; maliyet: { token: number; tts: number }; sure: number }): string {
+export function tutanakMd(t: Tutanak, o: DebateSession, ek: { modeller: { luxion: string; iris: string }; maliyet: { token: number; tts: number }; sure: number }): string {
   const liste = (x: string[]) => (x.length ? x.map(s => `- ${s}`).join('\n') : '- —');
   return `# ${t.title}
 
 **Tarih:** ${t.date}
 **Katılımcılar:** ${t.participants.join(', ')}
-**Modeller:** Jarvis · ${ek.modeller.jarvis} — Friday · ${ek.modeller.friday}
+**Modeller:** Luxion · ${ek.modeller.luxion} — Iris · ${ek.modeller.iris}
 **Süre:** ${Math.round(ek.sure / 60000)} dk · ≈${ek.maliyet.token.toLocaleString('tr-TR')} token · ${ek.maliyet.tts.toLocaleString('tr-TR')} TTS karakteri
 
 > ${t.summary}
@@ -73,7 +73,7 @@ ${liste(t.open_questions)}
 
 ## Yapılacaklar
 ${t.action_items.length ? t.action_items.map(a => `- **${a.who || '—'}:** ${a.what}${a.when ? ` (${a.when})` : ''}`).join('\n') : '- —'}
-${o.uzlasma ? `\n## Jarvis ile Friday'in ortak sonucu\n- **Anlaşılan:** ${o.uzlasma.agreed.join(' · ') || '—'}\n- **Anlaşılamayan:** ${o.uzlasma.disagreed.join(' · ') || '—'}\n- **Öneri:** ${o.uzlasma.recommendation} (güven: ${o.uzlasma.confidence})\n` : ''}
+${o.uzlasma ? `\n## Luxion ile Iris'in ortak sonucu\n- **Anlaşılan:** ${o.uzlasma.agreed.join(' · ') || '—'}\n- **Anlaşılamayan:** ${o.uzlasma.disagreed.join(' · ') || '—'}\n- **Öneri:** ${o.uzlasma.recommendation} (güven: ${o.uzlasma.confidence})\n` : ''}
 ## Döküm
 ${o.transcript.map(s => `**${AD[s.konusan]}:** ${s.metin}`).join('\n\n')}
 `;

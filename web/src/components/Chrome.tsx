@@ -23,7 +23,7 @@ export function TopBar({ me, online, model, connected, mock, onDemo }: { me: Dev
   return (
     <header className="topbar">
       <div className="brand">
-        <span className="brand-mark">JARVIS</span>
+        <span className="brand-mark">LUXION</span>
         <span className={'link ' + (connected ? 'on' : 'off')}>{connected ? 'çevrimiçi' : 'bağlanıyor…'}</span>
         {mock && <button className="demo" onClick={onDemo} title="Beyin ekle: Ayarlar → Beyin">DEMO · beyin ekle</button>}
       </div>

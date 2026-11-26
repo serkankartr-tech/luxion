@@ -82,7 +82,7 @@ setGokRequest(null);
 // 4) Sesli istekler
 {
   const t = (s: string) => gokNiyet(s);
-  ok('niyet: tara', t('Jarvis gökyüzünü tara')?.istek === 'tara');
+  ok('niyet: tara', t('Luxion gökyüzünü tara')?.istek === 'tara');
   ok('niyet: gezegenler', t('bu gece hangi gezegenler görünüyor')?.istek === 'gezegenler');
   ok('niyet: en parlak', t('en parlak yıldız hangisi')?.istek === 'en_parlak');
   ok('niyet: şu yıldız', t('şu yıldızın ışığı ne zaman yola çıktı')?.istek === 'yildiz' && t('şu yıldızın ışığı ne zaman yola çıktı')?.ad === '');

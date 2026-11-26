@@ -1,4 +1,4 @@
-import type { Gorsel, JarvisReply } from '../../lib/types';
+import type { Gorsel, LuxionReply } from '../../lib/types';
 
 /** Görselin başlığa en uygun alanı. */
 function visualTitle(g: Gorsel): string | null {
@@ -26,7 +26,7 @@ export interface AgendaItem { title: string; start: number; end: number }
  * Görseli olan her sahne bir madde; görselsiz yorum sahneleri bir önceki maddenin parçası sayılır.
  * (start, end) = maddenin kapsadığı sahne aralığı.
  */
-export function buildAgenda(reply: JarvisReply): AgendaItem[] {
+export function buildAgenda(reply: LuxionReply): AgendaItem[] {
   const starts = reply.sahneler
     .map((s, i) => ({ i, title: visualTitle(s.gorsel) }))
     .filter((x): x is { i: number; title: string } => !!x.title);

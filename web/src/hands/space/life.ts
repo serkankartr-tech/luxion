@@ -61,7 +61,7 @@ export interface Tarama {
   /** Buzlu yüzey (çatlaklar), güney kutbundan püskürme */
   buzlu: boolean;
   puskurme: boolean;
-  /** Jarvis'in adım cümleleri: 0 odak · 1 yüzey · 2 spektrum · 3 yer altı · 4 kontrol · 5 ESI · 6 keşifler · 7 sonuç */
+  /** Luxion'un adım cümleleri: 0 odak · 1 yüzey · 2 spektrum · 3 yer altı · 4 kontrol · 5 ESI · 6 keşifler · 7 sonuç */
   cumleler: string[];
   /** Hızlı tarama: yalnızca odak, ESI ve sonuç konuşulur */
   hizliCumleler: string[];
@@ -87,7 +87,7 @@ function yuzeySu(c: Cisim, g: TaramaGirdi): Madde {
 
 const DURUM_SIRA: Record<Kesif['durum'], number> = { 'KANITLANDI': 0, 'GÜÇLÜ İŞARET': 1, 'TARTIŞMALI': 2, 'BULUNMADI': 3 };
 
-/** Bir cismi tara: hesaplanan ve bilinen maddeler, ESI, keşifler, sonuç ve Jarvis'in cümleleri */
+/** Bir cismi tara: hesaplanan ve bilinen maddeler, ESI, keşifler, sonuç ve Luxion'un cümleleri */
 export function tara(c: Cisim, g: TaramaGirdi): Tarama {
   const v = VERI[c];
   const maddeler: Madde[] = [];
@@ -129,7 +129,7 @@ export function tara(c: Cisim, g: TaramaGirdi): Tarama {
   }
   const okyanusKatman = v.katmanlar.findIndex(L => /okyanus/i.test(L.ad));
 
-  // ---- Jarvis'in cümleleri (yaşam olasılığı yok; yalnızca koşullar ve bulgular)
+  // ---- Luxion'un cümleleri (yaşam olasılığı yok; yalnızca koşullar ve bulgular)
   const yuzey = c === 'dunya' && g.degisti ? dunyaYuzey(g, su) : YUZEY_SOZ[c];
   const atm = v.atmosfer;
   const spektrum = !atm.length || (v.basinc !== null && v.basinc < 0.001)
@@ -204,7 +204,7 @@ function puan(t: Tarama): number {
   return Math.max(p('Yüzeyde sıvı su'), p('Yer altında sıvı su')) * 3 + p('Enerji') + p('Temel elementler') + t.esi;
 }
 
-/** Laboratuvar bağlamı için kısa özet (Jarvis'in sohbet aracı bunu kullanır) */
+/** Laboratuvar bağlamı için kısa özet (Luxion'un sohbet aracı bunu kullanır) */
 export function ozet(t: Tarama) {
   return {
     cisim: t.ad,

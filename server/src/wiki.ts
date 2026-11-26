@@ -1,7 +1,7 @@
 // wiki_lookup: Türkçe Wikipedia (bulunamazsa İngilizce) özeti, lisanslı fotoğraf ve koordinat.
 // Kişi/yer/kurum sorularında gerçek fotoğraf gösterilir; sayı görselleri özet metniyle doğrulanır.
 
-const UA = { 'User-Agent': 'JarvisAsistan/1.0 (kisisel kullanim)' };
+const UA = { 'User-Agent': 'LuxionAsistan/1.0 (kisisel kullanim)' };
 const TIMEOUT = 8000;
 
 export interface WikiPhoto { url: string; lisans: string; yazar: string; dosya: string }

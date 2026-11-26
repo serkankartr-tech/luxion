@@ -3,7 +3,7 @@ import { token } from '../../lib/api';
 import type { Analiz, AramaOlay, Basin, DunyaBasini, DunyaBugun, IddiaSonuc, Merkez, Sabah, SonDakika, TemelKume } from './types';
 
 async function al<T>(yol: string): Promise<T> {
-  const r = await fetch(yol, { headers: token ? { 'x-jarvis-token': token } : {} });
+  const r = await fetch(yol, { headers: token ? { 'x-luxion-token': token } : {} });
   if (!r.ok) throw new Error(`${yol}: ${r.status}`);
   return r.json() as Promise<T>;
 }
@@ -20,13 +20,13 @@ export const basinAl = () => al<Basin>('/api/haber/basin');
 export const dunyaBugunAl = () => al<DunyaBugun>('/api/haber/dunya-bugun');
 /** Olay takibi: açık → takibe al, kapalı → takipten çıkar */
 export async function takipEt(id: string, ac: boolean): Promise<void> {
-  const r = await fetch(`/api/haber/takip/${id}`, { method: ac ? 'POST' : 'DELETE', headers: token ? { 'x-jarvis-token': token } : {} });
+  const r = await fetch(`/api/haber/takip/${id}`, { method: ac ? 'POST' : 'DELETE', headers: token ? { 'x-luxion-token': token } : {} });
   if (!r.ok) throw new Error(`takip: ${r.status}`);
 }
 
 /** Arama: sunucu her adımı bir satır olarak akıtır; her olay geldiği an bildirilir */
 export async function ara(q: string, olay: (o: AramaOlay) => void, signal?: AbortSignal): Promise<void> {
-  const r = await fetch(`/api/haber/ara?q=${encodeURIComponent(q)}`, { headers: token ? { 'x-jarvis-token': token } : {}, signal });
+  const r = await fetch(`/api/haber/ara?q=${encodeURIComponent(q)}`, { headers: token ? { 'x-luxion-token': token } : {}, signal });
   if (!r.ok || !r.body) throw new Error(`arama: ${r.status}`);
   const okur = r.body.getReader(), dec = new TextDecoder();
   let tampon = '';

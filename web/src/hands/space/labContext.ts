@@ -1,4 +1,4 @@
-// Uzay Laboratuvarı · açıkken ekrandaki durumun özeti. App sohbet isteğine ekler; Jarvis "neden dondu?" gibi
+// Uzay Laboratuvarı · açıkken ekrandaki durumun özeti. App sohbet isteğine ekler; Luxion "neden dondu?" gibi
 // soruları bu verilerle cevaplar. (Küçük, bağımsız dosya: App bunu içe aktarınca laboratuvar kodu ana pakete girmez.)
 
 let provider: (() => object | null) | null = null;

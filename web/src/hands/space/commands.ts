@@ -30,7 +30,7 @@ export type SpaceCmd =
   | { tip: 'yasanabilir'; goster: boolean }
   | { tip: 'gorunum'; ic: boolean }
   | { tip: 'kilo'; kg: number }
-  // Yaşam izi taraması: hedef null → seçili cisim, 'odak' → bölgedeki bütün cisimler. surucu: Jarvis'in sahneleri yürütür.
+  // Yaşam izi taraması: hedef null → seçili cisim, 'odak' → bölgedeki bütün cisimler. surucu: Luxion'un sahneleri yürütür.
   | { tip: 'tara'; hedef: Govde | 'odak' | null; hizli: boolean; surucu?: boolean }
   | { tip: 'odak'; govde: Govde }
   | { tip: 'kaldir'; govde: Govde }
@@ -38,7 +38,7 @@ export type SpaceCmd =
   // kutle: Ay yerine konan kara deliği büyüt / küçült ya da bir basamağa getir; kat: "10 kat büyüt"
   | { tip: 'ekstra'; numara: 'ay' | 'asteroit' | 'kizildev' | 'karadelik' | 'aykaradelik' | null; halka?: boolean; boyutKm?: number; yakin?: 'yakin' | 'uzak'; kutle?: 'buyut' | 'kucult' | KutleAd; kat?: number };
 
-/** Sadeleştir: "Jarvis, Dünya'yı GETİR!" → "jarvis dunyayi getir" */
+/** Sadeleştir: "Luxion, Dünya'yı GETİR!" → "luxion dunyayi getir" */
 export function fold(s: string): string {
   return s
     .toLocaleLowerCase('tr')
@@ -207,9 +207,9 @@ function matchLab(t: string, w: string[]): SpaceCmd | null {
   return null;
 }
 
-/** Metinde bir uzay komutu var mı? Yoksa null (normal Jarvis'e gider). */
+/** Metinde bir uzay komutu var mı? Yoksa null (normal Luxion'a gider). */
 export function matchSpaceCommand(text: string): SpaceCmd | null {
-  const t = fold(text).replace(/^(hey |ok )?(jarvis|carvis|cervis|jarvi|jarviz)\b\s*/, '');
+  const t = fold(text).replace(/^(hey |ok )?(luxion|luksiyon|luksyon|luksion|laksiyon|laksion|luxyon|lukson|luxon|loksiyon|luksin|laksin)\b\s*/, '');
   if (!t) return null;
   const w = t.split(' ');
 
@@ -265,7 +265,7 @@ export function matchSpaceCommand(text: string): SpaceCmd | null {
 
 /**
  * Zincirleme komut: "Dünya'yı Mars'ın yerine koy, sonra yaşam izi tara". Her parça bir uzay komutuysa sırayla
- * çalışacak liste döner; parçalardan biri komut değilse null (cümle normal Jarvis'e gider).
+ * çalışacak liste döner; parçalardan biri komut değilse null (cümle normal Luxion'a gider).
  */
 export function matchSpaceChain(text: string): SpaceCmd[] | null {
   const parts = fold(text).split(/ (?:daha sonra|ve sonra|ve ardindan|ardindan|sonrasinda|sonra) (?=\S)/).map(x => x.trim()).filter(Boolean);

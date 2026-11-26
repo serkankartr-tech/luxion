@@ -5,7 +5,7 @@ function safeGet(k: string) { try { return localStorage.getItem(k); } catch { re
 function safeSet(k: string, v: string | null) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* yok say */ } }
 
 /**
- * Jarvis'in sesi.
+ * Luxion'un sesi.
  * - Sunucu TTS'i açıksa RouteLLM ses modeli çalınır, seviye Web Audio analizörüyle ölçülür.
  * - Ses cevaba sabitlenir (reply.voice). Bir sahnenin sunucu sesi alınamazsa bir kez yeniden denenir; yine olmazsa
  *   O CEVABIN KALANI tarayıcı sesine geçer. Önceden tek tek sahneler tarayıcı sesine düşebiliyor, sesler karışıyordu.
@@ -30,7 +30,7 @@ class VoiceEngine {
   rate = 1.08;
   /** Bu çalmada kullanılan hız: ElevenLabs sesleri hızı sunucuda alır, tarayıcıda esnetilmez (1,0) */
   private playRate = 1.08;
-  /** "Jarvis efekti": sahne geçiş sesi */
+  /** "Luxion efekti": sahne geçiş sesi */
   sfx = true;
   /** Bu cevap tarayıcı sesine geçti mi */
   private replyBrowser = false;
@@ -49,8 +49,8 @@ class VoiceEngine {
   beginReply() { this.replyBrowser = !this.serverTts; }
 
   // ---- Tarayıcı sesi (çevrimdışı yedek): her cihazın kendi sesleri var, seçim cihazda saklanır ----
-  get browserVoiceName() { return safeGet('jarvis.browserVoice'); }
-  set browserVoiceName(v: string | null) { safeSet('jarvis.browserVoice', v); }
+  get browserVoiceName() { return safeGet('luxion.browserVoice'); }
+  set browserVoiceName(v: string | null) { safeSet('luxion.browserVoice', v); }
   browserVoices(): SpeechSynthesisVoice[] {
     if (!('speechSynthesis' in window)) return [];
     return speechSynthesis.getVoices().filter(v => v.lang.toLowerCase().startsWith('tr'));
@@ -175,7 +175,7 @@ class VoiceEngine {
 
   /**
    * Uyanış tınısı (~1,4 sn): alçaktan yükselen yumuşak bir süpürme, üstünde iki parlak nota ve ince bir ışıltı.
-   * Web Audio ile üretilir; ayarlardaki "Jarvis efekti"nden bağımsızdır (uyanışın imzası).
+   * Web Audio ile üretilir; ayarlardaki "Luxion efekti"nden bağımsızdır (uyanışın imzası).
    */
   chime() {
     const ctx = this.ctx;
@@ -285,7 +285,7 @@ class VoiceEngine {
   async speak(text: string, v?: VoiceSel, i?: number, n?: number, ctx: TtsCtx = {}): Promise<void> {
     this.stop();
     const gen = this.gen;
-    // Toplantı Odası: Friday'in sesi tarayıcı sesiyse (ElevenLabs yokken) yalnızca o cümle tarayıcıda okunur
+    // Toplantı Odası: Iris'in sesi tarayıcı sesiyse (ElevenLabs yokken) yalnızca o cümle tarayıcıda okunur
     if (v?.model === 'browser') return this.speakBrowser(text, v.voice);
     this.playRate = v?.model.startsWith('eleven_') ? 1 : this.rate;
     if (this.serverTts && !this.replyBrowser) {
@@ -317,7 +317,7 @@ class VoiceEngine {
       const voices = this.browserVoices();
       const chosen = this.browserVoiceName ? voices.find(v => v.name === this.browserVoiceName) : undefined;
       const kadin = tip === 'tr-kadin';
-      // Friday (kadın sesi): Jarvis'in tarayıcı sesinden farklı bir ses ve biraz daha yüksek perde
+      // Iris (kadın sesi): Luxion'un tarayıcı sesinden farklı bir ses ve biraz daha yüksek perde
       const preferred = kadin
         ? voices.find(v => /yelda|filiz|seda|female|kadın/i.test(v.name) && v.name !== this.browserVoiceName) || voices.find(v => v.name !== chosen?.name) || voices[0]
         : chosen || voices.find(v => /yelda|google|premium|enhanced/i.test(v.name)) || voices[0];

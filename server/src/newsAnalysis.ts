@@ -2,11 +2,11 @@
 //
 // Doğruluk kuralları (tarafsızlık için en önemli kısım):
 // - Model yalnızca öneri yapar; her alıntı kaynak metinde birebir aranır (büyük/küçük harf ve tırnak farkı hariç),
-//   bulunamayan madde atılır. Jarvis'in kendi cümlelerindeki her sayı ve şehir kaynak metinlerde geçmek zorunda.
+//   bulunamayan madde atılır. Luxion'un kendi cümlelerindeki her sayı ve şehir kaynak metinlerde geçmek zorunda.
 // - "Farklı sayılar" ve "sadece bazı kaynaklarda" kodla da çıkarılır; model yoksa (demo) bile karşılaştırma çalışır.
 // - Sorulmamış sorular, kodla bulunan somut boşluklara bağlıdır (5N1K'dan eksik olan, kaynağı belirtilmeyen sayı,
 //   kaynaklar arası çelişki, arşivde takibi yapılmamış söz). Model yalnızca soruyu cümleye döker.
-// - Değerlendirici dil ("propaganda", "yalan", "taraflı" …) Jarvis'in hiçbir cümlesinde geçemez; geçen madde atılır.
+// - Değerlendirici dil ("propaganda", "yalan", "taraflı" …) Luxion'un hiçbir cümlesinde geçemez; geçen madde atılır.
 import { tamMetin } from './article.js';
 import { analizKaydet, arsivKume, oncekiler, type OncekiHaber } from './newsArchive.js';
 import { fold, type Kume } from './newsCluster.js';
@@ -49,7 +49,7 @@ export const birebir = (alinti: string, metin: string) => alinti.trim().length >
 
 export const cumleler = (s: string) => s.split(/(?<=[.!?…])\s+(?=["“'‘A-ZÇĞİÖŞÜ0-9])/).map(c => c.trim()).filter(Boolean);
 
-/** Jarvis'in cümlelerinde geçemeyecek değerlendirici ifadeler */
+/** Luxion'un cümlelerinde geçemeyecek değerlendirici ifadeler */
 export const DEGERLENDIRICI = /propaganda|\byalan(cı|cılık|lar)?\b|manip[uü]l|tarafl[ıi]|\byanl[ıi]\b|doğru söylü|yanlış söylü|çarpıt|dezenformasyon|algı operasyon|gerçeği gizl|kandır|uydur(ma|du)/i;
 /** Sorularda ima ve yönlendirme */
 const IMA = /gizl[ei]|saklan|sakla(dı|yor)|örtbas|perde arkası|komplo|neden sus|acaba|aslında|gerçekte ne|kim kazan[ıi]yor/i;
@@ -292,7 +292,7 @@ ${metinler}`;
 // ———————————————————— Doğrulama ————————————————————
 
 const sayilar = (s: string) => [...s.matchAll(/\d+(?:[.,]\d+)*/g)].map(m => m[0].replace(/\./g, '').replace(',', '.'));
-/** Jarvis cümlesindeki her sayı ve şehir kaynak metinlerde geçmeli; değerlendirici dil olmamalı */
+/** Luxion cümlesindeki her sayı ve şehir kaynak metinlerde geçmeli; değerlendirici dil olmamalı */
 export function cumleGecerli(c: string, km: KaynakMetin[]): boolean {
   if (!c || c.length > 260 || !temizMi(c)) return false;
   const tum = km.map(k => k.metin).join('\n');

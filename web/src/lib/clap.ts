@@ -60,7 +60,7 @@ export class ClapDetector {
     this.ev = ev;
   }
 
-  /** Duraklatmadan dönünce (Jarvis konuştu vb.): yarım kalan aday ve desen sıfırlanır, ortam seviyesi korunur. */
+  /** Duraklatmadan dönünce (Luxion konuştu vb.): yarım kalan aday ve desen sıfırlanır, ortam seviyesi korunur. */
   relax() {
     this.cand = null;
     this.claps = [];
@@ -200,7 +200,7 @@ export interface ClapListener {
  * Mikrofonu açıp dedektörü her karede besler. Yalnızca dinleyici cihazda çağrılır (diğerlerinde izin istenmez).
  * Yankı engelleme / gürültü bastırma / otomatik kazanç KAPALI: alkışın keskin başlangıcı korunmalı.
  * @param ctx  Kullanıcı dokunuşuyla açılmış AudioContext (askıdaki bağlam mikrofon verisi üretmez)
- * @param paused  true dönerken analiz yapılmaz (Jarvis konuşuyor, komut dinleniyor…)
+ * @param paused  true dönerken analiz yapılmaz (Luxion konuşuyor, komut dinleniyor…)
  */
 export async function startClapListener(
   ctx: AudioContext,

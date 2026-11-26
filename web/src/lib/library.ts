@@ -18,8 +18,8 @@ export interface Kitap {
   toplamSayfa?: number;
   emin?: number;
   elle?: boolean;
-  /** Jarvis'in kitap defteri sayfaları (RouteLLM) */
-  jarvis?: JarvisSayfa;
+  /** Luxion'un kitap defteri sayfaları (RouteLLM) */
+  luxion?: LuxionSayfa;
   /** Kitaplığın bölümü (1-6) */
   bolum?: number;
   /** Adı kamera taramasında bölüm listesinden tamamlandı */
@@ -42,7 +42,7 @@ export interface Bolum {
   fotograflar: { id: string; at: string; okunan: number; belirsiz: number }[];
   liste: { foto: string; raf: number; sira: number; ad: string | null; yazar: string | null; kitapId: string | null }[];
 }
-export interface JarvisSayfa {
+export interface LuxionSayfa {
   bilinmiyor?: boolean;
   anaFikirler: string[];
   yazarHakkinda: string | null;
@@ -60,7 +60,7 @@ export interface TaramaCevabi { kitaplik: Kitaplik; bulunan: number; belirsiz: n
 /** Karenin bir parçası (JPEG) ve karedeki yeri (0..1, aynalanmamış) */
 export interface TaramaParcasi { resim: string; x: number; y: number; w: number; h: number }
 
-const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-jarvis-token': token } : {}) });
+const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-luxion-token': token } : {}) });
 async function json<T>(r: Response): Promise<T> {
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `sunucu ${r.status}`);
   return r.json();
@@ -110,7 +110,7 @@ export const addFromPhoto = (resim: string) => post<{ eklenen: string[]; zatenVa
 export const addNote = (id: string, metin: string, tur: 'not' | 'alinti' = 'not') => post<{ kitap: Kitap }>(`/api/kitaplik/${encodeURIComponent(id)}/not`, { metin, tur });
 export const patchBook = (id: string, patch: Partial<Kitap>) => post<{ kitap: Kitap }>(`/api/kitaplik/${encodeURIComponent(id)}`, patch);
 export const deleteBook = (id: string) => fetch(`/api/kitaplik/${encodeURIComponent(id)}`, { method: 'DELETE', headers: headers() }).then(r => json<{ ok: true }>(r));
-/** Jarvis sayfalarını (özet, ana fikirler, yazar, temalar, benzerler) doldur; again: yeniden yaz */
+/** Luxion sayfalarını (özet, ana fikirler, yazar, temalar, benzerler) doldur; again: yeniden yaz */
 export const fillBook = (id: string, again = false) => post<{ kitap: Kitap; bilinmiyor?: boolean }>(`/api/kitaplik/${encodeURIComponent(id)}/doldur${again ? '?yenile=1' : ''}`, {});
 export const uploadCover = (id: string, resim: string) => post<{ kitap: Kitap }>(`/api/kitaplik/${encodeURIComponent(id)}/kapak`, { resim });
 /** <img src> için (token sorgu parametresiyle); v: önbelleği kırmak için */

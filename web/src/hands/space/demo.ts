@@ -52,7 +52,7 @@ export function demoSpaceHands(t0: number, W: number, H: number): DemoFrame {
     const spread = lerp(0.2, 0.33, k);
     return { step: '✋✋ güneş sistemi', hands: [pose(R, W * (0.5 + spread), H * 0.74, OPEN, { roll: 0.15 }), pose(L, W * (0.5 - spread), H * 0.74, OPEN, { roll: -0.15, left: true })], loop };
   }
-  if (t < 25.0) return { step: '🗣 "Jarvis, Satürn getir"', hands: [], loop, cmd: t > 24.4 ? { key: 'saturn', cmd: { tip: 'gezegen', govde: 'saturn' } } : undefined };
+  if (t < 25.0) return { step: '🗣 "Luxion, Satürn getir"', hands: [], loop, cmd: t > 24.4 ? { key: 'saturn', cmd: { tip: 'gezegen', govde: 'saturn' } } : undefined };
   if (t < 30.5) {
     // ✊ gezegenin yanında 1,5 sn: kara delik, sonra yumruk tutuldukça yutar
     const x = W * 0.5 + Math.min(W, H) * 0.34;

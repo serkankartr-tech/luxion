@@ -69,7 +69,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'kameraya_bak',
-      description: "Evdeki kamera cihazından (Jarvis'in gözü) anlık bir kare alır ve görüntü modeline sorar. 'Mutfakta ne var', 'kahve makinesinin önünde fincan var mı', 'kapıya bak' gibi isteklerde kullanılır.",
+      description: "Evdeki kamera cihazından (Luxion'un gözü) anlık bir kare alır ve görüntü modeline sorar. 'Mutfakta ne var', 'kahve makinesinin önünde fincan var mı', 'kapıya bak' gibi isteklerde kullanılır.",
       parameters: {
         type: 'object',
         properties: {
@@ -128,7 +128,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'kitaplik_ekle',
-      description: "Kitaplığa bir kitap ekler (rafta yeri olmadan; El Kontrolü'nde K ile rafa yerleştirilir) ve Jarvis sayfalarını (özet, ana fikirler, yazar, temalar, benzer kitaplar) arka planda doldurur. 'Kitaplığıma Davranış'ı ekle', 'kitabın adı Davranış', 'Sapolsky'nin Davranış kitabı bende var' gibi isteklerde kullanılır.",
+      description: "Kitaplığa bir kitap ekler (rafta yeri olmadan; El Kontrolü'nde K ile rafa yerleştirilir) ve Luxion sayfalarını (özet, ana fikirler, yazar, temalar, benzer kitaplar) arka planda doldurur. 'Kitaplığıma Davranış'ı ekle', 'kitabın adı Davranış', 'Sapolsky'nin Davranış kitabı bende var' gibi isteklerde kullanılır.",
       parameters: {
         type: 'object',
         properties: {
@@ -181,7 +181,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'toplanti',
-      description: "Toplantı Odası: Jarvis ve ikinci yapay zekâ Friday. 'Jarvis ve Friday tartışsın: …', 'ikiniz tartışın: …' → tartis (konu ile); 'toplantı başlat', 'toplantı odasını aç' → baslat; 'son toplantının kararları neydi' → son_kararlar (cevabı 'soyle' alanından AYNEN kur, karar uydurma).",
+      description: "Toplantı Odası: Luxion ve ikinci yapay zekâ Iris. 'Luxion ve Iris tartışsın: …', 'ikiniz tartışın: …' → tartis (konu ile); 'toplantı başlat', 'toplantı odasını aç' → baslat; 'son toplantının kararları neydi' → son_kararlar (cevabı 'soyle' alanından AYNEN kur, karar uydurma).",
       parameters: {
         type: 'object',
         properties: {
@@ -227,7 +227,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'kitaplik_doldur',
-      description: "Kitaplıktaki bir kitabın Jarvis sayfalarını (özet, ana fikirler, yazar hakkında, temalar, neden okumalı, benzer kitaplar) arka planda doldurur ya da yeniden yazar. 'Davranış'ın sayfalarını doldur', 'şu kitabın içini doldur' gibi.",
+      description: "Kitaplıktaki bir kitabın Luxion sayfalarını (özet, ana fikirler, yazar hakkında, temalar, neden okumalı, benzer kitaplar) arka planda doldurur ya da yeniden yazar. 'Davranış'ın sayfalarını doldur', 'şu kitabın içini doldur' gibi.",
       parameters: { type: 'object', properties: { kitap: { type: 'string', description: 'Kitabın adı' } }, required: ['kitap'] },
     },
   },
@@ -299,7 +299,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'youtube_ara',
-      description: 'YouTube\'da video arar (Jarvis içinde oynatılabilen videolar). "… videosunu aç", "… ile ilgili bir video göster" gibi isteklerde kullanılır.',
+      description: 'YouTube\'da video arar (Luxion içinde oynatılabilen videolar). "… videosunu aç", "… ile ilgili bir video göster" gibi isteklerde kullanılır.',
       parameters: {
         type: 'object',
         properties: { sorgu: { type: 'string', description: 'Arama sorgusu, ör. "James Webb teleskobu yeni görüntüler"' } },
@@ -311,7 +311,7 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'youtube_ac',
-      description: 'Kullanıcının verdiği YouTube linkini (ya da video kimliğini) doğrular; Jarvis içinde oynatılabiliyorsa bilgisini döndürür.',
+      description: 'Kullanıcının verdiği YouTube linkini (ya da video kimliğini) doğrular; Luxion içinde oynatılabiliyorsa bilgisini döndürür.',
       parameters: {
         type: 'object',
         properties: { link: { type: 'string', description: 'YouTube linki' } },
@@ -418,7 +418,7 @@ export async function runTool(name: string, rawArgs: string, progress: ToolProgr
     const r: any = addBook(String(args.kitap ?? ''), args.yazar ? String(args.yazar) : null);
     progress('hata' in r ? `kitaplık: ${r.hata}` : r.yeni ? `kitaplığa eklendi: ${r.kitap.ad}` : `zaten kitaplıkta: ${r.kitap.ad}`);
     if ('hata' in r) return JSON.stringify(r);
-    const dolduruluyor = !r.kitap.jarvis;
+    const dolduruluyor = !r.kitap.luxion;
     if (dolduruluyor) fillInBackground(r.kitap.id);
     return JSON.stringify({ ok: true, kitap: r.kitap.ad, yazar: r.kitap.yazar, yeni: r.yeni, raftaYeri: !!r.kitap.kutu, sayfalarDolduruluyor: dolduruluyor });
   }

@@ -6,7 +6,7 @@ import type { Sahne, SahneCisim, SahneYildiz } from './sahne';
 
 export interface Gorunum { s: number; ox: number; oy: number }
 
-export const CYAN = '77, 225, 255';
+export const CYAN = '255, 204, 102';
 export const AMBER = '255, 181, 71';
 const AY_RENK = '235, 240, 255';
 

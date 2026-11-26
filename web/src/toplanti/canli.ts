@@ -1,6 +1,6 @@
 // Toplantı Odası · canlı dinleme: sürekli mikrofon (yankı engelleme açık), enerji tabanlı VAD, sürekli Web Speech
 // tanıma. Kullanıcı ~700 ms susunca o ana kadarki metin hemen gönderilir (tanımanın kendi "final"ini beklemeden).
-// Jarvis/Friday konuşurken eşik yükselir ve daha uzun ses ister (hoparlör sesi araya girme sayılmasın); yine de
+// Luxion/Iris konuşurken eşik yükselir ve daha uzun ses ister (hoparlör sesi araya girme sayılmasın); yine de
 // konuşma algılanırsa onAraGir() → ses anında kesilir. Tanıma sonucu son çalınan cümlelere çok benziyorsa (yankı)
 // atılır. Web Speech yoksa konuşma parçaları sunucunun ses tanımasına gönderilir.
 import { stt } from '../lib/api';
@@ -10,7 +10,7 @@ export { benzerlik, SozToplayici, Vad, yankiMi } from './vad';
 
 export interface CanliSecenek {
   sessizlikMs: number;
-  /** Şu an Jarvis ya da Friday konuşuyor mu (eşik yükselir) */
+  /** Şu an Luxion ya da Iris konuşuyor mu (eşik yükselir) */
   konusuyorMu(): boolean;
   /** Son çalınan cümleler (yankı süzgeci) */
   sonCumleler(): string[];

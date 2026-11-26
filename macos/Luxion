@@ -1,0 +1,160 @@
+#!/bin/bash
+# Luxion başlatıcı (macOS). Luxion.app/Contents/MacOS/Luxion
+#
+# 1. İlk açılışta (ve her güncellemede) uygulamayı ~/Library/Application Support/Luxion altına kurar.
+#    Ayarlar (.env) ve veriler (data/) orada kalır; uygulama güncellense de silinmez.
+# 2. Luxion sunucusunu arka planda başlatır (port 8787) ve arayüzü açar.
+# 3. Luxion zaten çalışıyorsa: "Aç / Durdur" diye sorar.
+# macOS'taki bash 3.2 ile uyumludur.
+
+set -u
+UYG_ADI="Luxion"
+PORT="${LUXION_PORT:-8787}"
+ADRES="http://localhost:${PORT}"
+
+KAYNAK="$(cd "$(dirname "$0")/../Resources" && pwd)"
+DESTEK="$HOME/Library/Application Support/Luxion"
+KURULU="$DESTEK/app"
+LOG_DIZIN="$HOME/Library/Logs/Luxion"
+LOG="$LOG_DIZIN/sunucu.log"
+PID_DOSYA="$DESTEK/sunucu.pid"
+mkdir -p "$DESTEK" "$LOG_DIZIN"
+
+mesaj() {  # mesaj "metin" [simge: note|caution|stop]
+  /usr/bin/osascript -e "display dialog \"$1\" with title \"$UYG_ADI\" buttons {\"Tamam\"} default button 1 with icon ${2:-note}" >/dev/null 2>&1
+}
+bildirim() {
+  /usr/bin/osascript -e "display notification \"$1\" with title \"$UYG_ADI\"" >/dev/null 2>&1
+}
+calisiyor_mu() {
+  /usr/bin/curl -s -o /dev/null --max-time 2 "$ADRES/" 2>/dev/null
+}
+
+arayuzu_ac() {
+  # Chrome önerilir (ses tanıma, el kontrolü, kamera). Varsa uygulama penceresi olarak açılır.
+  for tarayici in "Google Chrome" "Microsoft Edge" "Brave Browser" "Arc"; do
+    if /usr/bin/open -Ra "$tarayici" 2>/dev/null; then
+      if [ "$tarayici" = "Arc" ]; then
+        /usr/bin/open -a "$tarayici" "$ADRES"
+      else
+        /usr/bin/open -na "$tarayici" --args --app="$ADRES" --window-size=1440,900
+      fi
+      return
+    fi
+  done
+  /usr/bin/open "$ADRES"
+}
+
+sunucuyu_durdur() {
+  if [ -f "$PID_DOSYA" ]; then
+    kill "$(cat "$PID_DOSYA")" 2>/dev/null
+    rm -f "$PID_DOSYA"
+  fi
+  # Yedek: bu porttaki Luxion sunucusu
+  for p in $(/usr/sbin/lsof -ti "tcp:$PORT" -sTCP:LISTEN 2>/dev/null); do
+    if ps -o command= -p "$p" 2>/dev/null | grep -q "Luxion"; then kill "$p" 2>/dev/null; fi
+  done
+}
+
+# ---------------------------------------------------------------- Zaten çalışıyorsa
+if calisiyor_mu; then
+  SECIM=$(/usr/bin/osascript -e "button returned of (display dialog \"Luxion şu an çalışıyor.\" with title \"$UYG_ADI\" buttons {\"Durdur\", \"Aç\"} default button \"Aç\" with icon note)" 2>/dev/null)
+  if [ "$SECIM" = "Durdur" ]; then
+    sunucuyu_durdur
+    bildirim "Luxion durduruldu."
+  elif [ "$SECIM" = "Aç" ]; then
+    arayuzu_ac
+  fi
+  exit 0
+fi
+
+# ---------------------------------------------------------------- Node.js
+MIMARI="$(uname -m)"   # arm64 (Apple Silicon) | x86_64 (Intel)
+case "$MIMARI" in
+  arm64) NODE_PAKET="darwin-arm64" ;;
+  *)     NODE_PAKET="darwin-x64" ;;
+esac
+NODE=""
+if [ -x "$KAYNAK/node/$NODE_PAKET/bin/node" ]; then
+  mkdir -p "$DESTEK/node"
+  if ! cmp -s "$KAYNAK/node/$NODE_PAKET/bin/node" "$DESTEK/node/node" 2>/dev/null; then
+    cp "$KAYNAK/node/$NODE_PAKET/bin/node" "$DESTEK/node/node"
+    chmod +x "$DESTEK/node/node"
+    /usr/bin/xattr -d com.apple.quarantine "$DESTEK/node/node" 2>/dev/null
+  fi
+  NODE="$DESTEK/node/node"
+fi
+if [ -z "$NODE" ] || ! "$NODE" -v >/dev/null 2>&1; then
+  # Paketteki Node açılamazsa sistemdekini dene (Homebrew ya da nodejs.org kurulumu)
+  NODE=""
+  for aday in /opt/homebrew/bin/node /usr/local/bin/node "$(command -v node 2>/dev/null)"; do
+    if [ -n "$aday" ] && [ -x "$aday" ]; then
+      ANA=$("$aday" -p 'process.versions.node.split(".")[0]' 2>/dev/null)
+      if [ -n "$ANA" ] && [ "$ANA" -ge 20 ]; then NODE="$aday"; break; fi
+    fi
+  done
+fi
+if [ -z "$NODE" ]; then
+  mesaj "Luxion için Node.js 20 veya üstü gerekiyor ve bulunamadı. Şimdi nodejs.org açılacak: LTS sürümünü kurun, sonra Luxion'u yeniden açın." caution
+  /usr/bin/open "https://nodejs.org/tr/download"
+  exit 1
+fi
+
+# ---------------------------------------------------------------- Kurulum / güncelleme
+SURUM="$(cat "$KAYNAK/app/SURUM" 2>/dev/null || echo 0)"
+KURULU_SURUM="$(cat "$KURULU/SURUM" 2>/dev/null || echo yok)"
+ILK_KURULUM=0
+[ -f "$DESTEK/.env" ] || ILK_KURULUM=1
+
+if [ "$SURUM" != "$KURULU_SURUM" ]; then
+  bildirim "Luxion kuruluyor…"
+  rm -rf "$KURULU.yeni"
+  /usr/bin/ditto "$KAYNAK/app" "$KURULU.yeni" || { mesaj "Kurulum dosyaları kopyalanamadı." stop; exit 1; }
+  /usr/bin/xattr -dr com.apple.quarantine "$KURULU.yeni" 2>/dev/null
+  rm -rf "$KURULU"
+  mv "$KURULU.yeni" "$KURULU"
+fi
+
+# Kalıcı veriler: ayar dosyası ve data klasörü uygulamanın dışında durur
+mkdir -p "$DESTEK/data"
+if [ ! -f "$DESTEK/.env" ]; then
+  cp "$KURULU/server/.env.example" "$DESTEK/.env"
+fi
+ln -sfn "$DESTEK/data" "$KURULU/server/data"
+ln -sf "$DESTEK/.env" "$KURULU/server/.env"
+
+# İlk açılış: hitap adı
+if [ "$ILK_KURULUM" = "1" ]; then
+  AD=$(/usr/bin/osascript -e "text returned of (display dialog \"Luxion'a hoş geldiniz. Size nasıl hitap etsin?\" with title \"$UYG_ADI\" default answer \"\" buttons {\"Devam\"} default button 1 with icon note)" 2>/dev/null)
+  AD="$(printf '%s' "$AD" | tr -d '\n\r"\\|&')"
+  if [ -n "$AD" ]; then
+    /usr/bin/sed -i '' "s|^USER_NAME=.*|USER_NAME=${AD}|" "$DESTEK/.env"
+  fi
+fi
+
+# ---------------------------------------------------------------- Sunucuyu başlat
+cd "$KURULU/server" || exit 1
+echo "---- $(date '+%Y-%m-%d %H:%M:%S') · Luxion $SURUM · node $("$NODE" -v) ----" >> "$LOG"
+NODE_ANA=$("$NODE" -p 'process.versions.node.split(".")[0]')
+EK=""
+[ "$NODE_ANA" -ge 22 ] && EK="--disable-warning=ExperimentalWarning"
+PORT="$PORT" LUXION_APP=1 nohup "$NODE" $EK --title=Luxion build/index.js >> "$LOG" 2>&1 &
+echo $! > "$PID_DOSYA"
+
+# Hazır olana kadar bekle (en çok 45 sn)
+i=0
+until calisiyor_mu; do
+  i=$((i + 1))
+  if [ $i -gt 90 ] || ! kill -0 "$(cat "$PID_DOSYA")" 2>/dev/null; then
+    mesaj "Luxion sunucusu başlatılamadı. Ayrıntılar: ~/Library/Logs/Luxion/sunucu.log" stop
+    /usr/bin/open -a Console "$LOG" 2>/dev/null
+    exit 1
+  fi
+  sleep 0.5
+done
+
+arayuzu_ac
+if [ "$ILK_KURULUM" = "1" ]; then
+  bildirim "Hazır! Beyin ekranından ücretsiz Gemini ya da Groq anahtarı ekleyebilirsiniz."
+fi
+exit 0

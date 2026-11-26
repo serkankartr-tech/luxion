@@ -7,9 +7,9 @@ export interface VideoInfo { id: string; title: string; channel: string; externa
 const watchUrl = (id: string, shorts?: boolean) => (shorts ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`);
 
 /**
- * Jarvis içinde YouTube: resmi gömme oynatıcı (youtube-nocookie). Video bitince kendiliğinden kapanır.
+ * Luxion içinde YouTube: resmi gömme oynatıcı (youtube-nocookie). Video bitince kendiliğinden kapanır.
  * Sahibi başka sitelerde oynatmayı kapattıysa (S Sport) ya da oynatıcı engel bildirirse (LaLiga: hata 101/150)
- * "YouTube'da izle" kartı gösterilir; engel sunucuya bildirilir, o kanal bir daha Jarvis içinde denenmez.
+ * "YouTube'da izle" kartı gösterilir; engel sunucuya bildirilir, o kanal bir daha Luxion içinde denenmez.
  */
 export function VideoPanel({ video, onClose }: { video: VideoInfo; onClose(): void }) {
   const frame = useRef<HTMLIFrameElement>(null);

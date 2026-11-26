@@ -1,6 +1,6 @@
 // Toplantı Odası · prompt değerlendirmesi (GERÇEK modellerle; token harcar, ses üretmez).
-// 10 karar sorusunda Jarvis ve Friday tartışır. Ölçülenler:
-//   - Friday her tartışmada en az bir somut itiraz/eksik getirdi mi (hakem modeline sorulur) ya da açıkça
+// 10 karar sorusunda Luxion ve Iris tartışır. Ölçülenler:
+//   - Iris her tartışmada en az bir somut itiraz/eksik getirdi mi (hakem modeline sorulur) ya da açıkça
 //     "itirazım yok, çünkü…" dedi mi (Senaryo D: soruların en az yarısında somut itiraz beklenir)
 //   - Tekrar: aynı karakterin ardışık turları birbirine çok benziyor mu (kelime örtüşmesi ≥ %50)
 //   - İlk token / ilk cümle gecikmesi
@@ -26,12 +26,12 @@ const kelime = (s: string) => new Set(s.toLocaleLowerCase('tr').replace(/[^\p{L}
 /** Ortak kelime oranı; sorunun kendi kelimeleri (konu) sayılmaz: konu kelimesini her tur anmak tekrar değildir */
 const ortusme = (a: string, b: string, konu = '') => { const k = kelime(konu); const x = new Set([...kelime(a)].filter(w => !k.has(w))), y = new Set([...kelime(b)].filter(w => !k.has(w))); if (!x.size || !y.size) return 0; let o = 0; for (const w of x) if (y.has(w)) o++; return o / Math.min(x.size, y.size); };
 
-async function itirazVarMi(hakem: string, konu: string, jarvis: string, friday: string): Promise<{ somut: boolean; acikcaYok: boolean }> {
-  if (/itiraz[ıi]m yok/i.test(friday)) return { somut: false, acikcaYok: true };
+async function itirazVarMi(hakem: string, konu: string, luxion: string, iris: string): Promise<{ somut: boolean; acikcaYok: boolean }> {
+  if (/itiraz[ıi]m yok/i.test(iris)) return { somut: false, acikcaYok: true };
   const r = await routellmStream({
     model: hakem, temperature: 0, max_tokens: 60,
-    messages: [{ role: 'system', content: 'Yalnızca JSON döndür: {"somut_itiraz": true|false}. Friday\'in konuşması Jarvis\'in görüşüne somut bir itiraz, risk ya da gözden kaçan bir nokta (gerekçesiyle) getiriyor mu? Genel laf ya da tekrar ise false.' },
-      { role: 'user', content: `Konu: ${konu}\nJarvis: ${jarvis}\nFriday: ${friday}` }],
+    messages: [{ role: 'system', content: 'Yalnızca JSON döndür: {"somut_itiraz": true|false}. Iris\'in konuşması Luxion\'in görüşüne somut bir itiraz, risk ya da gözden kaçan bir nokta (gerekçesiyle) getiriyor mu? Genel laf ya da tekrar ise false.' },
+      { role: 'user', content: `Konu: ${konu}\nLuxion: ${luxion}\nIris: ${iris}` }],
   }).catch(() => null);
   return { somut: jsonAyikla(r?.content ?? '')?.somut_itiraz === true, acikcaYok: false };
 }
@@ -46,16 +46,16 @@ for (const soru of secili.length ? SORULAR.filter((_, i) => secili.includes(i + 
   const t = new Toplanti('tartisma', soru, (e: any) => {
     if (e.olay === 'konusma_son' && e.gecikme?.ilkCumle) ilk.push(e.gecikme.ilkCumle);
     if (e.olay === 'durum' && e.durum === 'bitti') bitti = true;
-  }, { jarvis: ses, friday: ses });
+  }, { luxion: ses, iris: ses });
   await t.baslat();
   for (let i = 0; i < 900 && !bitti; i++) await new Promise(r => setTimeout(r, 200));
   const tr = t.oturum.transcript;
-  const fr = tr.filter(s => s.konusan === 'friday');
-  const jv = tr.filter(s => s.konusan === 'jarvis');
+  const fr = tr.filter(s => s.konusan === 'iris');
+  const jv = tr.filter(s => s.konusan === 'luxion');
   let somut = false, acikcaYok = false;
   for (const f of fr) {
     const i = tr.indexOf(f);
-    const once = [...tr.slice(0, i)].reverse().find(s => s.konusan === 'jarvis')?.metin ?? '';
+    const once = [...tr.slice(0, i)].reverse().find(s => s.konusan === 'luxion')?.metin ?? '';
     const r = await itirazVarMi(t.m.hakem, soru, once, f.metin);
     somut ||= r.somut; acikcaYok ||= r.acikcaYok;
   }

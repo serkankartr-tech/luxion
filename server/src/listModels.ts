@@ -36,7 +36,7 @@ console.log(`
 Toplam ${all.length} model.
 
 Önerilen .env (ölçümlere göre, 5 Ekim 2026):
-CHAT_MODEL=route-llm                     # ya da Abacus'ta kurduğun Jarvis router'ının adı (README)
+CHAT_MODEL=route-llm                     # ya da Abacus'ta kurduğun Luxion router'ının adı (README)
 TTS_MODEL=${voice?.model ?? pick('gpt-audio-1.5')}               # sabit ses; Gemini TTS her istekte farklı perde üretiyor
 TTS_VOICE=${voice?.voice ?? 'onyx'}${voice ? '' : '                        # npm run voices ile doğrulanmış seslerden seç'}
 STT_MODEL=${pick('gemini-2.5-flash', 'gemini-3.5-flash')}               # /audio/transcriptions yok; ses girdili sohbet modeli

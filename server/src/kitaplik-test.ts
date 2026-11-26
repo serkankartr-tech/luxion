@@ -109,7 +109,7 @@ await t('tara: model hata verirse 502', async () => {
   const r = await api('/api/kitaplik/tara', { resim: jpeg, genislik: 1920, yukseklik: 1080 });
   assert.equal(r.status, 502);
 });
-await t('Jarvis aracı: "Davranış\'a not ekle", alıntı, durum; talimattaki kitaplık bölümü', async () => {
+await t('Luxion aracı: "Davranış\'a not ekle", alıntı, durum; talimattaki kitaplık bölümü', async () => {
   const n = lib.addBookNote("Davranış'a", 'Stres bölümünü videoda kullan.', 'not') as any;
   assert.equal(n.ok, true);
   assert.equal(n.kitap, 'Davranış');
@@ -193,7 +193,7 @@ await t('fotoğraftan ekle: okunan kitaplar eklenir, olanlar tekrar eklenmez, ya
   assert.match(lib.libraryForPrompt(), /Mülksüzler · Ursula K\. Le Guin · okunacak · notlar: "Anarres dili" · 1 alıntı · rafta yeri bilinmiyor/);
 });
 
-await t('Jarvis sayfaları: tanınan kitap dolar (benzer yalnızca kitaplıktan), tanınmayan uydurulmaz, ad değişince sıfırlanır', async () => {
+await t('Luxion sayfaları: tanınan kitap dolar (benzer yalnızca kitaplıktan), tanınmayan uydurulmaz, ad değişince sıfırlanır', async () => {
   const add = await api('/api/kitaplik/yeni', { ad: 'Davranış', yazar: 'Robert Sapolsky' });
   const id = add.body.kitap.id;
   let calls = 0;
@@ -205,7 +205,7 @@ await t('Jarvis sayfaları: tanınan kitap dolar (benzer yalnızca kitaplıktan)
   }) + '\n```'; };
   const r = await api(`/api/kitaplik/${id}/doldur`, {});
   assert.equal(r.status, 200);
-  const j = r.body.kitap.jarvis;
+  const j = r.body.kitap.luxion;
   assert.equal(j.anaFikirler.length, 6);
   assert.deepEqual(j.benzer, ['Körlük', 'Mülksüzler']);
   assert.equal(j.yil, 2017);
@@ -214,9 +214,9 @@ await t('Jarvis sayfaları: tanınan kitap dolar (benzer yalnızca kitaplıktan)
   // İkinci çağrı modeli tekrar çağırmaz; ?yenile=1 çağırır
   await api(`/api/kitaplik/${id}/doldur`, {});
   assert.equal(calls, 1);
-  // Ad değişince eski özet ve Jarvis sayfaları silinir
+  // Ad değişince eski özet ve Luxion sayfaları silinir
   const ren = await api(`/api/kitaplik/${id}`, { ad: 'Başka Kitap' });
-  assert.equal(ren.body.kitap.jarvis, undefined);
+  assert.equal(ren.body.kitap.luxion, undefined);
   assert.equal(ren.body.kitap.ozet, null);
   lib.chatDeps.chat = async () => '{"biliyorum": false}';
   const u = await api(`/api/kitaplik/${id}/doldur`, {});

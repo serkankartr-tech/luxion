@@ -1,12 +1,12 @@
-/* Kitaplığım: Jarvis'in koyu, camgöbeği teması; telefonda tam ekran, büyük dokunma alanları */
+/* Kitaplığım: Luxion'un koyu, camgöbeği teması; telefonda tam ekran, büyük dokunma alanları */
 .kp { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 0%, rgba(20, 60, 90, 0.55), rgba(4, 7, 12, 0.98) 60%), var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
 .kp-baslik { display: flex; align-items: center; gap: 18px; padding: calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 24px) 12px calc(env(safe-area-inset-left) + 24px); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-.kp-baslik h1 { margin: 0; font-family: 'Rajdhani', var(--sans); font-size: 26px; letter-spacing: 0.24em; color: var(--accent); text-shadow: 0 0 14px rgba(77, 225, 255, 0.5); }
+.kp-baslik h1 { margin: 0; font-family: 'Rajdhani', var(--sans); font-size: 26px; letter-spacing: 0.24em; color: var(--accent); text-shadow: 0 0 14px rgba(255, 204, 102, 0.5); }
 .kp-sayilar { display: flex; gap: 14px; flex-wrap: wrap; flex: 1; }
 .kp-sayilar span { display: flex; flex-direction: column; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
 .kp-sayilar b { font-size: 22px; color: var(--text); font-family: 'Rajdhani', var(--sans); letter-spacing: 0; }
 .kp-x { background: none; border: 1px solid var(--line); color: var(--text); width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; }
-.kp-btn { background: rgba(77, 225, 255, 0.08); border: 1px solid var(--line); color: var(--text); padding: 9px 14px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
+.kp-btn { background: rgba(255, 204, 102, 0.08); border: 1px solid var(--line); color: var(--text); padding: 9px 14px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
 .kp-btn.ana { border-color: var(--accent); color: var(--accent); }
 .kp-kam em { display: none; font-style: normal; }
 .kp-btn.tehlike { border-color: rgba(255, 107, 107, 0.5); color: var(--danger); margin-top: 8px; }
@@ -32,7 +32,7 @@
 .kp-izgara { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
 .kp-kart { width: 100%; background: none; border: 0; color: var(--text); text-align: left; padding: 0; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font: inherit; }
 .kp-kart-kapak { position: relative; aspect-ratio: 2 / 3; border-radius: 6px; overflow: hidden; background: rgba(8, 18, 28, 0.9); border: 1px solid var(--line); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45); transition: transform 0.2s, box-shadow 0.2s; }
-.kp-kart:hover .kp-kart-kapak { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 18px rgba(77, 225, 255, 0.3); }
+.kp-kart:hover .kp-kart-kapak { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 18px rgba(255, 204, 102, 0.3); }
 .kp-kart-kapak img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.4s; }
 .kp-kart-kapak img.yuklendi { opacity: 1; }
 .kp-kapak-yok { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 12px; background: linear-gradient(160deg, #11324a, #07131f); text-align: center; }
@@ -119,11 +119,11 @@
 .kp-fotolar img { width: 92px; height: 68px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
 .kp-fotolar figcaption { font-size: 11px; color: var(--muted); }
 .kp-fotolar figure button { position: absolute; top: 2px; right: 2px; background: rgba(0, 0, 0, 0.7); border: 0; color: #fff; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; cursor: pointer; }
-.kp-foto-ekle { width: 92px; height: 68px; border: 1px dashed var(--accent); border-radius: 6px; background: rgba(77, 225, 255, 0.05); color: var(--accent); font-size: 22px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.kp-foto-ekle { width: 92px; height: 68px; border: 1px dashed var(--accent); border-radius: 6px; background: rgba(255, 204, 102, 0.05); color: var(--accent); font-size: 22px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .kp-foto-ekle span { font-size: 11px; }
 .kp-bolum-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow: auto; }
 .kp-bolum-liste li { font-size: 13px; padding: 4px 6px; border-radius: 4px; cursor: pointer; display: flex; gap: 8px; }
-.kp-bolum-liste li:hover { background: rgba(77, 225, 255, 0.08); }
+.kp-bolum-liste li:hover { background: rgba(255, 204, 102, 0.08); }
 .kp-bolum-liste li em { font-style: normal; font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 34px; }
 .kp-bolum-liste li.rafta::after { content: '● rafta'; margin-left: auto; font-size: 11px; color: var(--ok); }
 .kp-bolum-liste li.belirsiz { color: var(--muted); font-style: italic; cursor: default; }
@@ -132,7 +132,7 @@
 .kp-kamera { position: fixed; inset: 0; z-index: 73; background: #000; }
 .kp-kamera video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .kp-kamera-hud { position: absolute; inset: 0; }
-.kp-tanindi { position: absolute; background: rgba(77, 225, 255, 0.08); border: 2px solid var(--accent); border-radius: 4px; box-shadow: 0 0 14px rgba(77, 225, 255, 0.7), inset 0 0 12px rgba(77, 225, 255, 0.25); cursor: pointer; padding: 0; transition: opacity 0.4s; animation: kp-kilit 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.kp-tanindi { position: absolute; background: rgba(255, 204, 102, 0.08); border: 2px solid var(--accent); border-radius: 4px; box-shadow: 0 0 14px rgba(255, 204, 102, 0.7), inset 0 0 12px rgba(255, 204, 102, 0.25); cursor: pointer; padding: 0; transition: opacity 0.4s; animation: kp-kilit 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes kp-kilit { from { transform: scale(1.4); opacity: 0; } }
 .kp-tanindi.okunuyor { border-color: var(--accent-2); box-shadow: 0 0 14px rgba(255, 181, 71, 0.7); }
 .kp-tanindi.bitti { border-color: var(--ok); box-shadow: 0 0 14px rgba(125, 255, 178, 0.7); }
@@ -181,7 +181,7 @@
 .kp-profil > span b { font-size: 22px; color: var(--text); font-family: 'Rajdhani', var(--sans); }
 .kp-etiketler { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .kp-etiketler i { font-style: normal; font-size: 11px; color: var(--muted); min-width: 64px; text-transform: uppercase; letter-spacing: 0.08em; }
-.kp-etiketler em { font-style: normal; font-size: 13px; padding: 3px 10px; border-radius: 99px; background: rgba(77, 225, 255, 0.08); border: 1px solid var(--line); }
+.kp-etiketler em { font-style: normal; font-size: 13px; padding: 3px 10px; border-radius: 99px; background: rgba(255, 204, 102, 0.08); border: 1px solid var(--line); }
 .kp-tarz-ozet { margin: 0; font-size: 16px; line-height: 1.55; border-left: 3px solid var(--accent); padding-left: 12px; }
 .kp-yeni-oneriler { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
 .kp-yeni-oneriler li { display: flex; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: rgba(4, 7, 12, 0.5); animation: kp-kay 0.4s ease backwards; }

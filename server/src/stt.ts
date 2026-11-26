@@ -22,17 +22,17 @@ export function audioFormat(mime: string): string | null {
 }
 
 /**
- * "Jarvis"in yanlış duyulmuş biçimleri (cümlenin başında, hitap olarak). Yalnızca gerçek bir Türkçe kelime olmayanlar:
+ * "Luxion"un yanlış duyulmuş biçimleri (cümlenin başında, hitap olarak). Yalnızca gerçek bir Türkçe kelime olmayanlar:
  * "Ceviz" ya da "Charlie" gerçek kelime olabilir, onları sistem talimatı bağlamdan anlar.
  */
-const YANLIS_HITAP = /^(\s*(?:hey\s+)?)(?:cervis|cerviz|çarvis|çarviz|şarvis|carvis|carviz|jervis|jerviz|jarviz|jarvıs|jarus|jarvus|garvis|javis|jarves|jarbis|ciervis|carves)(?=[\s,.!?]|$)/iu;
-export const hitapDuzelt = (text: string) => text.replace(YANLIS_HITAP, '$1Jarvis');
+const YANLIS_HITAP = /^(\s*(?:hey\s+)?)(?:lüksiyon|lüksyon|lüksion|luksiyon|luksyon|luksion|laksiyon|laksyon|laksion|lakşın|lukşın|lükşın|luxyon|lukson|luxon|lüksün|lugziyon|loksiyon|lüksiyın)(?=[\s,.!?]|$)/iu;
+export const hitapDuzelt = (text: string) => text.replace(YANLIS_HITAP, '$1Luxion');
 
 /** Ses tanımaya verilen bağlam: konuşmanın son mesajları (kısa) */
 export function sttIstemi(baglam: string[]): string {
   const son = baglam.map(x => x.replace(/\s+/g, ' ').trim().slice(0, 220)).filter(Boolean).slice(-4);
   return 'Bu Türkçe konuşmayı kelimesi kelimesine yazıya dök. Sadece duyduğun metni yaz; tırnak, açıklama ya da başlık ekleme. Konuşma yoksa hiçbir şey yazma.\n' +
-    'Konuşan kişi "Jarvis" adlı yapay zekâ asistanıyla konuşuyor; cümle çoğu zaman "Jarvis" diye başlar (Ceviz, Charlie, Cervis değil).' +
+    'Konuşan kişi "Luxion" adlı yapay zekâ asistanıyla konuşuyor; cümle çoğu zaman "Luxion" diye başlar (Lüks iyon, Lakşın, Lüksiyon değil).' +
     (son.length
       ? '\nKonuşmanın son mesajları aşağıda. Bunu YALNIZCA belirsiz duyduğun kelimeyi doğru seçmek için kullan (ör. önceki konu bir kitapsa "ağır gelmesi", "yağmur gelmesi" değil). ' +
         'Duymadığın bir şeyi ekleme, bu mesajları tekrar yazma.\n' + son.map(x => `- ${x}`).join('\n')
@@ -50,7 +50,7 @@ export async function transcribe(audio: Buffer, mime: string, baglam: string[] =
     form.append('file', new Blob([new Uint8Array(audio)], { type: mime }), `kayit.${format}`);
     form.append('model', STT_MODEL);
     form.append('language', 'tr');
-    form.append('prompt', ['Jarvis', ...baglam.slice(-2)].join('. ').slice(0, 600));
+    form.append('prompt', ['Luxion', ...baglam.slice(-2)].join('. ').slice(0, 600));
     const r = await fetch(`${BASE_URL}/audio/transcriptions`, { method: 'POST', headers: yetki(), body: form }).catch(() => null);
     if (r?.ok) {
       transcriptionsEndpoint = true;

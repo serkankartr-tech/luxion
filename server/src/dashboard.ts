@@ -195,7 +195,7 @@ function parseTcmb(xml: string): { date: string; rates: Rates } | null {
 }
 
 async function fetchTcmb(url: string): Promise<{ date: string; rates: Rates } | 'yok'> {
-  const r = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT), headers: { 'User-Agent': 'Mozilla/5.0 (Jarvis)' } });
+  const r = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT), headers: { 'User-Agent': 'Mozilla/5.0 (Luxion)' } });
   if (r.status === 404) return 'yok'; // hafta sonu / resmi tatil: bülten yok
   if (!r.ok) throw new Error(`TCMB HTTP ${r.status}`);
   const parsed = parseTcmb(await r.text());

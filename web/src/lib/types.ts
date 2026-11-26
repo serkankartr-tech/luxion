@@ -25,7 +25,7 @@ export interface VoiceOption { id: string; model: string; voice: string; label: 
 
 export interface Sahne { ses: string; gorsel: Gorsel }
 
-export interface JarvisReply {
+export interface LuxionReply {
   id: string;
   sahneler: Sahne[];
   detay: string;
@@ -35,7 +35,7 @@ export interface JarvisReply {
   created_at: string;
   /** Cevaba sabitlenen ses */
   voice?: VoiceSel;
-  /** İstekte kullanılan model (route-llm ya da Jarvis router'ı); `model` gerçekten çalışan alt model */
+  /** İstekte kullanılan model (route-llm ya da Luxion router'ı); `model` gerçekten çalışan alt model */
   router?: string;
 }
 
@@ -44,7 +44,7 @@ export interface StoredMessage {
   text: string;
   device: Device;
   at: string;
-  reply?: JarvisReply;
+  reply?: LuxionReply;
 }
 
 export type CoreState = 'idle' | 'listening' | 'thinking' | 'speaking';
@@ -74,12 +74,12 @@ export type ServerEvent =
   | { type: 'dashboard'; data: Dashboard }
   | { type: 'cleared' }
   | { type: 'kitaplik' }
-  /** Uzay Laboratuvarı komutu (Jarvis'in aracından; şekli web/src/hands/space/commands.ts SpaceCmd) */
+  /** Uzay Laboratuvarı komutu (Luxion'un aracından; şekli web/src/hands/space/commands.ts SpaceCmd) */
   | { type: 'lab_cmd'; cmd: unknown; origin: string }
   | { type: 'gok_cmd'; cmd: { tip: 'tara' } | { tip: 'vurgula'; hedef: number | string }; origin?: string }
   | { type: 'toplanti'; olay: string; origin?: string; mod?: string; [k: string]: any }
   | { type: 'bekci'; olay: 'basla' | 'adim' | 'sonuc' | 'guncel' | 'goster' | 'liste'; id?: string; kaynak?: string; gonderen?: string; zaman?: string; demo?: boolean; analiz?: import('../bekci/api').Analiz; ses?: boolean; ac?: boolean }
-  /** Jarvis kitap önerdi (raftaki kitap El Kontrolü'nde çıkar) · tarz analizi bitti */
+  /** Luxion kitap önerdi (raftaki kitap El Kontrolü'nde çıkar) · tarz analizi bitti */
   | { type: 'kitap_oner'; id: string | null; ad: string | null; ruhHali: string }
   | { type: 'kitap_tarzi' }
   /** Takipteki haberde gelişme (server/src/newsFollow.ts): yeni kaynak ya da olayın yeni bir kümesi */

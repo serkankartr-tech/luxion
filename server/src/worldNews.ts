@@ -32,7 +32,7 @@ export const DUNYA_KAYNAKLARI: DunyaKaynak[] = [
 
 const parser = new Parser({
   timeout: 8000,
-  headers: { 'User-Agent': 'Mozilla/5.0 (Jarvis RSS okuyucu)' },
+  headers: { 'User-Agent': 'Mozilla/5.0 (Luxion RSS okuyucu)' },
   customFields: { item: [['media:content', 'mediaContent', { keepArray: true }], ['media:thumbnail', 'mediaThumbnail'], ['source', 'kaynakEtiketi']] },
 });
 const temizle = (s = '') => s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { addMemory, deleteMemory, getProfile, saveProfile, type MemoryItem } from '../lib/api';
 
 /**
- * Ayarlar → Hakkımda: Jarvis'in sizi tanıdığı metin ve konuşmalarda not ettikleri (hafıza).
+ * Ayarlar → Hakkımda: Luxion'un sizi tanıdığı metin ve konuşmalarda not ettikleri (hafıza).
  * İkisi de yalnızca bu bilgisayardaki sunucuda saklanır; her istekte modele gönderilir.
  */
 export function ProfileSettings({ flash }: { flash(t: string): void }) {
@@ -22,7 +22,7 @@ export function ProfileSettings({ flash }: { flash(t: string): void }) {
   const save = () => {
     if (text === null) return;
     saveProfile(text)
-      .then(r => { setSaved(r.profile.text); setUpdated(r.profile.updated_at); flash('Tanıtım kaydedildi · Jarvis bir sonraki cevaptan itibaren bunu biliyor'); })
+      .then(r => { setSaved(r.profile.text); setUpdated(r.profile.updated_at); flash('Tanıtım kaydedildi · Luxion bir sonraki cevaptan itibaren bunu biliyor'); })
       .catch(e => flash(e.message));
   };
   const add = () => {
@@ -33,7 +33,7 @@ export function ProfileSettings({ flash }: { flash(t: string): void }) {
   const dirty = text !== null && text !== saved;
   return (
     <>
-      <label>Hakkımda (Jarvis sizi bununla tanır)</label>
+      <label>Hakkımda (Luxion sizi bununla tanır)</label>
       {text === null ? <p className="muted small">yükleniyor…</p> : (
         <>
           {!open ? (
@@ -54,8 +54,8 @@ export function ProfileSettings({ flash }: { flash(t: string): void }) {
         </>
       )}
 
-      <label>Jarvis'in hafızası · {memory.length} not</label>
-      <p className="muted small">Konuşurken "Jarvis, unutma: …" derseniz kendisi not eder; "bunu unut" derseniz siler.</p>
+      <label>Luxion'un hafızası · {memory.length} not</label>
+      <p className="muted small">Konuşurken "Luxion, unutma: …" derseniz kendisi not eder; "bunu unut" derseniz siler.</p>
       {memory.length > 0 && (
         <ul className="memory">
           {memory.map(m => (

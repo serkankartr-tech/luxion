@@ -29,7 +29,7 @@ export type Gorunum = 'acilis' | 'karusel' | 'detay' | 'karsilastir' | 'dunya' |
 export interface HaberHooks {
   say(text: string): Promise<void> | void;
   mic(): void;
-  /** Jarvis'in sesini kes (✊) */
+  /** Luxion'un sesini kes (✊) */
   sus?(): void;
 }
 
@@ -165,7 +165,7 @@ export class NewsScene implements SpaceScene {
     this.kanal.gorunur(true, false);
     this.kanal.gecis('HABER MERKEZİ');
     this.sfx.jenerik();
-    // Motto yazılınca kısa bir an kalır, sonra karusel (Jarvis mottoyu okumayı karusel açılırken sürdürür)
+    // Motto yazılınca kısa bir an kalır, sonra karusel (Luxion mottoyu okumayı karusel açılırken sürdürür)
     const komutla = !!this.bekleyenKomut;
     void this.kanal.motto(this.demo || komutla).then(() => setTimeout(() => this.acilisiBitir(), this.demo || komutla ? 400 : 700));
     if (this.mottoSesli && !komutla) void this.hooks.say(MOTTO);
@@ -357,7 +357,7 @@ export class NewsScene implements SpaceScene {
     return g;
   }
 
-  /** Süren gösteriyi kes: Jarvis susar, katmanlar kapanır */
+  /** Süren gösteriyi kes: Luxion susar, katmanlar kapanır */
   private gosteriBitir() {
     const g = this.gosteri;
     if (g) { g.iptal = true; this.hooks.sus?.(); }
@@ -367,7 +367,7 @@ export class NewsScene implements SpaceScene {
     void this.dunyaTur?.kapat(); this.dunyaTur = null;
   }
 
-  /** Jarvis anlatır; en az `enAz` ms ekranda kalır. Gösteri kesildiyse false. */
+  /** Luxion anlatır; en az `enAz` ms ekranda kalır. Gösteri kesildiyse false. */
   private async anlat(g: { iptal: boolean }, metin: string, enAz = 0): Promise<boolean> {
     if (g.iptal) return false;
     await Promise.all([this.hooks.say(metin), bekle(enAz)]);
@@ -380,7 +380,7 @@ export class NewsScene implements SpaceScene {
     return (this.merkez?.kumeler ?? []).filter(k => k.kaynakSayisi >= 2);
   }
 
-  /** "Canlı yayına geç": ana haber bülteni. Jarvis spiker gibi ilk 5 olayı sunar, sonda kapanış jeneriği. */
+  /** "Canlı yayına geç": ana haber bülteni. Luxion spiker gibi ilk 5 olayı sunar, sonda kapanış jeneriği. */
   async yayinAc() {
     const g = this.gosteriBaslat();
     this.aramaSonuc = null;
@@ -394,7 +394,7 @@ export class NewsScene implements SpaceScene {
     const saat = new Date().getHours();
     const selam = saat < 11 ? 'Günaydın' : saat < 18 ? 'İyi günler' : 'İyi akşamlar';
     const kaynakSay = this.merkez?.kaynaklar.calisan ?? 25;
-    if (!await this.anlat(g, `${selam} efendim. Jarvis Haber Merkezi'nden ana haber bültenine hoş geldiniz. ${kaynakSay} kaynağı taradık; işte gündemin öne çıkanları.`, 2500)) return;
+    if (!await this.anlat(g, `${selam} efendim. Luxion Haber Merkezi'nden ana haber bültenine hoş geldiniz. ${kaynakSay} kaynağı taradık; işte gündemin öne çıkanları.`, 2500)) return;
     const giris = ['İlk haberimiz.', 'Gündemin bir diğer başlığı.', 'Sıradaki haber.', 'Bir başka gelişme.', 'Ve bültenimizin son haberi.'];
     for (let i = 0; i < list.length; i++) {
       const k = list[i];
@@ -881,7 +881,7 @@ export class NewsScene implements SpaceScene {
     this.kanal.altBant(this.gorunum === 'karusel' ? on : this.gorunum === 'sabah' || this.gorunum === 'arama' ? null : this.secili, [this.aramaSonuc && this.gorunum === 'karusel' ? `ARAMA · ${this.aramaSonuc.q}` : '', (this.gorunum === 'karusel' ? on : this.secili)?.takipte ? '★ TAKİPTE' : ''].filter(Boolean).join(' · '));
     const m = this.merkez;
     const bekleyen = [...this.analizler.values()].filter(v => v instanceof Promise).length + [...this.iddialar.values()].filter(v => v instanceof Promise).length;
-    this.kanal.durum(m?.kaynaklar.calisan ?? 0, m?.kaynaklar.toplam ?? 0, this.listening ? '🎙 DİNLİYOR' : bekleyen ? 'JARVIS ANALİZ EDİYOR' : '');
+    this.kanal.durum(m?.kaynaklar.calisan ?? 0, m?.kaynaklar.toplam ?? 0, this.listening ? '🎙 DİNLİYOR' : bekleyen ? 'LUXION ANALİZ EDİYOR' : '');
     this.panelCiz();
     this.kisiCiz();
     this.fx.render(dt, now, [], holds);

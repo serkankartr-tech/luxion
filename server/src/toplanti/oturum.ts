@@ -1,8 +1,8 @@
 // Toplantı Odası · tartışma motoru (saf: ağ, ses ve arayüzden bağımsız; metinle test edilir).
-// Senaryo A: opening (Jarvis ilk görüş) → debate (tur = Friday + Jarvis; her turdan sonra hakem) → consensus → closed.
+// Senaryo A: opening (Luxion ilk görüş) → debate (tur = Iris + Luxion; her turdan sonra hakem) → consensus → closed.
 // Canlı toplantı: meeting durumunda kullanıcı konuşur, söz sırası kurallarla belirlenir.
 
-export type Konusan = 'user' | 'jarvis' | 'friday';
+export type Konusan = 'user' | 'luxion' | 'iris';
 export type Karakter = Exclude<Konusan, 'user'>;
 export type Durum = 'opening' | 'debate' | 'consensus' | 'meeting' | 'closed';
 
@@ -53,23 +53,23 @@ export class DebateSession {
 
   ekle(konusan: Konusan, metin: string) { this.transcript.push({ konusan, metin: metin.trim(), ts: Date.now() }); }
 
-  /** Tartışma (Senaryo A) sıradaki adım: opening → [Friday, Jarvis, hakem]×tur → uzlaşma */
+  /** Tartışma (Senaryo A) sıradaki adım: opening → [Iris, Luxion, hakem]×tur → uzlaşma */
   siradaki(): Adim {
     if (this.state === 'closed' || this.state === 'meeting') return { tur: 'bitti' };
     if (this.state === 'consensus') return this.uzlasma ? { tur: 'bitti' } : { tur: 'uzlasma' };
     if (this.state === 'opening') {
-      const acildi = this.transcript.slice(this.turBasi).some(s => s.konusan === 'jarvis');
-      if (!acildi) return { tur: 'konus', kim: 'jarvis', talimat: 'Konu hakkında ilk görüşünü ver.' };
+      const acildi = this.transcript.slice(this.turBasi).some(s => s.konusan === 'luxion');
+      if (!acildi) return { tur: 'konus', kim: 'luxion', talimat: 'Konu hakkında ilk görüşünü ver.' };
       this.state = 'debate';
       this.turBasi = this.transcript.length;
     }
-    // debate: bu turda (son hakemden beri) Friday ve ardından Jarvis konuştu mu?
+    // debate: bu turda (son hakemden beri) Iris ve ardından Luxion konuştu mu?
     const tur = this.transcript.slice(this.turBasi);
-    const fi = tur.findIndex(s => s.konusan === 'friday');
-    const friday = fi >= 0;
-    const jarvis = friday && tur.slice(fi + 1).some(s => s.konusan === 'jarvis');
-    if (!friday) return { tur: 'konus', kim: 'friday', talimat: this.round === 0 ? "Jarvis'in görüşünü sorgula." : 'Yeni bir nokta getir ya da ikna olduysan söyle.' };
-    if (!jarvis) return { tur: 'konus', kim: 'jarvis', talimat: "Yalnızca Friday'in getirdiği noktaya cevap ver: haklıysa fikrini düzelt, değilse gerekçeyle savun. Kendi ilk görüşünü tekrar etme; yeni bir somut adım ya da gerekçe ekle." };
+    const fi = tur.findIndex(s => s.konusan === 'iris');
+    const iris = fi >= 0;
+    const luxion = iris && tur.slice(fi + 1).some(s => s.konusan === 'luxion');
+    if (!iris) return { tur: 'konus', kim: 'iris', talimat: this.round === 0 ? "Luxion'un görüşünü sorgula." : 'Yeni bir nokta getir ya da ikna olduysan söyle.' };
+    if (!luxion) return { tur: 'konus', kim: 'luxion', talimat: "Yalnızca Iris'in getirdiği noktaya cevap ver: haklıysa fikrini düzelt, değilse gerekçeyle savun. Kendi ilk görüşünü tekrar etme; yeni bir somut adım ya da gerekçe ekle." };
     return { tur: 'hakem' };
   }
 
@@ -109,20 +109,20 @@ export class DebateSession {
 
 const kat = (s: string) => s.toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
 
-/** Ses tanımanın yazdığı biçimler de: "fraydi", "cervis", "carvis" */
+/** Ses tanımanın yazdığı biçimler de: "ayris", "lüksiyon", "lakşın" */
 const AD: Record<Karakter, RegExp> = {
-  friday: /\b(friday|fraydi|fıraydı|fraydey|frayday|freyday|cuma)\b/,
-  jarvis: /\b(jarvis|carvis|cervis|carviz|jarviz|carvıs)\b/,
+  iris: /\b(iris|ayris|airis|iriz|irisim)\b/,
+  luxion: /\b(luxion|luksiyon|luksyon|luksion|laksiyon|laksion|luxyon|lukson|luxon|loksiyon|luksin|laksin)\b/,
 };
 
-/** Kullanıcı bir karaktere adıyla hitap etti mi (ilki döner; "cuma" yalnızca cümle başında) */
+/** Kullanıcı bir karaktere adıyla hitap etti mi (ilki döner) */
 export function hitapEdilen(metin: string): Karakter | null {
   const k = kat(metin);
-  const f = AD.friday.exec(k), j = AD.jarvis.exec(k);
+  const f = AD.iris.exec(k), j = AD.luxion.exec(k);
   const fOk = f && (f[1] !== 'cuma' || f.index === 0);
-  if (fOk && j) return f!.index <= j.index ? 'friday' : 'jarvis';
-  if (fOk) return 'friday';
-  if (j) return 'jarvis';
+  if (fOk && j) return f!.index <= j.index ? 'iris' : 'luxion';
+  if (fOk) return 'iris';
+  if (j) return 'luxion';
   return null;
 }
 
@@ -131,24 +131,24 @@ export const ikisineBirden = (metin: string) => /\b(siz ne dusunuyorsunuz|ikiniz
 
 export type Sira = Karakter | 'user';
 
-/** Konuşmanın sonundaki "[SIRA: friday]" etiketi: model sözü kime bıraktığını seçer. Etiket seslendirilmez. */
+/** Konuşmanın sonundaki "[SIRA: iris]" etiketi: model sözü kime bıraktığını seçer. Etiket seslendirilmez. */
 export function siraEtiketi(metin: string): { temiz: string; sira: Sira | null } {
   let sira: Sira | null = null;
   for (const m of metin.matchAll(/\[\s*s[ıi]ra\s*:\s*([^\]\s]+)\s*\]?/gi)) {
     const k = kat(m[1]);
-    sira = k.startsWith('fri') ? 'friday' : k.startsWith('jar') ? 'jarvis' : k.startsWith('kul') || k.startsWith('user') || k.startsWith('siz') ? 'user' : sira;
+    sira = k.startsWith('iri') ? 'iris' : k.startsWith('lux') ? 'luxion' : k.startsWith('kul') || k.startsWith('user') || k.startsWith('siz') ? 'user' : sira;
   }
   // Etiketler ve akış sırasında yarım kalmış bir etiket başlangıcı ("[SIR") temizlenir
   const temiz = metin.replace(/\[\s*s[ıi]ra\s*:[^\]]*\]?/gi, '').replace(/\[[^\]]{0,12}$/, '').replace(/\s+/g, ' ').trim();
   return { temiz, sira };
 }
 
-/** Canlı toplantıda ilk söz alan: 1) adıyla hitap edilen, 2) ikisine birden → Jarvis, 3) son konuşan Jarvis'se Friday, değilse Jarvis */
+/** Canlı toplantıda ilk söz alan: 1) adıyla hitap edilen, 2) ikisine birden → Luxion, 3) son konuşan Luxion'sa Iris, değilse Luxion */
 export function ilkKonusan(metin: string, sonKarakter: Karakter | null): Karakter {
   const h = hitapEdilen(metin);
   if (h && !ikisineBirden(metin)) return h;
-  if (ikisineBirden(metin)) return 'jarvis';
-  return sonKarakter === 'jarvis' ? 'friday' : 'jarvis';
+  if (ikisineBirden(metin)) return 'luxion';
+  return sonKarakter === 'luxion' ? 'iris' : 'luxion';
 }
 
 /**
@@ -157,7 +157,7 @@ export function ilkKonusan(metin: string, sonKarakter: Karakter | null): Karakte
  * Karakterler kendi aralarında en fazla `sinir` kez art arda konuşur; sonra söz kullanıcıya döner.
  */
 export function sonrakiKonusan(o: { kim: Karakter; secim: Sira | null; ardisik: number; sinir: number; ikiDe?: boolean }): Sira {
-  const diger: Karakter = o.kim === 'jarvis' ? 'friday' : 'jarvis';
+  const diger: Karakter = o.kim === 'luxion' ? 'iris' : 'luxion';
   if (o.ardisik >= o.sinir) return 'user';
   if (o.ikiDe && o.ardisik === 1) return diger;
   if (!o.secim || o.secim === o.kim) return 'user';
@@ -166,7 +166,7 @@ export function sonrakiKonusan(o: { kim: Karakter; secim: Sira | null; ardisik: 
 
 /** Canlı toplantıda her konuşmanın talimatı: kalıp yok; katıl, itiraz et, ekle, soru sor ya da sözü diğerine bırak */
 export function dogalTalimat(kim: Karakter, ardisik: number, sinir: number, hitap: string): string {
-  const diger = kim === 'jarvis' ? 'Friday' : 'Jarvis';
+  const diger = kim === 'luxion' ? 'Iris' : 'Luxion';
   const son = ardisik + 1 >= sinir;
   return [
     ...(ardisik > 0 ? [`Az önce ${diger} konuştu: söylediğini tekrar etme. Ona katılıp yeni bir şey ekle ya da gerekçeyle itiraz et; ${diger} kullanıcıya bir soru sorduysa aynı soruyu yineleme.`] : []),
@@ -232,7 +232,7 @@ export function cumleler(s: string): string[] {
 
 /** Konuşma sınırı: en fazla n cümle; markdown ve madde işaretleri temizlenir */
 export function sinirla(s: string, n: number): string {
-  const temiz = siraEtiketi(s).temiz.replace(/[*_#`>]/g, '').replace(/^\s*[-•]\s*/gm, '').replace(/^(Jarvis|Friday)\s*:\s*/i, '').replace(/\s+/g, ' ').trim();
+  const temiz = siraEtiketi(s).temiz.replace(/[*_#`>]/g, '').replace(/^\s*[-•]\s*/gm, '').replace(/^(Luxion|Iris)\s*:\s*/i, '').replace(/\s+/g, ' ').trim();
   return cumleler(temiz).slice(0, n).join(' ');
 }
 

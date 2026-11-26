@@ -1,6 +1,6 @@
-// DEMO modu: yapay zekâ anahtarı yokken (ya da MOCK=1) Jarvis hazır cevaplarla ve ÜCRETSİZ GERÇEK verilerle çalışır.
+// DEMO modu: yapay zekâ anahtarı yokken (ya da MOCK=1) Luxion hazır cevaplarla ve ÜCRETSİZ GERÇEK verilerle çalışır.
 // Model yok: niyet basit kalıplarla bulunur. Gerçek veriler: hava (Open-Meteo), döviz (TCMB), manşetler (RSS kümeleri),
-// Wikipedia, ev cihazları (simülasyon / Home Assistant) ve kitaplık. Anlaşılmayan soruda Jarvis anahtarın nereden
+// Wikipedia, ev cihazları (simülasyon / Home Assistant) ve kitaplık. Anlaşılmayan soruda Luxion anahtarın nereden
 // ekleneceğini söyler. Haber kaynakları alınamazsa brifing KURGUSAL örnekle döner (kaynak adları "Demo …").
 import { __setCacheForTest } from './news.js';
 import { getMarkets, getWeather } from './dashboard.js';
@@ -21,7 +21,7 @@ const DEMO_NEWS: NewsItem[] = [
   { id: 'n5', title: 'Milli takım kadrosu açıklandı', summary: 'Teknik direktör 26 kişilik kadroyu duyurdu, iki yeni isim ilk kez davet edildi.', category: 'spor', source: 'Demo Spor', published_at: now(), url: '', image_url: null },
 ];
 
-export const DEMO_NOTU = "Bu bir demo cevabıdır. Jarvis'e serbest soru sormak için **Ayarlar → Beyin**'den ücretsiz bir Google Gemini ya da Groq anahtarı ekleyin (kart istemez, iki dakika sürer).";
+export const DEMO_NOTU = "Bu bir demo cevabıdır. Luxion'a serbest soru sormak için **Ayarlar → Beyin**'den ücretsiz bir Google Gemini ya da Groq anahtarı ekleyin (kart istemez, iki dakika sürer).";
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 const kucuk = (s: string) => s.toLocaleLowerCase('tr').replace(/[’'`]/g, '').replace(/\s+/g, ' ').trim();
@@ -41,7 +41,7 @@ export interface MockSonuc { sahneler: Sahne[]; detay: string; toolLog: string[]
 /** Demo niyetleri: sıra önemli (önce dar kalıplar). Testler ayrı ayrı çağırabilsin diye dışarı açık. */
 export function demoNiyet(text: string):
   | 'brifing' | 'selam' | 'saat' | 'tanit' | 'hava' | 'doviz' | 'ev' | 'kitap' | 'tesekkur' | 'wiki' | 'bilinmiyor' {
-  const t = kucuk(text).replace(/^(hey\s+)?jarvis[,\s]*/, '');
+  const t = kucuk(text).replace(/^(hey\s+)?luxion[,\s]*/, '');
   if (/ayd[ıi]nlat\s*beni|gündem|gundem|brifing|manşet|manset|haberler|neler oluyor|^devam/.test(t)) return 'brifing';
   if (/kimsin|kendini tanıt|kendini tanit|neler yapabilirsin|ne yapabilirsin|ne işe yarıyorsun|özelliklerin/.test(t)) return 'tanit';
   if (/hava|yağmur|yagmur|sıcaklık|sicaklik|derece|şemsiye|semsiye/.test(t)) return 'hava';
@@ -57,7 +57,7 @@ export function demoNiyet(text: string):
 
 /** "Atatürk kimdir", "Kapadokya nerede", "Mars hakkında bilgi ver" → konu */
 export function wikiKonusu(text: string): string | null {
-  const t = kucuk(text).replace(/^(hey\s+)?jarvis[,\s]*/, '').replace(/[?.!]+$/, '').trim();
+  const t = kucuk(text).replace(/^(hey\s+)?luxion[,\s]*/, '').replace(/[?.!]+$/, '').trim();
   const m = /^(.{2,60}?)\s+(kimdir|kim|nedir|ne demek|nerede|neresi|nerededir)$/.exec(t)
     ?? /^(.{2,60}?)\s+hakkında(?: bana)? (?:bilgi ver|ne biliyorsun|anlat)$/.exec(t)
     ?? /^bana\s+(.{2,60}?)\s+(?:hakkında bilgi ver|anlat)$/.exec(t);
@@ -67,12 +67,12 @@ export function wikiKonusu(text: string): string | null {
 function selam(device: Device): Sahne[] {
   const h = Number(new Date().toLocaleString('en-GB', { timeZone: 'Europe/Istanbul', hour: '2-digit', hour12: false }));
   const s = h < 11 ? 'Günaydın' : h < 18 ? 'İyi günler' : 'İyi akşamlar';
-  return [{ ses: `${s} efendim. ${device === 'telefon' ? 'Telefondan' : 'Buradan'} sizi duyuyorum. Demo modundayım ama hava, döviz, gündem ve Wikipedia sorularınıza gerçek verilerle cevap verebilirim.`, gorsel: { tip: 'ikon', ikon: 'smile', baslik: 'Jarvis · Demo', alt: '"Jarvis, aydınlat beni" deyin' } }];
+  return [{ ses: `${s} efendim. ${device === 'telefon' ? 'Telefondan' : 'Buradan'} sizi duyuyorum. Demo modundayım ama hava, döviz, gündem ve Wikipedia sorularınıza gerçek verilerle cevap verebilirim.`, gorsel: { tip: 'ikon', ikon: 'smile', baslik: 'Luxion · Demo', alt: '"Luxion, aydınlat beni" deyin' } }];
 }
 
 function tanit(): Sahne[] {
   return [
-    { ses: 'Ben Jarvis, kişisel yapay zekâ asistanınız. Şu an demo modundayım, yani beynim henüz takılmadı ama ellerim boş değil.', gorsel: { tip: 'ikon', ikon: 'sparkles', baslik: 'Jarvis', alt: 'Demo modu' } },
+    { ses: 'Ben Luxion, kişisel yapay zekâ asistanınız. Şu an demo modundayım, yani beynim henüz takılmadı ama ellerim boş değil.', gorsel: { tip: 'ikon', ikon: 'sparkles', baslik: 'Luxion', alt: 'Demo modu' } },
     { ses: 'Demo modunda bile gerçek verilerle çalışırım: güncel hava, Merkez Bankası kurları, onlarca kaynaktan gündem, Wikipedia, haber merkezi ve El Kontrolü.', gorsel: { tip: 'kart', baslik: 'Demoda çalışanlar', maddeler: [{ ikon: 'cloud', metin: 'Hava durumu (Open-Meteo)' }, { ikon: 'wallet', metin: 'Döviz kurları (TCMB)' }, { ikon: 'newspaper', metin: 'Gündem ve haber merkezi' }, { ikon: 'hand', metin: 'El Kontrolü ve Uzay Laboratuvarı' }] } },
     { ses: 'Serbest sohbet, fotoğraf yorumlama ve ses tanıma için Ayarlar, Beyin bölümünden bir anahtar eklemeniz yeterli. Google Gemini ve Groq ücretsiz.', gorsel: { tip: 'ikon', ikon: 'cpu', baslik: 'Beyin ekle', alt: 'Ayarlar → Beyin · Gemini / Groq ücretsiz' } },
   ];
@@ -246,6 +246,6 @@ export async function mockReply(text: string, device: Device, progress: ToolProg
   }
   return sonuc([
     { ses: 'Demo modundayım efendim, bu soruyu cevaplayacak bir beynim henüz yok. Ayarlar, Beyin bölümünden ücretsiz bir Gemini ya da Groq anahtarı eklerseniz her şeyi sorabilirsiniz.', gorsel: { tip: 'ikon', ikon: 'cpu', baslik: 'Beyin ekleyin', alt: 'Ayarlar → Beyin · Gemini / Groq ücretsiz' } },
-    { ses: 'Şimdilik hava, döviz, gündem, Wikipedia ve ev komutlarında yardımcı olabilirim. Örneğin: Jarvis, aydınlat beni.', gorsel: { tip: 'kart', baslik: 'Demoda deneyin', maddeler: [{ ikon: 'newspaper', metin: '"Jarvis, aydınlat beni"' }, { ikon: 'cloud', metin: '"Hava nasıl?"' }, { ikon: 'wallet', metin: '"Dolar kaç?"' }, { ikon: 'globe', metin: '"Kapadokya nerede?"' }] } },
+    { ses: 'Şimdilik hava, döviz, gündem, Wikipedia ve ev komutlarında yardımcı olabilirim. Örneğin: Luxion, aydınlat beni.', gorsel: { tip: 'kart', baslik: 'Demoda deneyin', maddeler: [{ ikon: 'newspaper', metin: '"Luxion, aydınlat beni"' }, { ikon: 'cloud', metin: '"Hava nasıl?"' }, { ikon: 'wallet', metin: '"Dolar kaç?"' }, { ikon: 'globe', metin: '"Kapadokya nerede?"' }] } },
   ]);
 }

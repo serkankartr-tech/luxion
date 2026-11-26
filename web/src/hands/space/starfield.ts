@@ -117,7 +117,7 @@ export class Starfield {
   /** Mod geçişi: oda kararıp yıldızlar ışık hızında belirir (0,8 sn) */
   warp(now: number) { this.warpAt = now; }
 
-  /** "Jarvis, kayan yıldız" ya da kendiliğinden (15-30 sn'de bir) */
+  /** "Luxion, kayan yıldız" ya da kendiliğinden (15-30 sn'de bir) */
   shoot(now: number) {
     const fromLeft = Math.random() < 0.5;
     const sp = rnd(900, 1400);

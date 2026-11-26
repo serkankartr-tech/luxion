@@ -38,8 +38,8 @@ export interface Kitap {
   elle?: boolean;
   /** Open Library'de son arama (bulunamadıysa her açılışta tekrar sorulmasın) */
   kapakArandi?: number;
-  /** Jarvis'in kitap defteri sayfaları (RouteLLM); kullanıcının notlarından ayrı */
-  jarvis?: JarvisSayfa;
+  /** Luxion'un kitap defteri sayfaları (RouteLLM); kullanıcının notlarından ayrı */
+  luxion?: LuxionSayfa;
   /** Kitaplığın hangi bölümünde (1-6); bölüm fotoğrafından ya da elle */
   bolum?: number;
   /** Adı kamera taramasında bölüm listesinden tamamlandı */
@@ -68,7 +68,7 @@ export interface Bolum {
   liste: { foto: string; raf: number; sira: number; ad: string | null; yazar: string | null; kitapId: string | null }[];
 }
 
-export interface JarvisSayfa {
+export interface LuxionSayfa {
   /** Model kitabı tanımadı: sayfa uydurulmadı */
   bilinmiyor?: boolean;
   anaFikirler: string[];
@@ -177,7 +177,7 @@ function clean(b: any, prev?: Kitap): Kitap {
     emin: prev?.emin ?? (typeof b?.emin === 'number' ? clamp01(b.emin) : undefined),
     elle: b?.elle === true || prev?.elle || undefined,
     kapakArandi: prev?.kapakArandi,
-    jarvis: prev?.jarvis,
+    luxion: prev?.luxion,
     bolum: b && 'bolum' in b ? (posInt(b.bolum, BOLUM_SAYISI) ?? undefined) : prev?.bolum,
     tamamlandi: prev?.tamamlandi,
     rafDisi: prev?.rafDisi,
@@ -433,7 +433,7 @@ export async function scanShelf(parts: Parca[], ref: Omit<Referans, 'at'>): Prom
 
 // ---------------------------------------------------------------- Kapak (Open Library)
 
-const UA = { 'User-Agent': 'Jarvis kisisel asistan (kitaplik kapagi)' };
+const UA = { 'User-Agent': 'Luxion kisisel asistan (kitaplik kapagi)' };
 const coverFile = (id: string) => path.join(COVERS, `${id.replace(/[^\w-]/g, '')}.jpg`);
 
 /** Open Library'ye aynı anda en fazla 4 istek (Kitaplığım yüzlerce kapağı birden ister) */
@@ -480,7 +480,7 @@ function update(id: string, fn: (b: Kitap) => Kitap): Kitap | null {
 
 // ---------------------------------------------------------------- Özet
 
-// ---------------------------------------------------------------- Jarvis'in kitap defteri (RouteLLM)
+// ---------------------------------------------------------------- Luxion'un kitap defteri (RouteLLM)
 
 const fillPrompt = (b: Kitap, shelf: string[]) =>
   `"${b.ad}"${b.yazar ? ` (${b.yazar})` : ''} kitabı için, okuyan birinin kitap defteri gibi Türkçe içerik hazırla. YALNIZCA JSON döndür, başka hiçbir şey yazma:\n` +
@@ -505,14 +505,14 @@ export const chatDeps = {
 const filling = new Map<string, Promise<Kitap | null>>();
 
 /**
- * Kitabın Jarvis sayfalarını doldur: özet (yoksa), ana fikirler, yazar, temalar, neden okumalı, kime uygun ve
+ * Kitabın Luxion sayfalarını doldur: özet (yoksa), ana fikirler, yazar, temalar, neden okumalı, kime uygun ve
  * kullanıcının kitaplığından benzer kitaplar. Model kitabı tanımıyorsa uydurmaz (bilinmiyor işaretlenir).
  * Aynı kitap için aynı anda tek istek.
  */
 export function fillBook(id: string, again = false): Promise<Kitap | null> {
   const cur = read().kitaplar.find(b => b.id === id);
   if (!cur || !cur.ad) return Promise.resolve(cur ?? null);
-  if (cur.jarvis && !again) return Promise.resolve(cur);
+  if (cur.luxion && !again) return Promise.resolve(cur);
   if (filling.has(id)) return filling.get(id)!;
   const job = (async () => {
     const shelf = read().kitaplar.filter(b => b.ad && b.id !== id).map(b => b.ad!).slice(0, 220);
@@ -524,12 +524,12 @@ export function fillBook(id: string, again = false): Promise<Kitap | null> {
     const at = new Date().toISOString();
     if (!j || j.biliyorum !== true) {
       console.log(`[kitaplık] doldur · ${cur.ad} · model kitabı tanımadı`);
-      return update(id, x => ({ ...x, jarvis: { bilinmiyor: true, anaFikirler: [], yazarHakkinda: null, temalar: [], nedenOku: null, kimeUygun: null, tur: null, yil: null, benzer: [], at } }));
+      return update(id, x => ({ ...x, luxion: { bilinmiyor: true, anaFikirler: [], yazarHakkinda: null, temalar: [], nedenOku: null, kimeUygun: null, tur: null, yil: null, benzer: [], at } }));
     }
     const list = (v: unknown, n: number, max = 300) => strList(v).slice(0, n).map(x => x.slice(0, max));
     const names = new Map(shelf.map(t => [foldTitle(t), t]));
     const yil = Math.round(Number(j.yil));
-    const page: JarvisSayfa = {
+    const page: LuxionSayfa = {
       anaFikirler: list(j.anaFikirler, 6),
       yazarHakkinda: str(j.yazarHakkinda, 500),
       temalar: list(j.temalar, 5, 60),
@@ -541,7 +541,7 @@ export function fillBook(id: string, again = false): Promise<Kitap | null> {
       benzer: strList(j.benzer).map(t => names.get(foldTitle(t))).filter((t): t is string => !!t).slice(0, 4),
       at,
     };
-    const nb = update(id, x => ({ ...x, ozet: x.ozet ?? str(j.ozet, 1200), yazar: x.yazar ?? str(j.yazar, 120), jarvis: page }));
+    const nb = update(id, x => ({ ...x, ozet: x.ozet ?? str(j.ozet, 1200), yazar: x.yazar ?? str(j.yazar, 120), luxion: page }));
     console.log(`[kitaplık] doldur · ${cur.ad} · ${page.anaFikirler.length} fikir · ${page.benzer.length} benzer`);
     return nb;
   })().finally(() => filling.delete(id));
@@ -554,7 +554,7 @@ export function fillInBackground(id: string) {
   fillBook(id).catch(e => console.warn('[kitaplık] doldurulamadı', (e as Error).message));
 }
 
-// ---------------------------------------------------------------- Jarvis için (talimat + araçlar)
+// ---------------------------------------------------------------- Luxion için (talimat + araçlar)
 
 /** Kitap adından kitabı bul ("Davranış'a not ekle" → Davranış). Birden çok aday varsa hepsini döndür. */
 export function findBook(q: string): { kitap: Kitap } | { hata: string; adaylar?: string[] } {
@@ -603,7 +603,7 @@ function appendNote(id: string, metin: string, tur: 'not' | 'alinti'): Kitap | n
   });
 }
 
-/** Jarvis aracı: kitap kitaplıkta yoksa önce eklenir (kitap kaydettikçe Jarvis'in hafızası güncellenir) */
+/** Luxion aracı: kitap kitaplıkta yoksa önce eklenir (kitap kaydettikçe Luxion'un hafızası güncellenir) */
 export function addBookNote(kitap: string, metin: string, tur: 'not' | 'alinti', yazar?: string) {
   if (!str(metin)) return { hata: 'Not boş.' };
   let f = findBook(kitap);
@@ -632,7 +632,7 @@ export function setBookStatus(kitap: string, a: { durum?: string; sayfa?: unknow
   return { ok: true, kitap: b.ad, durum: b.durum, sayfa: b.sayfa ?? null, toplamSayfa: b.toplamSayfa ?? null };
 }
 
-/** Talimata girecek kitaplık bölümü: Jarvis kitaplığı kayıt edildikçe kendiliğinden bilir */
+/** Talimata girecek kitaplık bölümü: Luxion kitaplığı kayıt edildikçe kendiliğinden bilir */
 export function libraryForPrompt(): string {
   const all = read().kitaplar;
   const named = all.filter(b => b.ad);
@@ -727,7 +727,7 @@ export function libraryRouter(): Router {
     }
   });
 
-  // Açık kitaba not/alıntı ekle ("Jarvis, not al: …")
+  // Açık kitaba not/alıntı ekle ("Luxion, not al: …")
   r.post('/api/kitaplik/:id/not', (req, res) => {
     const b = appendNote(String(req.params.id), String(req.body?.metin ?? ''), req.body?.tur === 'alinti' ? 'alinti' : 'not');
     if (!b) return res.status(400).json({ error: 'kitap yok ya da not boş' });
@@ -737,10 +737,10 @@ export function libraryRouter(): Router {
   r.post('/api/kitaplik/:id', (req, res) => {
     const b = update(String(req.params.id), x => {
       const n = clean({ ...req.body, id: x.id, elle: 'ad' in (req.body ?? {}) || 'kutu' in (req.body ?? {}) ? true : undefined }, x);
-      // Kitabın adı değişti: eski kitaba ait özet, Jarvis sayfaları ve kapak geçersiz
+      // Kitabın adı değişti: eski kitaba ait özet, Luxion sayfaları ve kapak geçersiz
       if (n.ad && (!x.ad || foldTitle(n.ad) !== foldTitle(x.ad))) {
         fs.rmSync(coverFile(x.id), { force: true });
-        return { ...n, ozet: 'ozet' in (req.body ?? {}) ? n.ozet : null, jarvis: undefined, kapak: null, kapakArandi: undefined };
+        return { ...n, ozet: 'ozet' in (req.body ?? {}) ? n.ozet : null, luxion: undefined, kapak: null, kapakArandi: undefined };
       }
       return n;
     });
@@ -791,7 +791,7 @@ export function libraryRouter(): Router {
     res.json({ kitap: b });
   });
 
-  // Jarvis sayfaları + özet (yoksa). ?yenile=1 yeniden yazar. Eski /ozet adı da aynı işi yapar.
+  // Luxion sayfaları + özet (yoksa). ?yenile=1 yeniden yazar. Eski /ozet adı da aynı işi yapar.
   const fill = async (req: Request, res: Response) => {
     const id = String(req.params.id);
     const b = read().kitaplar.find(x => x.id === id);
@@ -801,9 +801,9 @@ export function libraryRouter(): Router {
       const again = req.query.yenile === '1';
       if (again) update(id, x => ({ ...x, ozet: null }));
       const nb = await fillBook(id, again);
-      res.json({ kitap: nb, bilinmiyor: !!nb?.jarvis?.bilinmiyor });
+      res.json({ kitap: nb, bilinmiyor: !!nb?.luxion?.bilinmiyor });
     } catch (e) {
-      res.status(502).json({ error: `Jarvis sayfaları yazılamadı: ${String((e as Error).message).slice(0, 120)}` });
+      res.status(502).json({ error: `Luxion sayfaları yazılamadı: ${String((e as Error).message).slice(0, 120)}` });
     }
   };
   r.post('/api/kitaplik/:id/doldur', fill);

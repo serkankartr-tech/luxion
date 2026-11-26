@@ -7,7 +7,7 @@ export { FEEDS };
 
 const parser = new Parser({
   timeout: 8000,
-  headers: { 'User-Agent': 'Mozilla/5.0 (Jarvis RSS okuyucu)' },
+  headers: { 'User-Agent': 'Mozilla/5.0 (Luxion RSS okuyucu)' },
   customFields: {
     item: [
       ['media:content', 'mediaContent', { keepArray: true }],

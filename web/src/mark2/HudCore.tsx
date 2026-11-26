@@ -271,5 +271,5 @@ export function HudCore({ state, level, introAt = null, info }: { state: CoreSta
     return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, []);
 
-  return <canvas ref={ref} className="m2-core" aria-label="Jarvis çekirdeği" />;
+  return <canvas ref={ref} className="m2-core" aria-label="Luxion çekirdeği" />;
 }

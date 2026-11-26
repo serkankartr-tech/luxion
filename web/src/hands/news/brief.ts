@@ -1,5 +1,5 @@
 // Haber Modu · sabah özeti: elle (✋ dikey savurma) kaydırılan dikey kartlar: hava, döviz, trafik, gündemin ilk 5 olayı,
-// ajanda (varsa). Her kart öne gelince Jarvis tek cümleyle seslendirir.
+// ajanda (varsa). Her kart öne gelince Luxion tek cümleyle seslendirir.
 import { esc, saatYaz } from './channel';
 import { KATEGORI_AD, KATEGORI_RENK, type Sabah } from './types';
 
@@ -51,7 +51,7 @@ export function sabahKartlari(s: Sabah): SabahKart[] {
       soz: `Gündemin başında ${s.gundem[0].kaynakSayisi} kaynağın verdiği haber var: ${s.gundem[0].baslik}.`,
     });
   }
-  // Ajanda: Jarvis'te henüz takvim bağlantısı yok; varsa burada görünür
+  // Ajanda: Luxion'da henüz takvim bağlantısı yok; varsa burada görünür
   return out;
 }
 

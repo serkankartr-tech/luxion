@@ -1,5 +1,5 @@
 // YouTube: maç özetleri (resmi kanal akışları, anahtarsız), genel arama (resmi YouTube Data API, YOUTUBE_API_KEY)
-// ve kullanıcının verdiği link (oEmbed ile doğrulanır). Video Jarvis'in içinde resmi gömme oynatıcıyla açılır.
+// ve kullanıcının verdiği link (oEmbed ile doğrulanır). Video Luxion'un içinde resmi gömme oynatıcıyla açılır.
 // YouTube arama sayfası kazınmaz (kullanım şartlarına aykırı); anahtar yoksa genel arama dürüstçe "yok" der.
 import 'dotenv/config';
 import fs from 'node:fs';
@@ -10,8 +10,8 @@ export interface YtVideo {
   video_id: string; baslik: string; kanal: string; tarih: string | null; ozet_mi?: boolean;
   /** Türkçe yayıncı (S Sport, beIN, TRT) */
   turkce?: boolean;
-  /** Jarvis içinde oynatılabilir mi; false → "YouTube'da izle" kartı */
-  jarvis_icinde?: boolean;
+  /** Luxion içinde oynatılabilir mi; false → "YouTube'da izle" kartı */
+  luxion_icinde?: boolean;
   /** YouTube Shorts (dikey) */
   shorts?: boolean;
 }
@@ -25,7 +25,7 @@ export const youtubeSearchReady = () => !!YT_KEY;
  * Ek kanal: YOUTUBE_CHANNELS="Ad=UCxxxx,Ad2=UCyyyy"
  */
 const CHANNELS: { name: string; id: string; tr?: boolean }[] = [
-  // S Sport: La Liga, Serie A, Bundesliga Türkçe özetleri. Videolarında gömme KAPALI (oEmbed 401): Jarvis içinde
+  // S Sport: La Liga, Serie A, Bundesliga Türkçe özetleri. Videolarında gömme KAPALI (oEmbed 401): Luxion içinde
   // oynamaz, "YouTube'da izle" kartıyla açılır. Halil Türkçe özeti tercih ediyor.
   { name: 'S Sport', id: 'UCpdSUUHlxMjO0c5824FGcsA', tr: true },
   { name: 'beIN SPORTS Türkiye', id: 'UCPe9vNjHF1kEExT5kHwc7aw', tr: true }, // Süper Lig, Ligue 1
@@ -120,7 +120,7 @@ export async function findHighlights(takim: string, brans: Brans = 'futbol'): Pr
   // Gömülebilirlik (önbellekli oEmbed + oynatırken yakalanan engeller)
   await Promise.all(cands.slice(0, 12).map(v => checkVideo(v.video_id).catch(() => null)));
   const playable = (v: YtVideo) => !blockedChannels.has(v.kanal) && embedState.get(v.video_id) !== false;
-  // Aynı maç haftası: en yeni özetten 36 saat içindekiler. Onların arasında önce Türkçe yayıncı, sonra Jarvis
+  // Aynı maç haftası: en yeni özetten 36 saat içindekiler. Onların arasında önce Türkçe yayıncı, sonra Luxion
   // içinde oynayan. Böylece eski bir Türkçe özet yeni maçın önüne geçmez.
   const time = (v: YtVideo) => (v.tarih ? Date.parse(v.tarih) : 0);
   const newest = Math.max(0, ...cands.filter(v => v.ozet_mi).map(time));
@@ -128,7 +128,7 @@ export async function findHighlights(takim: string, brans: Brans = 'futbol'): Pr
     (v.ozet_mi ? 100 : 0) + (v.ozet_mi && newest - time(v) < 36 * 3600_000 ? 50 : 0) + (v.turkce ? 4 : 0) + (playable(v) ? 2 : 0) - (v.shorts ? 200 : 0);
   const sorted = cands.sort((a, b) => score(b) - score(a) || time(b) - time(a));
   return {
-    videolar: sorted.slice(0, 5).map(({ shorts: _s, ...v }) => ({ ...v, jarvis_icinde: playable(v) })),
+    videolar: sorted.slice(0, 5).map(({ shorts: _s, ...v }) => ({ ...v, luxion_icinde: playable(v) })),
     taranan: CHANNELS.map(c => c.name),
     kaynak: YT_KEY ? 'kanal araması' : 'kanal akışı (her kanalın son 15 videosu)',
     brans,
@@ -170,7 +170,7 @@ export async function latestFromChannel(kanal: string, tur?: VideoTur): Promise<
   const list = await channelFeed(ch);
   const pick = list.filter(v => want === 'hepsi' || (want === 'shorts' ? v.shorts : !v.shorts)).slice(0, 5);
   await Promise.all(pick.map(v => checkVideo(v.video_id).catch(() => null)));
-  return { kanal: ch.name, tur: want, videolar: pick.map(v => ({ ...v, jarvis_icinde: isEmbeddable(v.video_id) !== false })) };
+  return { kanal: ch.name, tur: want, videolar: pick.map(v => ({ ...v, luxion_icinde: isEmbeddable(v.video_id) !== false })) };
 }
 
 /** Genel video araması: resmi YouTube Data API (gömülebilir videolar, Türkiye). Anahtar yoksa null. */
@@ -194,7 +194,7 @@ export function videoIdFrom(s: string): string | null {
 // ---------------------------------------------------------------- Gömülebilirlik
 
 const BLOCKED_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'yt-blocked.json');
-/** video_id → Jarvis içinde oynar mı. oEmbed'in göremediği engeller (LaLiga: "iş ortağı bu sitede engelledi")
+/** video_id → Luxion içinde oynar mı. oEmbed'in göremediği engeller (LaLiga: "iş ortağı bu sitede engelledi")
  *  oynatıcıdan bildirilir ve diske yazılır. */
 const saved: { ids: string[]; kanallar: string[] } = (() => {
   try { const j = JSON.parse(fs.readFileSync(BLOCKED_FILE, 'utf8')); return Array.isArray(j) ? { ids: j, kanallar: [] } : j; } catch { return { ids: [], kanallar: [] }; }
@@ -228,5 +228,5 @@ export async function checkVideo(id: string): Promise<YtVideo | { hata: string }
   if (!r.ok) return { hata: 'Video bulunamadı.' };
   if (!embedState.has(id)) embedState.set(id, true);
   const j: any = await r.json();
-  return { video_id: id, baslik: String(j.title ?? ''), kanal: String(j.author_name ?? ''), tarih: null, jarvis_icinde: true };
+  return { video_id: id, baslik: String(j.title ?? ''), kanal: String(j.author_name ?? ''), tarih: null, luxion_icinde: true };
 }

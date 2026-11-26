@@ -1,5 +1,5 @@
 // Bekçi: gelen SMS / iMessage / RCS ve e-postaları gelir gelmez, kullanıcı sormadan analiz eder; dolandırıcılık
-// şüphesi varsa Jarvis'in sesiyle uyarır ve telefona bildirim gönderir. Linki engellemez, UYARIR.
+// şüphesi varsa Luxion'un sesiyle uyarır ve telefona bildirim gönderir. Linki engellemez, UYARIR.
 //   ≥ tehlikeli eşik: sesli uyarı + push + panel · ≥ şüpheli eşik: yalnızca push (sessiz) + panelde işaret · altı: log
 // Mesaj içeriği diske yazılmaz; son analiz edilen mesaj takip soruları için yalnızca bellekte tutulur.
 import { execFile } from 'node:child_process';
@@ -87,7 +87,7 @@ export function bekciDurum() {
   };
 }
 
-// ---------------------------------------------------------------- Sohbet aracı (Jarvis'in sesli/yazılı cevabı)
+// ---------------------------------------------------------------- Sohbet aracı (Luxion'un sesli/yazılı cevabı)
 
 /** macOS panosu (yalnızca kullanıcı "panodaki/kopyaladığım" dediğinde) */
 const pano = () => new Promise<string>(ok => (os.platform() === 'darwin' ? execFile('pbpaste', { timeout: 2000 }, (_e, out) => ok(String(out ?? '').slice(0, 5000))) : ok('')));

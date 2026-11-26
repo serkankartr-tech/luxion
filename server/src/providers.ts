@@ -1,4 +1,4 @@
-// Yapay zekâ sağlayıcıları. Jarvis'in bütün model çağrıları OpenAI uyumlu tek bir kapıdan geçer
+// Yapay zekâ sağlayıcıları. Luxion'un bütün model çağrıları OpenAI uyumlu tek bir kapıdan geçer
 // (/chat/completions, /models, /audio/transcriptions, /audio/speech); sağlayıcı = adres + anahtar + model seçimi.
 // Model adları zamanla değiştiği için sabit ad yerine TERCİH KALIPLARI tutulur: bağlantı testinde sağlayıcının
 // /models listesinden kalıba uyan en yeni model seçilir; liste alınamazsa `varsayilan` kullanılır.
@@ -94,7 +94,7 @@ export const SAGLAYICILAR: Saglayici[] = [
     stt: null, tts: null,
     tercih: {},
     varsayilan: { chat: 'openrouter/auto', vision: 'openrouter/auto' },
-    basliklar: () => ({ 'HTTP-Referer': 'https://github.com/halilozat/jarvis', 'X-Title': 'Jarvis' }),
+    basliklar: () => ({ 'HTTP-Referer': 'https://github.com/halilozat/luxion', 'X-Title': 'Luxion' }),
   },
   {
     id: 'abacus', ad: 'Abacus.AI RouteLLM', ucretsiz: false,

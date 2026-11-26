@@ -1,4 +1,4 @@
-// Uzay Laboratuvarı · gerçek veriler. Bu dosyadaki her sayı bir kaynağa dayanır; ekranda gösterilen ve Jarvis'in
+// Uzay Laboratuvarı · gerçek veriler. Bu dosyadaki her sayı bir kaynağa dayanır; ekranda gösterilen ve Luxion'un
 // söylediği bütün sayılar buradan ya da bunlardan yapılan hesaplardan (physics.ts) gelir.
 //
 // Kaynaklar:

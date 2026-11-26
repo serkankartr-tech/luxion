@@ -114,7 +114,7 @@ export function beyinRouter(o: { korumali: boolean; degisti: () => void }) {
   const r = Router();
   const izin = (req: Request, res: Response) => {
     if (o.korumali || yereldenMi(req)) return true;
-    res.status(403).json({ error: 'Beyin ayarı yalnızca Jarvis\'in çalıştığı bilgisayardan değiştirilebilir (ya da ACCESS_TOKEN tanımlayın).' });
+    res.status(403).json({ error: 'Beyin ayarı yalnızca Luxion\'in çalıştığı bilgisayardan değiştirilebilir (ya da ACCESS_TOKEN tanımlayın).' });
     return false;
   };
 

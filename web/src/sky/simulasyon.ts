@@ -107,7 +107,7 @@ export function simZemin(ctx: CanvasRenderingContext2D, b: Bakis, W: number, H: 
     ctx.closePath();
     ctx.fillStyle = 'rgba(3, 8, 6, 0.96)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(77, 225, 255, 0.45)';
+    ctx.strokeStyle = 'rgba(255, 204, 102, 0.45)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
@@ -119,7 +119,7 @@ export function simZemin(ctx: CanvasRenderingContext2D, b: Bakis, W: number, H: 
   for (const [az, ad] of YON) {
     const p = proj(az, 0);
     if (!p || p.x < 0 || p.x > W) continue;
-    ctx.fillStyle = ad === 'K' ? '#ff8f8f' : 'rgba(77, 225, 255, 0.9)';
+    ctx.fillStyle = ad === 'K' ? '#ff8f8f' : 'rgba(255, 204, 102, 0.9)';
     ctx.fillText(ad, p.x, Math.min(H - 12, p.y + 22));
   }
   ctx.textAlign = 'start';

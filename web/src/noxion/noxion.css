@@ -1,0 +1,55 @@
+/* Noxion Paketi · tema ve sahne katmanları. Tema tek bir değişken setiyle açılıp kapanır: html.noxion-tema + --u-tema (0..1).
+   Mavi (#3db4ff, ~205°) → turuncu (#ff6a1a, ~21°): hue-rotate ≈ 176°. */
+:root {
+  --u-ana: #ff6a1a; --u-koyu: #ff3b1f; --u-cekirdek: #ffd27a; --u-arka: #070302;
+  --u-cizgi: rgba(255, 106, 26, 0.55); --u-soluk: rgba(255, 160, 110, 0.6); --u-yazi: #ffe3d2;
+  --u-font: 'Rajdhani', 'Orbitron', ui-monospace, Menlo, monospace;
+}
+html.noxion-tema .app { filter: hue-rotate(calc(var(--u-tema, 0) * 176deg)) saturate(calc(1 + var(--u-tema, 0) * 0.45)); }
+/* Ele geçirilen sekme: turuncu + glitch (RGB kayması, kırpma, titreme). Tema zaten turuncuysa ikinci kez döndürülmez. */
+[data-noxion-ele] {
+  filter: hue-rotate(calc(max(0, var(--u-ele, 0) - var(--u-tema, 0)) * 176deg)) saturate(calc(1 + var(--u-ele, 0) * 0.7))
+    drop-shadow(calc(var(--u-glitch, 0) * 4px) 0 0 rgba(255, 0, 60, 0.7)) drop-shadow(calc(var(--u-glitch, 0) * -4px) 0 0 rgba(0, 200, 255, 0.6))
+    drop-shadow(0 0 calc(var(--u-ele, 0) * 8px) rgba(255, 106, 26, 0.85)) !important;
+  translate: var(--u-gx, 0px) 0;
+  clip-path: inset(var(--u-kirp-ust, 0%) 0 var(--u-kirp-alt, 0%) 0);
+}
+
+.noxion-savas-karart { position: fixed; inset: 0; z-index: 9000; background: #000; }
+.noxion-savas-gl, .noxion-savas-hud { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; }
+.noxion-savas-gl { z-index: 9001; mix-blend-mode: screen; }
+.noxion-savas-hud { z-index: 9002; }
+.noxion-savas-ust { position: fixed; inset: 0; z-index: 9003; cursor: none; }
+.noxion-savas { position: fixed; inset: 0; z-index: 9000; }
+.noxion-savas-ust .u-durum, .noxion-savas .u-durum { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 600 14px var(--u-font); letter-spacing: 0.2em; color: var(--u-soluk); text-transform: uppercase; }
+.noxion-savas-ust .u-ipucu, .noxion-savas .u-ipucu { position: absolute; right: 18px; bottom: 14px; font: 500 11px var(--u-font); letter-spacing: 0.12em; color: rgba(255, 200, 170, 0.35); }
+.noxion-savas.kayit .u-ipucu, .noxion-savas.kayit { cursor: default; }
+.noxion-kayit-ilerleme { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 9100; font: 600 13px var(--u-font); color: var(--u-yazi); background: rgba(20, 6, 2, 0.85); border: 1px solid var(--u-cizgi); padding: 8px 14px; letter-spacing: 0.1em; }
+
+/* Noxion seçim paneli (alt çubuktaki "Noxion" düğmesi) */
+.u-secici-arka { position: fixed; inset: 0; z-index: 8000; background: rgba(3, 1, 0, 0.72); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; animation: u-belir 0.18s ease-out; }
+.u-secici { width: min(720px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto; background: linear-gradient(180deg, rgba(34, 10, 3, 0.96), rgba(12, 4, 1, 0.97)); border: 1px solid var(--u-cizgi); box-shadow: 0 0 40px rgba(255, 106, 26, 0.18), inset 0 0 30px rgba(255, 106, 26, 0.05); color: var(--u-yazi); padding: 22px 24px 20px; font-family: 'Rubik', system-ui, sans-serif; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
+.u-secici-ust { display: flex; align-items: center; gap: 12px; }
+.u-secici-ust h2 { margin: 0; flex: 1; font: 700 30px/1 'Rajdhani', var(--u-font); letter-spacing: 0.32em; color: var(--u-ana); text-shadow: 0 0 14px rgba(255, 106, 26, 0.6); }
+.u-secici-ikon svg, .u-kart svg { width: 30px; height: 30px; fill: none; stroke: var(--u-ana); stroke-width: 1.6; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255, 106, 26, 0.7)); }
+.u-secici-x { width: 44px; height: 44px; border: 1px solid var(--u-cizgi); background: transparent; color: var(--u-yazi); font-size: 18px; cursor: pointer; }
+.u-secici-x:hover, .u-secici-x:focus-visible { background: rgba(255, 106, 26, 0.15); outline: none; }
+.u-secici-giris { margin: 10px 0 16px; color: var(--u-soluk); font-size: 15px; }
+.u-secici-kartlar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.u-kart { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 16px; min-height: 44px; background: rgba(255, 106, 26, 0.06); border: 1px solid var(--u-cizgi); color: var(--u-yazi); cursor: pointer; font: inherit; transition: background 0.15s, box-shadow 0.15s; }
+.u-kart:hover:not(:disabled), .u-kart:focus-visible { background: rgba(255, 106, 26, 0.16); box-shadow: 0 0 18px rgba(255, 106, 26, 0.3); outline: none; }
+.u-kart:disabled { opacity: 0.4; cursor: not-allowed; }
+.u-kart-ad { font: 700 22px/1.1 'Rajdhani', var(--u-font); letter-spacing: 0.08em; color: var(--u-ana); text-transform: uppercase; }
+.u-kart-metin { font-size: 14px; line-height: 1.45; color: #f3d9c9; }
+.u-kart-komut { margin-top: auto; font: 600 14px 'Rajdhani', var(--u-font); letter-spacing: 0.04em; color: var(--u-cekirdek); }
+.u-secici-ipucu { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255, 106, 26, 0.25); display: grid; gap: 6px; font-size: 13.5px; color: var(--u-soluk); }
+.u-secici-ipucu b { color: var(--u-yazi); font-weight: 500; }
+.u-secici-ipucu kbd { font: 600 12px 'JetBrains Mono', monospace; border: 1px solid var(--u-cizgi); padding: 1px 5px; color: var(--u-yazi); }
+.u-secici-hata { color: #ff9b84; }
+@media (max-width: 600px) { .u-secici-kartlar { grid-template-columns: minmax(0, 1fr); } .u-secici { padding: 18px 16px 16px; } .u-secici-ust h2 { font-size: 26px; } }
+@keyframes u-belir { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .u-secici-arka { animation: none; } }
+
+/* Savaş Modu ✕ (dokunmatikte Esc yerine) */
+.noxion-savas-ust .u-kapat { position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(255, 106, 26, 0.45); background: rgba(20, 6, 2, 0.55); color: rgba(255, 210, 180, 0.8); font: 600 18px var(--u-font); cursor: pointer !important; opacity: 0.55; transition: opacity 0.15s, background 0.15s; }
+.noxion-savas-ust .u-kapat:hover, .noxion-savas-ust .u-kapat:focus-visible { opacity: 1; background: rgba(255, 106, 26, 0.2); outline: none; }

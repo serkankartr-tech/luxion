@@ -12,7 +12,7 @@ const [cmd, ...args] = process.argv.slice(2);
 if (cmd === 'ekle') {
   const [owner, id, ...name] = args;
   if (!owner || !id) { console.error('Kullanım: npm run eleven -- ekle <public_owner_id> <voice_id> <ad>'); process.exit(1); }
-  const vid = await elevenAddShared(owner, id, name.join(' ') || 'Jarvis');
+  const vid = await elevenAddShared(owner, id, name.join(' ') || 'Luxion');
   console.log(`Eklendi: ${vid} — Ayarlar → Seslendiren'de görünür.`);
   process.exit(0);
 }

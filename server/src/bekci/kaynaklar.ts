@@ -79,7 +79,7 @@ function whois(sunucu: string, sorgu: string, ms: number): Promise<string> {
 
 const USOM_API = process.env.USOM_API || 'https://siberguvenlik.gov.tr/api/address/index';
 let usom: { set: Set<string>; yuklendi: number; satir: number } | null = null;
-/** USOM listesinin yüklü satır sayısı (Ultron'un Gözü siber katmanı; liste yüklenmediyse null) */
+/** USOM listesinin yüklü satır sayısı (Noxion'un Gözü siber katmanı; liste yüklenmediyse null) */
 export const usomSatir = () => (usom && usom.satir > 0 ? usom.satir : null);
 
 /** Kayıt adresini host'a indir: "http://www.a.b/yol" → "a.b" */
@@ -150,7 +150,7 @@ export async function safeBrowsing(urls: string[], f: F = fetch, ms = 4000): Pro
   const r = await f(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${encodeURIComponent(k)}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(ms),
     body: JSON.stringify({
-      client: { clientId: 'jarvis-bekci', clientVersion: '1.0' },
+      client: { clientId: 'luxion-bekci', clientVersion: '1.0' },
       threatInfo: { threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'], platformTypes: ['ANY_PLATFORM'], threatEntryTypes: ['URL'], threatEntries: urls.map(url => ({ url })) },
     }),
   });

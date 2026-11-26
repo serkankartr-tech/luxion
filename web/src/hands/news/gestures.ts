@@ -11,7 +11,7 @@
 //   ✊→🖐 kısa yumruk ve aç (0,2–0,8 sn) → kartı aç · ✊ yumruğu 0,8 sn tut → kapat (bir seviye geri)
 //     Yumruk yapmak tek başına bir şey tetiklemez: karar el açılınca ya da halka dolunca verilir.
 //   ☝️ işaret → kartı vurgula
-//   👍 1 sn → Jarvis özetler · ✌️ → mikrofon
+//   👍 1 sn → Luxion özetler · ✌️ → mikrofon
 // Eşikler el büyüklüğüyle ölçeklenir (kameraya yakın el daha hızlı ve büyük görünür).
 import type { HoldState } from '../fx';
 import type { P, TrackedHand } from '../gestures';

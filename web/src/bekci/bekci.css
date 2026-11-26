@@ -1,13 +1,13 @@
-/* Bekçi paneli · Jarvis HUD dili. Risk: temiz yeşil, şüpheli turuncu, tehlikeli kırmızı. */
+/* Bekçi paneli · Luxion HUD dili. Risk: temiz yeşil, şüpheli turuncu, tehlikeli kırmızı. */
 .bk2 {
-  --bk-cyan: #4de1ff; --bk-red: #ff4d5e; --bk-amber: #ffb547; --bk-green: #7dffb2; --bk-line: rgba(77, 225, 255, 0.25);
+  --bk-cyan: #ffcc66; --bk-red: #ff4d5e; --bk-amber: #ffb547; --bk-green: #7dffb2; --bk-line: rgba(255, 204, 102, 0.25);
   position: fixed; inset: 3vh 3vw; z-index: 55; display: flex; flex-direction: column; border: 1px solid var(--bk-line); border-radius: 14px;
-  background: rgba(3, 9, 16, 0.96); box-shadow: 0 0 80px rgba(0, 0, 0, 0.7), 0 0 40px rgba(77, 225, 255, 0.08); color: #e8f6ff; overflow: hidden;
+  background: rgba(3, 9, 16, 0.96); box-shadow: 0 0 80px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 204, 102, 0.08); color: #e8f6ff; overflow: hidden;
   animation: bk2-gel 0.3s ease-out;
 }
 @keyframes bk2-gel { from { opacity: 0; transform: scale(0.98); } }
 .bk2-ust { display: flex; align-items: center; gap: 18px; padding: 14px 18px; border-bottom: 1px solid var(--bk-line); }
-.bk2-baslik b { font-family: var(--mono); letter-spacing: 0.4em; color: var(--bk-cyan); font-size: 16px; text-shadow: 0 0 12px rgba(77, 225, 255, 0.6); }
+.bk2-baslik b { font-family: var(--mono); letter-spacing: 0.4em; color: var(--bk-cyan); font-size: 16px; text-shadow: 0 0 12px rgba(255, 204, 102, 0.6); }
 .bk2-baslik span { display: block; font-size: 11px; color: rgba(232, 246, 255, 0.55); margin-top: 2px; }
 .bk2-durumlar { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 .bk2-durumlar > * { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--bk-line); background: none; color: rgba(232, 246, 255, 0.6); }
@@ -18,8 +18,8 @@
 .bk2-akis { border-right: 1px solid var(--bk-line); overflow: auto; padding: 10px; }
 .bk2-etiket { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; color: var(--bk-cyan); margin: 6px 0 8px; }
 .bk2-bos { color: rgba(232, 246, 255, 0.5); font-size: 13px; padding: 14px 4px; }
-.bk2-satir { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'k r' 'g r' 's r'; gap: 1px 8px; width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; border: 1px solid transparent; background: rgba(77, 225, 255, 0.04); color: inherit; }
-.bk2-satir.on { border-color: var(--bk-line); background: rgba(77, 225, 255, 0.1); }
+.bk2-satir { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'k r' 'g r' 's r'; gap: 1px 8px; width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; border: 1px solid transparent; background: rgba(255, 204, 102, 0.04); color: inherit; }
+.bk2-satir.on { border-color: var(--bk-line); background: rgba(255, 204, 102, 0.1); }
 .bk2-satir.guvenli { opacity: 0.55; }
 .bk2-kaynak { grid-area: k; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; color: rgba(232, 246, 255, 0.55); }
 .bk2-gonderen { grid-area: g; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -56,13 +56,13 @@
 .bk2-hap { border: 1px solid var(--bk-line); border-radius: 8px; padding: 7px 9px; min-width: 0; }
 .bk2-hap b { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: rgba(232, 246, 255, 0.5); }
 .bk2-hap span { display: block; font-size: 11px; color: rgba(232, 246, 255, 0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
-.bk2-hap.d-calisiyor { border-color: var(--bk-cyan); box-shadow: 0 0 12px rgba(77, 225, 255, 0.3); }
+.bk2-hap.d-calisiyor { border-color: var(--bk-cyan); box-shadow: 0 0 12px rgba(255, 204, 102, 0.3); }
 .bk2-hap.d-calisiyor b { color: var(--bk-cyan); animation: bk2-yanip 0.8s ease-in-out infinite; }
 .bk2-hap.d-tamam b { color: var(--bk-green); }
 .bk2-hap.d-hata b { color: var(--bk-amber); }
 .bk2-hap.d-atlandi { opacity: 0.5; }
 @keyframes bk2-yanip { 50% { opacity: 0.35; } }
-.bk2-ilerleme { height: 3px; background: rgba(77, 225, 255, 0.12); border-radius: 2px; margin: 10px 0 16px; overflow: hidden; }
+.bk2-ilerleme { height: 3px; background: rgba(255, 204, 102, 0.12); border-radius: 2px; margin: 10px 0 16px; overflow: hidden; }
 .bk2-ilerleme i { display: block; height: 100%; background: var(--bk-cyan); box-shadow: 0 0 10px var(--bk-cyan); transition: width 0.4s ease; }
 .bk2-iki { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
 .bk2-gerekce { margin: 0 0 14px; padding-left: 18px; }
@@ -80,14 +80,14 @@
 @keyframes bk2-satir { from { opacity: 0; transform: translateX(-6px); } }
 .bk2-log .imlec { color: var(--bk-cyan); animation: bk2-yanip 0.8s steps(2) infinite; }
 .bk2-dugmeler { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.bk2-dugmeler button, .bk2-ana { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--bk-line); background: rgba(77, 225, 255, 0.06); color: #e8f6ff; font-size: 13px; }
+.bk2-dugmeler button, .bk2-ana { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--bk-line); background: rgba(255, 204, 102, 0.06); color: #e8f6ff; font-size: 13px; }
 .bk2-dugmeler button:disabled { opacity: 0.5; }
 .bk2-alt { display: flex; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--bk-line); }
 .bk2-alt textarea { flex: 1; resize: none; border-radius: 8px; border: 1px solid var(--bk-line); background: rgba(0, 0, 0, 0.35); color: #e8f6ff; font: inherit; font-size: 14px; padding: 8px 10px; }
 .bk2-ana { background: var(--bk-cyan); color: #01121a; border-color: var(--bk-cyan); font-weight: 600; }
 .bk2-ana:disabled { opacity: 0.5; }
 
-/* Tehlikeli mesaj gelince Jarvis'in çekirdeği kırmızıya döner */
+/* Tehlikeli mesaj gelince Luxion'un çekirdeği kırmızıya döner */
 .app.bekci-alarm { --accent: #ff4d5e; }
 .app.bekci-alarm .mk2 { --m2: #ff5d5d; --m2-hi: #ffd0d0; --m2-dim: rgba(255, 93, 93, 0.3); --m2-faint: rgba(255, 93, 93, 0.1); --accent: #ff5d5d; }
 

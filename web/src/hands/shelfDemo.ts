@@ -92,13 +92,13 @@ export const DEMO_SHELVES: DemoBook[][] = [
 ];
 
 /** Demo kitapların özetleri ve notları (açılan sayfalarda görünür) */
-const DEMO_OZET: Record<string, { ozet: string; notlar?: string[]; alintilar?: string[]; durum?: Kitap['durum']; sayfa?: number; toplam?: number; jarvis?: Omit<NonNullable<Kitap['jarvis']>, 'at'> }> = {
+const DEMO_OZET: Record<string, { ozet: string; notlar?: string[]; alintilar?: string[]; durum?: Kitap['durum']; sayfa?: number; toplam?: number; luxion?: Omit<NonNullable<Kitap['luxion']>, 'at'> }> = {
   'Otostopçunun Galaksi Rehberi': {
     ozet: 'Dünya bir otoyol yapımı için yıkılmadan hemen önce Arthur Dent, uzaylı arkadaşı Ford Prefect sayesinde bir uzay gemisine otostop çeker. Galaksiyi dolaşan bu absürt yolculuk, hayatın anlamını arayan insanlığı tatlı bir alayla tiye alır. Bilimkurguyu bu kadar komik okuyabileceğinizi gösteren bir klasik.',
     notlar: ['Havlu her zaman yanında olsun: en kullanışlı eşya.', '42: cevap kadar doğru soruyu bilmek de önemli.'],
     alintilar: ['Panik yapma.'],
     durum: 'bitti', sayfa: 640, toplam: 640,
-    jarvis: {
+    luxion: {
       tur: 'bilimkurgu, mizah', yil: 1979,
       anaFikirler: [
         'Evren bürokrasiyle, kayıtsızlıkla ve saçmalıkla doludur; Adams bunu büyük felsefi sorularla dalga geçerek anlatır.',
@@ -352,7 +352,7 @@ export function buildDemoShelf(): { frame: HTMLCanvasElement; books: Kitap[]; gi
       durum: extra?.durum ?? 'okunacak',
       sayfa: extra?.sayfa,
       toplamSayfa: extra?.toplam,
-      jarvis: extra?.jarvis ? { ...extra.jarvis, at: '2026-10-18T00:00:00.000Z' } : undefined,
+      luxion: extra?.luxion ? { ...extra.luxion, at: '2026-10-18T00:00:00.000Z' } : undefined,
       emin: p.b.belirsiz ? 0.2 : 0.9,
     };
   });

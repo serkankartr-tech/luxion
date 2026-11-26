@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { CoreState } from '../lib/types';
 
 const COLORS: Record<CoreState, [number, number, number]> = {
-  idle: [77, 225, 255],
+  idle: [255, 204, 102],
   listening: [125, 255, 178],
   thinking: [255, 181, 71],
   speaking: [120, 236, 255],
@@ -15,7 +15,7 @@ const span = (p: number, a: number, b: number) => {
 };
 
 /**
- * Jarvis çekirdeği: farklı hızlarda dönen parçalı halkalar + sese tepki veren dalga halkası.
+ * Luxion çekirdeği: farklı hızlarda dönen parçalı halkalar + sese tepki veren dalga halkası.
  * Tamamen özgün bir tasarım; canvas ile çizilir.
  * introAt (performance.now): uyanış sekansı. Çekirdek bir noktadan parlar, halkalar içten dışa sırayla çizilir
  * (0,3–1,2 sn); null → tam çizim.
@@ -191,5 +191,5 @@ export function Core({ state, level, introAt = null }: { state: CoreState; level
     return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, [level]);
 
-  return <canvas ref={ref} className="core-canvas" aria-label="Jarvis çekirdeği" />;
+  return <canvas ref={ref} className="core-canvas" aria-label="Luxion çekirdeği" />;
 }

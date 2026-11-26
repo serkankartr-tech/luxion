@@ -41,7 +41,7 @@ const aciMetni = (sn: number) => (sn < 60 ? `${sayi(sn, sn < 1 ? 2 : 1)}″` : s
 
 export class MoonHole implements ExtraNumara {
   ad = 'AY YERİNE KARA DELİK';
-  ipucu = '🤏 çimdikle yukarı / aşağı: kütle   ·   "Jarvis, kara deliği büyüt / küçült"   ·   "Jüpiter kütlesine büyüt"   ·   ✊ durdur   ·   "sıfırla"';
+  ipucu = '🤏 çimdikle yukarı / aşağı: kütle   ·   "Luxion, kara deliği büyüt / küçült"   ·   "Jüpiter kütlesine büyüt"   ·   ✊ durdur   ·   "sıfırla"';
   private startAt = 0;
   private earth: Body | null = null;
   private moon: Body | null = null;

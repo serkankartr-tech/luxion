@@ -1,4 +1,4 @@
-// El Kontrolü: kamera görüntüsü üstünde el takibi, büyü efektleri ve jestle Jarvis kontrolü.
+// El Kontrolü: kamera görüntüsü üstünde el takibi, büyü efektleri ve jestle Luxion kontrolü.
 // Tuşlar: Esc kapat · L arayüzü gizle/göster (temiz çekim) · D iskelet · M ses · C kamera değiştir · F yüz kilidi · K kitaplık ayarı
 // U uzay modu · N haber modu · B arka plan (tam uzay / oda) · G laboratuvar ↔ gösteri · T temiz çekim (yalnızca sonuçlar)
 // Haber modunda: ←/→ haber · ↑/↓ kategori · Enter detay · K karşılaştır · W dünya basını · / ara · I iddia kontrolü · S sorular · O sabah özeti · ⌫ geri
@@ -40,7 +40,7 @@ import './news/news.css';
 export interface HandControlProps {
   /** Sentetik ellerle çalış (kamera yok): ?el=demo */
   demo?: boolean;
-  /** Jarvis'in o anki altyazısı ve durumu */
+  /** Luxion'un o anki altyazısı ve durumu */
   caption: string;
   core: string;
   onAction(k: Kontrol): void;
@@ -53,39 +53,39 @@ export interface HandControlProps {
   kitaplik?: boolean;
   /** Sunucuda kitaplık değişti (SSE): haritayı yeniden yükle */
   libraryKey?: number;
-  /** "Jarvis, kitaplığımı tara": her artışta bir tarama */
+  /** "Luxion, kitaplığımı tara": her artışta bir tarama */
   scanSignal?: number;
   onScanDone?(r: { bulunan: number; belirsiz: number; tamamlanan?: number; tahmini?: number; hata?: string }): void;
   /** Açık kitaba sesle eklenen kayıt: kalemle yazılır (n her istekte artar) */
   kalemKaydi?: { kayit: KalemKaydi; n: number } | null;
-  /** Jarvis'in önerdiği kitap: raftan kendiliğinden çıkar (n her öneride artar) */
+  /** Luxion'un önerdiği kitap: raftan kendiliğinden çıkar (n her öneride artar) */
   oneriCmd?: { id: string; ad: string | null; n: number } | null;
   /** Kitap açıkken 👍 basılı: özeti seçili sesle oku */
   onBookRead?(k: Kitap): void;
-  /** Açık kitap değişti ("Jarvis, bunu özetle" için) */
+  /** Açık kitap değişti ("Luxion, bunu özetle" için) */
   onBookOpen?(k: Kitap | null): void;
-  /** "Jarvis, Mars yap": n her istekte artar */
+  /** "Luxion, Mars yap": n her istekte artar */
   planetCmd?: { tur: GezegenTur; n: number } | null;
-  /** Uzay modunda başla (?mod=uzay ya da "Jarvis, uzay modunu aç") */
+  /** Uzay modunda başla (?mod=uzay ya da "Luxion, uzay modunu aç") */
   uzay?: boolean;
   /** Uzay sesli komutu (sunucuya gitmez): n her istekte artar. zincir: "…, sonra …" komutları sırayla */
   spaceCmd?: { cmd: SpaceCmd; n: number; zincir?: SpaceCmd[] } | null;
-  /** Jarvis'in sohbet aracıyla başlayan yaşam izi taramasında cevabın sahne sırası */
+  /** Luxion'un sohbet aracıyla başlayan yaşam izi taramasında cevabın sahne sırası */
   sahneIlerleme?: { i: number; bitti: boolean };
   /** Bu cümlelerin sesini önceden hazırla */
   onPreload?(lines: string[]): void;
   /** Mikrofon dinliyor (✌️ elinin çevresinde dalga) */
   listening?: boolean;
-  /** Jarvis bu cümleyi seçili sesle söylesin; söz cümle bitince çözülür */
+  /** Luxion bu cümleyi seçili sesle söylesin; söz cümle bitince çözülür */
   onSay?(text: string): Promise<void> | void;
   /** ✌️ basılı (uzay modu): mikrofonu aç */
   onMic?(): void;
   onModeChange?(m: 'buyu' | 'uzay' | 'haber'): void;
-  /** Haber modunda başla (?mod=haber ya da "Jarvis, haber modunu aç") */
+  /** Haber modunda başla (?mod=haber ya da "Luxion, haber modunu aç") */
   haber?: boolean;
   /** Haber modu sesli komutu: n her istekte artar */
   newsCmd?: { cmd: HaberCmd; n: number } | null;
-  /** ✊ (haber modu): Jarvis'in sesini kes */
+  /** ✊ (haber modu): Luxion'un sesini kes */
   onSus?(): void;
   /** Uzay modunun sahnesi: laboratuvar (varsayılan) ya da gösteri (?mod=gosteri) */
   uzaySahne?: 'lab' | 'gosteri' | 'ekstra';
@@ -108,7 +108,7 @@ const KITAP_KOMUTLARI: [string, string, string][] = [
   ['sayfa', '120. sayfadayım', 'sayfa ve ilerleme'],
   ['not', 'not al: …', 'kalem notu yazar'],
   ['alinti', 'alıntı ekle: …', 'kalem alıntıyı yazar'],
-  ['ozetle', 'bunu özetle', 'Jarvis özeti okur'],
+  ['ozetle', 'bunu özetle', 'Luxion özeti okur'],
   ['ad', 'bu kitabın adı …', 'adsız kitabı adlandırır'],
   ['sohbet', 'bu kitap hakkında konuşalım', 'kitap sohbeti'],
 ];
@@ -116,7 +116,7 @@ const KITAP_KOMUTLARI: [string, string, string][] = [
 const DEMO_TAHMIN = new URLSearchParams(location.search).get('tahmin') === '1';
 /** Kitaplık demosunda sentetik el yok (sesli komut ve öneri denemesi için): ?el=demo&kitaplik=1&eller=yok */
 const DEMO_ELSIZ = new URLSearchParams(location.search).get('eller') === 'yok';
-/** Kitaplık demosu: taramadan sonra Jarvis bu kitabı önerir (raftan kendiliğinden çıkar): &oneri=Kitap Adı (boşsa hedef kitap) */
+/** Kitaplık demosu: taramadan sonra Luxion bu kitabı önerir (raftan kendiliğinden çıkar): &oneri=Kitap Adı (boşsa hedef kitap) */
 const DEMO_ONERI = new URLSearchParams(location.search).get('oneri');
 
 /** Uzay Laboratuvarı jestleri */
@@ -211,7 +211,7 @@ export default function HandControl(p: HandControlProps) {
   const [stats, setStats] = useState<{ fps: number; st: Status; delegate: string; step?: string }>({ fps: 0, st: { hands: [], mode: '—' }, delegate: '' });
   const muted = !ayar.ses;
   const [cams, setCams] = useState<CameraInfo[]>([]);
-  const [camId, setCamId] = useState<string | undefined>(() => { try { return localStorage.getItem('jarvis.el.kamera') || undefined; } catch { return undefined; } });
+  const [camId, setCamId] = useState<string | undefined>(() => { try { return localStorage.getItem('luxion.el.kamera') || undefined; } catch { return undefined; } });
   const [toast, setToast] = useState<string | null>(null);
   const ctlRef = useRef<Controller | null>(null);
   const actionRef = useRef(p.onAction);
@@ -226,7 +226,7 @@ export default function HandControl(p: HandControlProps) {
     if (!cams.length) return;
     const i = cams.findIndex(c => c.deviceId === camId);
     const n = cams[(i + 1) % cams.length];
-    try { localStorage.setItem('jarvis.el.kamera', n.deviceId); } catch { /* yok say */ }
+    try { localStorage.setItem('luxion.el.kamera', n.deviceId); } catch { /* yok say */ }
     setCamId(n.deviceId);
   };
 
@@ -246,7 +246,7 @@ export default function HandControl(p: HandControlProps) {
     hudFace.onLock = () => { sfx.lockOn(); faceLockRef.current?.(); };
     const lib = new Library(shelfRef.current!, stageRef.current!, video, fx, sfx, {
       onRead: k => {
-        if (p.demo) { setToast('demo · Jarvis özeti seçili sesle okurdu'); setTimeout(() => setToast(null), 2200); return; }
+        if (p.demo) { setToast('demo · Luxion özeti seçili sesle okurdu'); setTimeout(() => setToast(null), 2200); return; }
         propsRef.current.onBookRead?.(k);
       },
       onOpenChange: k => propsRef.current.onBookOpen?.(k),
@@ -259,7 +259,7 @@ export default function HandControl(p: HandControlProps) {
     const stars = new Starfield(starsRef.current!);
     const brain = new SpaceBrain(spaceRef.current!, fx, sfx, stars, {
       say: t => {
-        if (p.demo) { setToast(`demo · Jarvis: ${t}`); setTimeout(() => setToast(null), 2600); return; }
+        if (p.demo) { setToast(`demo · Luxion: ${t}`); setTimeout(() => setToast(null), 2600); return; }
         propsRef.current.onSay?.(t);
       },
       mic: () => propsRef.current.onMic?.(),
@@ -269,7 +269,7 @@ export default function HandControl(p: HandControlProps) {
       say: t => {
         // Demoda ses yok: cümle altyazı olarak görünür, okuma süresi kadar beklenir
         if (p.demo) {
-          const msg = `demo · Jarvis: ${t}`, ms = Math.max(1300, t.length * 52);
+          const msg = `demo · Luxion: ${t}`, ms = Math.max(1300, t.length * 52);
           setToast(msg);
           setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
           return new Promise<void>(r => setTimeout(r, ms));
@@ -283,7 +283,7 @@ export default function HandControl(p: HandControlProps) {
     const extra = new ExtraScene(spaceRef.current!, fx, sfx, {
       say: t => {
         if (p.demo) {
-          const msg = `demo · Jarvis: ${t}`, ms = Math.max(1300, t.length * 52);
+          const msg = `demo · Luxion: ${t}`, ms = Math.max(1300, t.length * 52);
           setToast(msg); setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
           return new Promise<void>(r => setTimeout(r, ms));
         }
@@ -298,7 +298,7 @@ export default function HandControl(p: HandControlProps) {
     const news = new NewsScene(newsStageRef.current!, fx, sfx, {
       say: t => {
         if (p.demo) {
-          const msg = `demo · Jarvis: ${t}`, ms = Math.min(9000, Math.max(1300, t.length * 52));
+          const msg = `demo · Luxion: ${t}`, ms = Math.min(9000, Math.max(1300, t.length * 52));
           setToast(msg); setTimeout(() => setToast(c => (c === msg ? null : c)), ms + 600);
           return new Promise<void>(r => setTimeout(r, ms));
         }
@@ -427,7 +427,7 @@ export default function HandControl(p: HandControlProps) {
         if (d.cmd && !demoFired.has(key)) { demoFired.add(key); scene.command(d.cmd.cmd, now); }
       } else if (demoShelf) {
         const t = (now - demoStart) / 1000;
-        const d = DEMO_ELSIZ || DEMO_ONERI !== null ? { hands: [], step: DEMO_ONERI !== null && t > 10 ? '🗣 "Jarvis, bugün yorgunum, bana bir kitap öner"' : '', loop: 0, kalem: undefined } : demoBookHands(t, fx.W, fx.H, lib.rectOf(demoTarget));
+        const d = DEMO_ELSIZ || DEMO_ONERI !== null ? { hands: [], step: DEMO_ONERI !== null && t > 10 ? '🗣 "Luxion, bugün yorgunum, bana bir kitap öner"' : '', loop: 0, kalem: undefined } : demoBookHands(t, fx.W, fx.H, lib.rectOf(demoTarget));
         if (DEMO_ONERI !== null && t > 11 && !demoFired.has('oneri')) {
           demoFired.add('oneri');
           const k = demoBooks.find(b => b.ad && (DEMO_ONERI ? b.ad.toLocaleLowerCase('tr') === DEMO_ONERI.toLocaleLowerCase('tr') : b.id === demoTarget));
@@ -701,14 +701,14 @@ export default function HandControl(p: HandControlProps) {
     return r.yerlesen.length;
   };
 
-  // "Jarvis, kitaplığımı tara"
+  // "Luxion, kitaplığımı tara"
   const lastSignal = useRef(p.scanSignal ?? 0);
   useEffect(() => {
     if (!p.scanSignal || p.scanSignal === lastSignal.current) return;
     lastSignal.current = p.scanSignal;
     runScan();
   }, [p.scanSignal]); // eslint-disable-line react-hooks/exhaustive-deps
-  // "Jarvis, Mars yap": eldeki gezegen dönüşür, yoksa sonraki çimdikte gelir
+  // "Luxion, Mars yap": eldeki gezegen dönüşür, yoksa sonraki çimdikte gelir
   const lastPlanetCmd = useRef(p.planetCmd?.n ?? 0);
   useEffect(() => {
     const c = p.planetCmd;
@@ -720,7 +720,7 @@ export default function HandControl(p: HandControlProps) {
   }, [p.planetCmd]);
 
   // Uzay sesli komutları: mod ve arka plan burada, gerisi uzay beyninde
-  const say = (t: string) => { if (p.demo) { setToast(`demo · Jarvis: ${t}`); setTimeout(() => setToast(null), 2600); } else propsRef.current.onSay?.(t); };
+  const say = (t: string) => { if (p.demo) { setToast(`demo · Luxion: ${t}`); setTimeout(() => setToast(null), 2600); } else propsRef.current.onSay?.(t); };
   const lastSpaceCmd = useRef(0);
   const applySpaceCmd = (cmd: SpaceCmd) => {
     if (cmd.tip === 'mod') {
@@ -782,7 +782,7 @@ export default function HandControl(p: HandControlProps) {
     const z = c.zincir;
     void Promise.resolve().then(() => (z?.length ? runChain(z) : applySpaceCmd(c.cmd)));
   }, [p.spaceCmd]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Jarvis'in sahneleri sohbet aracıyla başlayan taramayı ilerletir
+  // Luxion'un sahneleri sohbet aracıyla başlayan taramayı ilerletir
   useEffect(() => {
     const s = p.sahneIlerleme;
     if (s) labRef.current?.drive(s.i, s.bitti);
@@ -812,7 +812,7 @@ export default function HandControl(p: HandControlProps) {
     });
   }, [p.newsCmd]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Jarvis kitap önerdi: El Kontrolü büyü modundaysa kitap raftan çıkar
+  // Luxion kitap önerdi: El Kontrolü büyü modundaysa kitap raftan çıkar
   const lastOneri = useRef(0);
   useEffect(() => {
     const c = p.oneriCmd;
@@ -919,7 +919,7 @@ export default function HandControl(p: HandControlProps) {
         <>
           <i className="el-corner tl" /><i className="el-corner tr" /><i className="el-corner bl" /><i className="el-corner br" />
           <div className="el-top">
-            <span className="el-title">JARVIS · {mod === 'haber' ? 'HABER MERKEZİ' : mod === 'uzay' ? (sahne === 'lab' ? 'UZAY LABORATUVARI' : sahne === 'ekstra' ? 'UZAY · EKSTRA' : 'UZAY · GÖSTERİ') : 'EL KONTROLÜ'}</span>
+            <span className="el-title">LUXION · {mod === 'haber' ? 'HABER MERKEZİ' : mod === 'uzay' ? (sahne === 'lab' ? 'UZAY LABORATUVARI' : sahne === 'ekstra' ? 'UZAY · EKSTRA' : 'UZAY · GÖSTERİ') : 'EL KONTROLÜ'}</span>
             <span className="el-chip">MOD: {st.mode.toLocaleUpperCase('tr')}</span>
             <span className="el-meta">{stats.fps} FPS · {st.hands.length} el{stats.delegate ? ` · ${stats.delegate}` : ''}{p.demo ? ' · DEMO' : ''}</span>
             {st.hands.map(h => <span key={h.id} className="el-meta">{GESTURE_LABEL[h.gesture]}</span>)}
@@ -983,7 +983,7 @@ export default function HandControl(p: HandControlProps) {
               {GEZEGENLER.map(g => <option key={g.tur} value={g.tur}>{g.ad}</option>)}
             </select>
           </div>
-          <p>Bu cihazda saklanır. Kapalı efekt hiç tetiklenmez. Sesle: "Jarvis, Mars yap". Kısayol: <b>E</b></p>
+          <p>Bu cihazda saklanır. Kapalı efekt hiç tetiklenmez. Sesle: "Luxion, Mars yap". Kısayol: <b>E</b></p>
         </aside>
       )}
       {moved && !editing && <div className="el-warn">⚠ KAMERA KIPIRDAMIŞ · KİTAPLIĞI YENİDEN TARA (K)</div>}

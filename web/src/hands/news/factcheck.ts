@@ -49,5 +49,5 @@ export function iddiaHtml(list: IddiaSonuc[] | null, i: number, hata: string | n
   </div>`;
 }
 
-/** Jarvis'in okuyacağı cümle */
+/** Luxion'un okuyacağı cümle */
 export const iddiaCumlesi = (s: IddiaSonuc) => `${s.etiket.toLocaleLowerCase('tr')}. ${s.aciklama}`;

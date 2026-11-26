@@ -1,5 +1,5 @@
 // "İki alkışla uyanma" — tarayıcı tarafı: komut eşleştirme, sunucu saatine senkron, ekranı açık tutma ve
-// alkıştan sonraki kısa komut penceresi ("uyan jarvis").
+// alkıştan sonraki kısa komut penceresi ("uyan luxion").
 import { serverTime, stt } from './api';
 import { startRecording } from './recorder';
 import { createRecognizer } from './speech';
@@ -17,13 +17,13 @@ export function fold(s: string): string {
     .trim();
 }
 
-// Ses tanıma "Jarvis"i çoğu zaman Türkçe yazımla duyar: carvis, cervis, çarvis (→ carvis), jarviz…
-const NAME = /\b(jarvis|carvis|cervis|jervis|carviz|jarviz)\b/;
+// Ses tanıma "Luxion"u çoğu zaman Türkçe yazımla duyar: lüksiyon (→ luksiyon), lakşın (→ laksin), luxyon…
+const NAME = /\b(luxion|luksiyon|luksyon|luksion|laksiyon|laksion|luxyon|lukson|luxon|loksiyon|luksin|laksin)\b/;
 // "uyan", "uyan artık", "hadi uyan", "uyansana"
 const WAKE = /\buyan(sana|in)?\b/;
 
 /**
- * "Uyan Jarvis" mi? strict: hem "uyan" hem isim gerekir (yalnızca sesle uyanma: alkış yok, yanlış uyanma daha kolay).
+ * "Uyan Luxion" mi? strict: hem "uyan" hem isim gerekir (yalnızca sesle uyanma: alkış yok, yanlış uyanma daha kolay).
  * strict değilse (alkıştan sonraki 4 sn) "uyan" yeterli: niyeti çift alkış zaten gösterdi; isim yanlış duyulsa da kaçmaz.
  */
 export function isWakePhrase(text: string, strict: boolean): boolean {
@@ -138,7 +138,7 @@ export interface CommandResult {
 export interface CommandListen { result: Promise<CommandResult>; cancel(): void }
 
 /**
- * Kısa bir pencerede "uyan jarvis" dinler. İki yol yarışır:
+ * Kısa bir pencerede "uyan luxion" dinler. İki yol yarışır:
  *  - Asıl yol: kayıt → RouteLLM ile yazıya çevirme (her cihazda çalışır; konuşma bitince gönderilir).
  *  - Hızlandırıcı: Web Speech (varsa) ara sonuçları canlı verir; "uyan" duyulur duyulmaz eşleşir.
  * Hangisi önce eşleşirse o kazanır; ikisi de bitip eşleşme yoksa matched=false.
@@ -188,7 +188,7 @@ export function listenForCommand(o: {
     ctx: o.ctx,
     noSpeechMs: o.ms,
     silenceMs: 700,
-    maxMs: o.ms + 2000, // pencerenin sonunda başlayan "uyan jarvis" yarıda kesilmesin
+    maxMs: o.ms + 2000, // pencerenin sonunda başlayan "uyan luxion" yarıda kesilmesin
     onStop: blob => {
       if (done) return;
       if (!blob) return report('routellm', '', true);

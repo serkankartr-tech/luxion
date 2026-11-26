@@ -42,8 +42,8 @@ function safeGet(k: string) { try { return localStorage.getItem(k); } catch { re
 function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* yok say */ } }
 
 export type Role = 'ekran' | 'kamera';
-export const getRole = (): Role => (safeGet('jarvis.role') === 'kamera' ? 'kamera' : 'ekran');
-export function setRole(r: Role) { safeSet('jarvis.role', r); location.reload(); }
+export const getRole = (): Role => (safeGet('luxion.role') === 'kamera' ? 'kamera' : 'ekran');
+export function setRole(r: Role) { safeSet('luxion.role', r); location.reload(); }
 
 export interface CamSettings {
   id: string;
@@ -58,7 +58,7 @@ export interface CamSettings {
 }
 export function getCamSettings(): CamSettings {
   let s: Partial<CamSettings> = {};
-  try { s = JSON.parse(safeGet('jarvis.cam') || '{}'); } catch { /* yok say */ }
+  try { s = JSON.parse(safeGet('luxion.cam') || '{}'); } catch { /* yok say */ }
   const id = s.id && /^cam-[\w-]{4,40}$/.test(s.id) ? s.id : `cam-${Math.random().toString(36).slice(2, 10)}`;
   const out: CamSettings = {
     id,
@@ -69,14 +69,14 @@ export function getCamSettings(): CamSettings {
     threshold: typeof s.threshold === 'number' ? Math.min(0.2, Math.max(0.01, s.threshold)) : 0.04,
     started: !!s.started,
   };
-  safeSet('jarvis.cam', JSON.stringify(out));
+  safeSet('luxion.cam', JSON.stringify(out));
   return out;
 }
-export const saveCamSettings = (s: CamSettings) => safeSet('jarvis.cam', JSON.stringify(s));
+export const saveCamSettings = (s: CamSettings) => safeSet('luxion.cam', JSON.stringify(s));
 
 // ---------------------------------------------------------------- Sunucu
 
-const headers = (json = true): HeadersInit => ({ ...(json ? { 'Content-Type': 'application/json' } : {}), ...(token ? { 'x-jarvis-token': token } : {}) });
+const headers = (json = true): HeadersInit => ({ ...(json ? { 'Content-Type': 'application/json' } : {}), ...(token ? { 'x-luxion-token': token } : {}) });
 const post = (url: string, body: object) => fetch(url, { method: 'POST', headers: headers(), body: JSON.stringify(body), keepalive: true });
 
 export type Ice = RTCIceServer[];
@@ -98,7 +98,7 @@ export const forgetCamera = (camId: string) => post(`/api/cameras/${camId}/forge
 export const cameraMotion = (camId: string, on: boolean) => post(`/api/cameras/${camId}/motion`, { on }).catch(() => {});
 export const watchFrames = (camId: string, on: boolean) => post(`/api/cameras/${camId}/watch`, { clientId, on });
 export function postFrame(camId: string, jpeg: Blob, reqId?: string) {
-  return fetch(`/api/cameras/${camId}/frame${reqId ? `?req=${encodeURIComponent(reqId)}` : ''}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', ...(token ? { 'x-jarvis-token': token } : {}) }, body: jpeg }).catch(() => {});
+  return fetch(`/api/cameras/${camId}/frame${reqId ? `?req=${encodeURIComponent(reqId)}` : ''}`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg', ...(token ? { 'x-luxion-token': token } : {}) }, body: jpeg }).catch(() => {});
 }
 export const frameUrl = (camId: string, t: number) => `/api/cameras/${camId}/frame.jpg?t=${t}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
 /** WebRTC sinyali. Kamera gönderirken `to` izleyicinin clientId'si; izleyici gönderirken sunucu kameraya iletir. */

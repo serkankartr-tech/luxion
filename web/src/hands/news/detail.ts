@@ -22,7 +22,7 @@ export function detayHtml(o: KumeOzet, temel: TemelKume | null, a: Analiz | null
   const d = a?.detay;
   const ozet = d
     ? d.ozet.map(c => `<p>${esc(c)}</p>`).join('')
-    : `${temel?.haberler[0] ? `<p class="hb-rss">${esc(temel.haberler[0].ozet.slice(0, 260))}</p>` : ''}<div class="hb-analiz"><i></i><span>${hata ? 'Analiz alınamadı: ' + esc(hata) : 'JARVIS KAYNAKLARI OKUYOR · tam metinler · karşılaştırma'}</span></div>`;
+    : `${temel?.haberler[0] ? `<p class="hb-rss">${esc(temel.haberler[0].ozet.slice(0, 260))}</p>` : ''}<div class="hb-analiz"><i></i><span>${hata ? 'Analiz alınamadı: ' + esc(hata) : 'LUXION KAYNAKLARI OKUYOR · tam metinler · karşılaştırma'}</span></div>`;
   const sayilar = d?.sayilar.length
     ? `<section class="hb-sayilar"><h4>ÖNEMLİ SAYILAR</h4>${d.sayilar.slice(0, 3).map(s => `<div><b>${esc(s.deger)}</b><p>“${esc(s.baglam)}”</p><em>${esc(s.kaynak)}</em></div>`).join('')}</section>`
     : '';

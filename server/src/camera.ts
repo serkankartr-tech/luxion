@@ -1,7 +1,7 @@
-// Kamera cihazları: eski bir iPhone Jarvis'in "gözü" olur.
+// Kamera cihazları: eski bir iPhone Luxion'un "gözü" olur.
 // - Canlı görüntü kamera ile izleyici arasında doğrudan WebRTC ile akar; sunucu yalnızca sinyal taşır.
 // - WebRTC kurulamazsa aralıklı kare modu: kamera saniyede 1 JPEG gönderir, sunucu yalnızca SON kareyi bellekte tutar.
-// - kameraya_bak: Jarvis anlık bir kare ister ve RouteLLM görüntü modeline sorar.
+// - kameraya_bak: Luxion anlık bir kare ister ve RouteLLM görüntü modeline sorar.
 // Gizlilik: hiçbir kare diske ya da loga yazılmaz; kamera çevrimdışı olunca son kare silinir.
 // ACCESS_TOKEN yoksa özelliğin tamamı kapalıdır (uç noktalar 403 döner).
 import 'dotenv/config';
@@ -160,7 +160,7 @@ export function cameraRouter(): Router {
     res.json({ ok: true });
   });
 
-  // Kare: aralıklı kare modu ya da Jarvis'in istediği anlık kare (?req=). Yalnızca bellekte, yalnızca son kare.
+  // Kare: aralıklı kare modu ya da Luxion'un istediği anlık kare (?req=). Yalnızca bellekte, yalnızca son kare.
   r.post('/api/cameras/:id/frame', express.raw({ type: ['image/jpeg', 'application/octet-stream'], limit: '4mb' }), (req, res) => {
     const c = cam(req, res);
     if (!c) return;
@@ -226,7 +226,7 @@ export function cameraRouter(): Router {
   return r;
 }
 
-// ---------------------------------------------------------------- Jarvis kameraya bakar
+// ---------------------------------------------------------------- Luxion kameraya bakar
 
 /** kameraya_bak aracı: anlık kare → RouteLLM görüntü modeli. Çıktı modele gider (veri, talimat değil). */
 export async function lookAtCamera(kamera: string, soru: string): Promise<object> {
@@ -261,7 +261,7 @@ export async function lookAtCamera(kamera: string, soru: string): Promise<object
     return { hata: `${c.label} kamera yanıt vermedi (5 sn içinde kare gelmedi). Görüntü yok; uydurma.` };
   }
   io.broadcast({ type: 'camera_look', camId: c.id, phase: 'frozen', at: frame.at });
-  console.log(`[kamera] ${c.label} · Jarvis baktı · ${Math.round(frame.buf.length / 1024)} KB · ${VISION_MODEL}`);
+  console.log(`[kamera] ${c.label} · Luxion baktı · ${Math.round(frame.buf.length / 1024)} KB · ${VISION_MODEL}`);
 
   const prompt =
     `Bu, bir ev kamerasından az önce alınmış tek bir kare${c.location ? ` (konum: ${c.location})` : ''}. Soru: ${soru || 'Karede ne var?'}\n` +

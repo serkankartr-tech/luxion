@@ -5,7 +5,7 @@ import { voice } from '../lib/speech';
 import { iz } from './iz';
 import type { VoiceSel } from '../lib/types';
 
-export type Karakter = 'jarvis' | 'friday';
+export type Karakter = 'luxion' | 'iris';
 export interface TOlay { olay: string; [k: string]: any }
 export interface Satir { id: number; kim: Karakter | 'user'; metin: string; tamam: boolean }
 export interface Tutanak { title: string; date: string; participants: string[]; decisions: string[]; open_questions: string[]; action_items: { who: string; what: string; when: string }[]; summary: string }
@@ -15,7 +15,7 @@ export interface Gorunum {
   id: string | null;
   mod: 'tartisma' | 'canli';
   demo: boolean;
-  /** dinliyor · jarvis · friday · uzlasma · tutanak · bitti · hazirlaniyor */
+  /** dinliyor · luxion · iris · uzlasma · tutanak · bitti · hazirlaniyor */
   durum: string;
   konusan: Karakter | null;
   satirlar: Satir[];
@@ -24,7 +24,7 @@ export interface Gorunum {
   kivilcim: number;
   sonuc: Uzlasma | null;
   tutanak: (Tutanak & { dosya?: string }) | null;
-  modeller: { jarvis: string; friday: string; hakem: string; ayniAile?: boolean } | null;
+  modeller: { luxion: string; iris: string; hakem: string; ayniAile?: boolean } | null;
   karakterler: Record<Karakter, { ad: string; hitap: string; renk: string }> | null;
   maliyet: { token: number; tts: number; cagri: number };
   tur: number;
@@ -139,7 +139,7 @@ export class Oynatici {
     }
   }
 
-  /** İtiraz gibi görünen Friday cümlesi gelince kıvılcım (hakemden önce de) */
+  /** İtiraz gibi görünen Iris cümlesi gelince kıvılcım (hakemden önce de) */
   itiraz() { this.guncelle({ kivilcim: performance.now() }); }
 
   /** Araya girme / dur: ses anında kesilir, kuyruk boşalır; en son çalan cümle döner */

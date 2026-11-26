@@ -15,7 +15,7 @@ export interface ExtraCtx {
   W: number; H: number; dpr: number;
   renderer: BodyRenderer;
   fx: Fx; sfx: Sfx;
-  /** Jarvis söylesin; söz cümle bitince çözülür */
+  /** Luxion söylesin; söz cümle bitince çözülür */
   say(text: string): Promise<void> | void;
   /** Oda modu: kullanıcının odası görünür */
   oda: boolean;
@@ -37,6 +37,6 @@ export interface ExtraNumara {
   lens?(now: number): Lens | null;
   command?(cmd: SpaceCmd, now: number, ctx: ExtraCtx): Promise<void> | void;
   stop?(ctx: ExtraCtx): void;
-  /** Jarvis'in sohbet bağlamı için kısa durum */
+  /** Luxion'un sohbet bağlamı için kısa durum */
   durum?(): object;
 }

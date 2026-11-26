@@ -36,7 +36,7 @@ interface Ast { x: number; y: number; vx: number; vy: number; held: string | nul
 
 export class AsteroidStrike implements ExtraNumara {
   ad = "DÜNYA'YA ASTEROİT";
-  ipucu = '🤏 boşlukta çimdik: asteroit · Dünya\'ya savur   ·   "Jarvis, 20 kilometrelik asteroit"   ·   "sıfırla"';
+  ipucu = '🤏 boşlukta çimdik: asteroit · Dünya\'ya savur   ·   "Luxion, 20 kilometrelik asteroit"   ·   "sıfırla"';
   private earth: Body | null = null;
   private ast: Ast | null = null;
   private Dkm = 10;

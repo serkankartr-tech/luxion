@@ -29,7 +29,7 @@ export class Kanal {
     const el = document.createElement('div');
     el.className = 'hb-kanal';
     el.innerHTML = `
-      <div class="hb-logo"><b>JARVIS</b><span>HABER</span><i class="hb-canli"><em></em>CANLI</i></div>
+      <div class="hb-logo"><b>LUXION</b><span>HABER</span><i class="hb-canli"><em></em>CANLI</i></div>
       <div class="hb-saat"><b></b><span></span></div>
       <nav class="hb-serit"></nav>
       <div class="hb-durum"></div>

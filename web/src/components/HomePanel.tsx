@@ -10,7 +10,7 @@ export interface FilterCoffee { id: string; ad: string; oda: string; tur: 'filtr
 export type HomeDevice = Light | TurkishCoffee | FilterCoffee;
 export interface HomeState { mode: 'simulasyon' | 'homeassistant'; devices: HomeDevice[]; real: string[]; last?: { id: string; ozet: string } }
 
-const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-jarvis-token': token } : {}) });
+const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-luxion-token': token } : {}) });
 export const getHome = (): Promise<HomeState | null> => fetch('/api/home', { headers: headers() }).then(r => (r.ok ? r.json() : null)).catch(() => null);
 export const homeAct = (id: string, body: object) => fetch(`/api/home/${id}`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
 
@@ -107,13 +107,13 @@ export function HomePanel({ home, onClose }: { home: HomeState; onClose(): void 
           {turk?.tur === 'turk_kahve' && <TurkishCard d={turk} now={now} />}
           {filtre?.tur === 'filtre_kahve' && <FilterCard d={filtre} now={now} />}
         </div>
-        <p className="hp-hint">Sesle de olur: "Jarvis, salonun ışığını aç", "çalışma odasını yüzde otuz yap", "filtre kahveyi iki fincan demle".</p>
+        <p className="hp-hint">Sesle de olur: "Luxion, salonun ışığını aç", "çalışma odasını yüzde otuz yap", "filtre kahveyi iki fincan demle".</p>
       </motion.div>
     </motion.div>
   );
 }
 
-/** Jarvis bir cihazı değiştirince ekranın üstünde kısa HUD bildirimi */
+/** Luxion bir cihazı değiştirince ekranın üstünde kısa HUD bildirimi */
 export function HomeToast({ text }: { text: string }) {
   return (
     <motion.div className="home-toast" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>

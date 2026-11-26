@@ -29,7 +29,7 @@ import type { GokCmd } from './sky/GokyuzuModu';
 import { bekciDemo, type Analiz as BekciAnaliz } from './bekci/api';
 import { toplantiBaslat, toplantiBitir, toplantiKes, toplantiOlayi } from './toplanti/api';
 import { toplantiKomutu } from './toplanti/komutlar';
-import { ultronKomutu } from './ultron/komutlar';
+import { noxionKomutu } from './noxion/komutlar';
 import { emitCamera, getCameras, getRole, isCameraEvent, onCamera, setRole, toggleCameraPanel } from './lib/camera';
 import { BeyinKurulum, DEMO_ANAHTARI } from './components/BeyinKurulum';
 import { type AppState, type ElevenUsage, clearConversation, setServerStt, serverStt, detectDevice, getDashboard, getHealth, getState, getVoices, metric, postAttention, postSleep, postWake, previewUrl, saveDevice, saveSettings, sendChat, setPhotoMode, stt, subscribe, token, clientId } from './lib/api';
@@ -38,7 +38,7 @@ import { shrinkImage } from './lib/image';
 import { recorderSupported, startRecording } from './lib/recorder';
 import { Markdown } from './lib/markdown';
 import { createRecognizer, speechRecognitionSupported, voice } from './lib/speech';
-import { DEVICE_LABEL, type CoreState, type CurrencyCode, type Dashboard, type Device, type GreetingPeriod, type Health, type JarvisReply, type Sahne, type ServerEvent, type StoredMessage, type UiMode, type VoiceOption, type VoiceSel, type WakeConfig } from './lib/types';
+import { DEVICE_LABEL, type CoreState, type CurrencyCode, type Dashboard, type Device, type GreetingPeriod, type Health, type LuxionReply, type Sahne, type ServerEvent, type StoredMessage, type UiMode, type VoiceOption, type VoiceSel, type WakeConfig } from './lib/types';
 import { atServerTime, clockInfo, keepAwake, listenForCommand, preciseTimeout, startClockSync, syncClock, type CommandListen } from './lib/wake';
 
 type Highlight = CurrencyCode | 'weather';
@@ -55,14 +55,14 @@ function highlightsFor(text: string): Highlight[] {
   return out;
 }
 
-const SUGGESTIONS = ['Jarvis, aydınlat beni', 'Devam et'];
+const SUGGESTIONS = ['Luxion, aydınlat beni', 'Devam et'];
 
 /** Akışla gelen cevap: sahneler geldikçe dolar, oynatıcı bir sonraki sahneyi bekler. */
-interface Live { id: string; scenes: Sahne[]; voice?: VoiceSel; ended: boolean; wake: (() => void) | null; base: JarvisReply }
+interface Live { id: string; scenes: Sahne[]; voice?: VoiceSel; ended: boolean; wake: (() => void) | null; base: LuxionReply }
 const wakeLive = (l: Live) => { const w = l.wake; l.wake = null; w?.(); };
 const waitScene = (l: Live, i: number) => new Promise<void>(res => { if (l.scenes[i] || l.ended) res(); else l.wake = res; });
 /** Rozet: router → gerçekten çalışan alt model */
-const brainLabel = (r: JarvisReply) => (r.router && r.model && r.router !== r.model ? `${r.router} → ${r.model}` : r.model);
+const brainLabel = (r: LuxionReply) => (r.router && r.model && r.router !== r.model ? `${r.router} → ${r.model}` : r.model);
 const voiceGroup = (v: VoiceOption) => v.label.split(' · ').slice(1).join(' · ') || v.model;
 const voiceTone = (f0: number | null) => (f0 === null ? '' : f0 < 110 ? 'derin' : f0 < 160 ? 'orta' : 'ince');
 
@@ -74,13 +74,13 @@ const Kitapligim = lazy(() => import('./library/Kitapligim'));
 const GokyuzuModu = lazy(() => import('./sky/GokyuzuModu'));
 const BekciPanel = lazy(() => import('./bekci/BekciPanel'));
 const ToplantiOdasi = lazy(() => import('./toplanti/ToplantiOdasi'));
-const SavasModu = lazy(() => import('./ultron/SavasModu'));
-const UltronGozu = lazy(() => import('./ultron/goz/UltronGozu'));
-const UltronKayit = lazy(() => import('./ultron/UltronKayit'));
-const UltronSecici = lazy(() => import('./ultron/UltronSecici'));
+const SavasModu = lazy(() => import('./noxion/SavasModu'));
+const NoxionGozu = lazy(() => import('./noxion/goz/NoxionGozu'));
+const NoxionKayit = lazy(() => import('./noxion/NoxionKayit'));
+const NoxionSecici = lazy(() => import('./noxion/NoxionSecici'));
 /** ?el=1 açılışta el kontrolünü açar, ?el=demo kamerasız sentetik ellerle gösterir */
 const EL_PARAM = ((q: string | null) => (q === 'demo' ? 'demo' : q === '1' || q === 'kamera' ? 'kamera' : null))(new URLSearchParams(location.search).get('el'));
-/** "Jarvis, el kontrolünü aç / kapat" — sunucuya gitmeden arayüzde karşılanır */
+/** "Luxion, el kontrolünü aç / kapat" — sunucuya gitmeden arayüzde karşılanır */
 const EL_OPEN = /\b(el kontrol[a-zçğıöşü]*|büyü modu[a-zçğıöşü]*)\b.*\b(aç|başlat|etkinleştir)|^(el kontrolü|büyü modu)$/i;
 const EL_CLOSE = /\b(el kontrol[a-zçğıöşü]*|büyü modu[a-zçğıöşü]*)\b.*\b(kapat|durdur)/i;
 /** ?el=demo&kitaplik=1: kitaplık demosu (prosedürel raf) */
@@ -90,29 +90,29 @@ const MOD_PARAM = new URLSearchParams(location.search).get('mod');
 const EL_UZAY = MOD_PARAM === 'uzay' || MOD_PARAM === 'lab' || MOD_PARAM === 'gosteri' || MOD_PARAM === 'ekstra';
 /** ?el=1&mod=haber: El Kontrolü Haber Modu'nda açılır */
 const EL_HABER = MOD_PARAM === 'haber';
-/** "Jarvis, kitaplığımı aç" / "kitaplığımı göster": Kitaplığım ekranı */
+/** "Luxion, kitaplığımı aç" / "kitaplığımı göster": Kitaplığım ekranı */
 /** Gece Gökyüzü Modu: ?gok=1 açık başlar · ?gok=demo örnek fotoğrafla (internetsiz) · &isaret=demo sentetik el */
 const GOK_PARAM = new URLSearchParams(location.search).get('gok');
 const ISARET_DEMO = new URLSearchParams(location.search).get('isaret') === 'demo';
-/** "Jarvis, gökyüzünü tara" · "gece gökyüzü modunu aç" (modele gitmez) */
+/** "Luxion, gökyüzünü tara" · "gece gökyüzü modunu aç" (modele gitmez) */
 const GOK_AC = /g[öo]ky[üu]z[üu]n[üu]\s+tar|gece\s+g[öo]ky[üu]z[üu]|g[öo]ky[üu]z[üu]\s+modu/i;
 const GOK_SIM = /(g[öo]ky[üu]z[üu]\s+)?sim[üu]lasyon(u|una)?\s*(a[çc]|ge[çc]|g[öo]ster)/i;
 /** Bekçi: ?bekci=1 panel açık başlar · ?bekci=demo örnek dolandırıcı SMS'i akışa sokar (ağ isteği yok) */
 const BEKCI_PARAM = new URLSearchParams(location.search).get('bekci');
 /** Toplantı Odası: ?toplanti=1 canlı toplantı · ?toplanti=demo kayıtlı tartışma senaryosu (LLM yok, ses gerçek) */
 const TOPLANTI_PARAM = new URLSearchParams(location.search).get('toplanti');
-/** Ultron Paketi: ?ultron=savas|goz · ?ultron-final=A|B · ?ultron-preview=28.5 (tek kare) · ?ultron-record=war|eye|full&aspect=9:16 (kayıt) */
-const ULTRON_Q = new URLSearchParams(location.search);
-const ULTRON_ILK = ULTRON_Q.get('ultron');
-const ULTRON_FINAL = (['A', 'B'] as const).find(f => f === ULTRON_Q.get('ultron-final')?.toUpperCase());
-const ULTRON_ONIZLEME = ULTRON_Q.get('ultron-preview') != null ? Number(ULTRON_Q.get('ultron-preview')!.replace(/^t=/, '')) : null;
-const ULTRON_KAYIT = (['war', 'eye', 'full'] as const).find(m => m === ULTRON_Q.get('ultron-record')) ?? null;
+/** Noxion Paketi: ?noxion=savas|goz · ?noxion-final=A|B · ?noxion-preview=28.5 (tek kare) · ?noxion-record=war|eye|full&aspect=9:16 (kayıt) */
+const NOXION_Q = new URLSearchParams(location.search);
+const NOXION_ILK = NOXION_Q.get('noxion');
+const NOXION_FINAL = (['A', 'B'] as const).find(f => f === NOXION_Q.get('noxion-final')?.toUpperCase());
+const NOXION_ONIZLEME = NOXION_Q.get('noxion-preview') != null ? Number(NOXION_Q.get('noxion-preview')!.replace(/^t=/, '')) : null;
+const NOXION_KAYIT = (['war', 'eye', 'full'] as const).find(m => m === NOXION_Q.get('noxion-record')) ?? null;
 const KITAPLIGIM_AC = /kitapl[ıi][gğ][ıi]m[ıi]?\s+(aç|göster|getir)/i;
 /** ?kitapligim=1: Kitaplığım açık başlar (deneme) */
 const KITAPLIGIM_PARAM = new URLSearchParams(location.search).get('kitapligim') === '1';
-/** "Jarvis, kitaplığımı tara" / "kitaplığı tarar mısın" / "rafları tara" (El Kontrolü kamerasıyla) */
+/** "Luxion, kitaplığımı tara" / "kitaplığı tarar mısın" / "rafları tara" (El Kontrolü kamerasıyla) */
 const KITAPLIK_TARA = /(kitapl[ıi]k|kitapl[ıi][gğ][ıi](m[ıi])?|raflar[ıi](m[ıi])?)\s.*?\btar(a|ar|at)/i;
-/** El Kontrolü açıkken: "Jarvis, Mars yap", "Jüpiter'e çevir", "gezegeni Dünya yap", "Güneş olsun" */
+/** El Kontrolü açıkken: "Luxion, Mars yap", "Jüpiter'e çevir", "gezegeni Dünya yap", "Güneş olsun" */
 const GEZEGEN_KOMUT = /(?:^|\s)(dünya|mars|jüpiter|jupiter|satürn|saturn|ay|güneş)(?:['’]?(?:y?[aeıiuü]|[dt][ae]|n[ıiuü]n))?\s+(yap|çevir|olsun|getir|dönüştür|oluştur)/i;
 const GEZEGEN_ADI: Record<string, GezegenTur> = { dünya: 'dunya', mars: 'mars', jüpiter: 'jupiter', jupiter: 'jupiter', satürn: 'saturn', saturn: 'saturn', ay: 'ay', güneş: 'gunes' };
 /** ?ui=mark2 ya da ?ui=mark1: ortak ayarı değiştirmeden yalnızca bu sekmede dene */
@@ -151,7 +151,7 @@ export default function App() {
   const [photoMode, setMode] = useState<'haber' | 'video'>('haber');
   const [core, setCore] = useState<CoreState>('idle');
   const [telemetry, setTelemetry] = useState<string[]>([]);
-  const [reply, setReply] = useState<JarvisReply | null>(null);
+  const [reply, setReply] = useState<LuxionReply | null>(null);
   const [sceneIdx, setSceneIdx] = useState(-1);
   const [model, setModel] = useState<string | null>(null);
   const [input, setInput] = useState('');
@@ -181,7 +181,7 @@ export default function App() {
   const [dash, setDash] = useState<Dashboard | null>(null);
   const [dashTried, setDashTried] = useState(false);
   const [hl, setHl] = useState<Highlight[]>(NO_HIGHLIGHT);
-  // Jarvis içinde açılan YouTube videosu
+  // Luxion içinde açılan YouTube videosu
   const [video, setVideo] = useState<VideoInfo | null>(null);
   const videoRef = useRef(video);
   videoRef.current = video;
@@ -217,11 +217,11 @@ export default function App() {
     toplantiDemoBasladi.current = true;
     setTimeout(() => toplantiBaslat({ mod: 'tartisma', demo: true }).catch(() => {}), 1200);
   }, [connected]);
-  const [ultronSecici, setUltronSecici] = useState(false);
-  const [ultron, setUltron] = useState<{ mod: 'savas' | 'goz'; gecis?: boolean } | null>(ULTRON_KAYIT ? null : ULTRON_ILK === 'savas' || ULTRON_ONIZLEME != null ? { mod: 'savas' } : ULTRON_ILK === 'goz' ? { mod: 'goz' } : null);
-  const ultronRef = useRef(ultron);
-  ultronRef.current = ultron;
-  /** Ultron'un Gözü açıkken söylenen/yazılan her şey panele gider */
+  const [noxionSecici, setNoxionSecici] = useState(false);
+  const [noxion, setNoxion] = useState<{ mod: 'savas' | 'goz'; gecis?: boolean } | null>(NOXION_KAYIT ? null : NOXION_ILK === 'savas' || NOXION_ONIZLEME != null ? { mod: 'savas' } : NOXION_ILK === 'goz' ? { mod: 'goz' } : null);
+  const noxionRef = useRef(noxion);
+  noxionRef.current = noxion;
+  /** Noxion'un Gözü açıkken söylenen/yazılan her şey panele gider */
   const gozGirdi = useRef<((t: string) => void) | null>(null);
   const toplantiKapat = () => { voice.stop(); void toplantiKes(null).catch(() => {}); setToplanti(null); };
   const [bekci, setBekci] = useState(BEKCI_PARAM !== null);
@@ -243,7 +243,7 @@ export default function App() {
   /** Takipteki haberde gelişme: ekranın üstünde bant (haber modu kapalıyken de) */
   const [gelisme, setGelisme] = useState<{ baslik: string; ek: string; soz: string; n: number } | null>(null);
   const sohbetRef = useRef<{ id: string; ad: string; at: number } | null>(null);
-  /** Jarvis'in önerdiği kitap (El Kontrolü'nde raftan çıkar) ve öneri listesinin sürümü (Kitaplığım) */
+  /** Luxion'un önerdiği kitap (El Kontrolü'nde raftan çıkar) ve öneri listesinin sürümü (Kitaplığım) */
   const [oneriCmd, setOneriCmd] = useState<{ id: string; ad: string | null; n: number } | null>(null);
   const [oneriKey, setOneriKey] = useState(0);
   /** Açık kitaba sesle eklenen kayıt: El Kontrolü'nde ve Kitaplığım'da kalemle yazılır */
@@ -268,7 +268,7 @@ export default function App() {
   /** "Kamera" düğmesi: canlı kamera paneli; bağlı kamera yoksa nasıl bağlanacağını söyler */
   const openLiveCamera = () => {
     if (!cameraEnabled) return flash('Kamera özelliği kapalı: sunucuda ACCESS_TOKEN tanımlı değil.');
-    if (!camCount) return flash("Henüz kamera cihazı bağlı değil efendim. Eski iPhone'da Jarvis'i açıp Ayarlar → Bu cihazın rolü → Kamera seçin.");
+    if (!camCount) return flash("Henüz kamera cihazı bağlı değil efendim. Eski iPhone'da Luxion'u açıp Ayarlar → Bu cihazın rolü → Kamera seçin.");
     toggleCameraPanel();
   };
   const ui: UiMode = UI_OVERRIDE ?? uiShared;
@@ -346,7 +346,7 @@ export default function App() {
       const minMs = sc.gorsel.tip !== 'yok' ? 1200 : 0;
       await Promise.all([voice.speak(sc.ses, l.voice, i + 1, n, ctx(i)), new Promise(r => setTimeout(r, minMs))]);
       if (playToken.current !== my) return;
-      // Video sahnesi: cümleden sonra video Jarvis'in içinde açılır, cevap burada biter (sesler çakışmasın)
+      // Video sahnesi: cümleden sonra video Luxion'un içinde açılır, cevap burada biter (sesler çakışmasın)
       if (sc.gorsel.tip === 'video') {
         setVideo({ id: sc.gorsel.youtube_id, title: sc.gorsel.baslik, channel: sc.gorsel.kanal, external: !!sc.gorsel.harici, vertical: !!sc.gorsel.dikey });
         break;
@@ -360,7 +360,7 @@ export default function App() {
   }, []);
 
   /** Tamamlanmış bir cevabı (geçmişten) baştan oynatır. */
-  const play = useCallback((r: JarvisReply) => {
+  const play = useCallback((r: LuxionReply) => {
     const l: Live = { id: r.id, scenes: r.sahneler.slice(), voice: r.voice, ended: true, wake: null, base: r };
     liveRef.current = l;
     setReply(r);
@@ -442,7 +442,7 @@ export default function App() {
     voice.speak(text, e.voice).then(() => {
       voice.onPlay = prev;
       end();
-      if (e.brief && playToken.current === my) submit('Jarvis, aydınlat beni');
+      if (e.brief && playToken.current === my) submit('Luxion, aydınlat beni');
       // Sabah ilk uyanış: El Kontrolü haber modunda, sabah özetiyle açılır
       if (e.sabah && playToken.current === my) {
         setStartHaber(true); setStartUzay(false);
@@ -635,7 +635,7 @@ export default function App() {
           if (!mine) break;
           let l = liveRef.current;
           if (!l || l.id !== e.replyId) {
-            const base: JarvisReply = { id: e.replyId, sahneler: [], detay: '', model: null, tool_log: [], device, created_at: new Date().toISOString(), voice: e.voice };
+            const base: LuxionReply = { id: e.replyId, sahneler: [], detay: '', model: null, tool_log: [], device, created_at: new Date().toISOString(), voice: e.voice };
             l = { id: e.replyId, scenes: [], voice: e.voice, ended: false, wake: null, base };
             liveRef.current = l;
             l.scenes[e.index] = e.sahne;
@@ -717,9 +717,9 @@ export default function App() {
           break;
         case 'dashboard': setDash(e.data); setDashTried(true); break;
         case 'cleared': setMessages([]); setReply(null); setSceneIdx(-1); break;
-        // Jarvis'in yasam_izi_tara aracı: taramayı ekranda başlat (adımları cevabın sahneleri ilerletir)
+        // Luxion'un yasam_izi_tara aracı: taramayı ekranda başlat (adımları cevabın sahneleri ilerletir)
         case 'lab_cmd': if (mine && handsRef.current) setSpaceCmd(c => ({ cmd: e.cmd as SpaceCmd, n: (c?.n ?? 0) + 1 })); break;
-        // Jarvis'in gokyuzu aracı: modu aç, animasyonu yeniden oynat ya da yıldızı vurgula
+        // Luxion'un gokyuzu aracı: modu aç, animasyonu yeniden oynat ya da yıldızı vurgula
         case 'gok_cmd': if (mine) { if (e.cmd.tip === 'tara' && !gokRef.current) setGok(true); else setGokCmd(c => ({ cmd: e.cmd as GokCmd, n: (c?.n ?? 0) + 1 })); } break;
       }
     }, setConnected);
@@ -789,14 +789,14 @@ export default function App() {
     }
     // 20 dakika sessizlik: kitap sohbeti kendiliğinden biter
     if (sohbetRef.current && !sohbetIlk && simdi() - sohbetRef.current.at > 20 * 60_000) { sohbetRef.current = null; setKitapSohbeti(null); }
-    // Ultron Paketi: Savaş Modu / Ultron'un Gözü / Jarvis'i geri getir (modele gitmez). Göz açıkken sözler Ultron'a gider.
-    const uk = !image ? ultronKomutu(t, ultronRef.current?.mod ?? null) : null;
+    // Noxion Paketi: Savaş Modu / Noxion'un Gözü / Luxion'u geri getir (modele gitmez). Göz açıkken sözler Noxion'a gider.
+    const uk = !image ? noxionKomutu(t, noxionRef.current?.mod ?? null) : null;
     if (uk) {
       voice.unlock(); voice.stop(); setInput(''); setInterim(''); setCore('idle');
-      setUltron(uk.tip === 'kapat' ? null : { mod: uk.tip === 'savas' ? 'savas' : 'goz' });
+      setNoxion(uk.tip === 'kapat' ? null : { mod: uk.tip === 'savas' ? 'savas' : 'goz' });
       return;
     }
-    if (!image && ultronRef.current?.mod === 'goz' && gozGirdi.current) { setInput(''); setInterim(''); setCore('idle'); gozGirdi.current(t); return; }
+    if (!image && noxionRef.current?.mod === 'goz' && gozGirdi.current) { setInput(''); setInterim(''); setCore('idle'); gozGirdi.current(t); return; }
     // Gece Gökyüzü: aç / yeniden tara / simülasyon (modele gitmez). Diğer gökyüzü soruları gokyuzu aracıyla modele gider.
     if (!image && (GOK_AC.test(t) || (gokRef.current && GOK_SIM.test(t)))) {
       voice.unlock(); setInput(''); setInterim('');
@@ -855,7 +855,7 @@ export default function App() {
       return;
     }
     // Açık kitap (El Kontrolü ya da Kitaplığım): "okundu listesine ekle", "120. sayfadayım", "şu alıntıyı ekle: …",
-    // "not al: …", "bu kitabın adı …", "bunu özetle". Modele gitmez; El Kontrolü'nde kalem yazar, Jarvis kısa onay verir.
+    // "not al: …", "bu kitabın adı …", "bunu özetle". Modele gitmez; El Kontrolü'nde kalem yazar, Luxion kısa onay verir.
     const kk = !image && openBook.current ? matchBookCommand(t) : null;
     if (kk && openBook.current) {
       voice.unlock(); setInput(''); setInterim('');
@@ -933,7 +933,7 @@ export default function App() {
 
   /**
    * Uzay modunda mikrofon: Chrome'un konuşma tanıması ara sonuçlarıyla. Komut cümle biterken yakalanır (STT'yi
-   * beklemez); komut değilse cümle bitince normal Jarvis'e gider. Desteklenmiyorsa her zamanki yol.
+   * beklemez); komut değilse cümle bitince normal Luxion'a gider. Desteklenmiyorsa her zamanki yol.
    */
   const startSpaceListen = () => {
     let handled = false;
@@ -1038,13 +1038,13 @@ export default function App() {
     });
   };
 
-  // Takipteki haberde gelişme: bant çıkınca Jarvis söyler
+  // Takipteki haberde gelişme: bant çıkınca Luxion söyler
   const gelismeN = gelisme?.n ?? 0;
   useEffect(() => { if (gelisme) void speakLine(gelisme.soz); }, [gelismeN]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (bekciSoz) void speakLine(bekciSoz.metin); }, [bekciSoz?.n]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Yüz kilidi: seçili sesle tek cümle. Sesi sunucuda önceden hazır (server/src/scripted.ts YUZ_KILIDI ile aynı metin).
-   *  En fazla dakikada bir; Jarvis başka bir şey anlatıyorsa araya girmez. */
+   *  En fazla dakikada bir; Luxion başka bir şey anlatıyorsa araya girmez. */
   const faceGreetAt = useRef(0);
   const onFaceLock = () => {
     const now = Date.now();
@@ -1062,7 +1062,7 @@ export default function App() {
   /** El Kontrolü kapandı: bir sonraki açılış büyü modunda, bekleyen uzay komutu yok */
   const closeHands = () => { setHands(null); setSpaceCmd(null); setNewsCmd(null); setStartUzay(false); setStartHaber(false); elMod.current = 'buyu'; };
 
-  /** El Kontrolü modu değişti. Uzaya geçince Jarvis'in bütün uzay cümleleri önceden yüklenir (komutta ses beklemez). */
+  /** El Kontrolü modu değişti. Uzaya geçince Luxion'un bütün uzay cümleleri önceden yüklenir (komutta ses beklemez). */
   const onElMod = (m: 'buyu' | 'uzay' | 'haber') => {
     elMod.current = m;
     if (m === 'uzay' && voiceSel) for (const line of tumCumleler()) voice.preload(line, voiceSel, undefined, undefined, true);
@@ -1085,7 +1085,7 @@ export default function App() {
   };
   const toggleHands = () => { voice.unlock(); if (handsRef.current) closeHands(); else setHands('kamera'); };
 
-  // Kamera / galeri: Jarvis'in "gözü"
+  // Kamera / galeri: Luxion'un "gözü"
   const onPhoto = async (f: File | undefined) => {
     if (!f) return;
     try {
@@ -1169,7 +1169,7 @@ export default function App() {
     return () => { window.removeEventListener('pointerdown', onGesture, true); window.removeEventListener('keydown', onGesture, true); };
   }, []);
 
-  // Boşta kalınca uyku (yalnızca bu cihaz). Jarvis konuşurken/düşünürken, çekmece ya da kalibrasyon açıkken saymaz.
+  // Boşta kalınca uyku (yalnızca bu cihaz). Luxion konuşurken/düşünürken, çekmece ya da kalibrasyon açıkken saymaz.
   useEffect(() => {
     const id = setInterval(() => {
       const mins = wakeRef.current?.idleMinutes ?? 0;
@@ -1200,10 +1200,10 @@ export default function App() {
     setMicError(null);
     let alive = true;
     let quietUntil = 0;
-    // Jarvis konuşurken, komut dinlenirken ve ses bittikten sonraki 600 ms boyunca analiz yok (kendi sesi tetiklemesin)
+    // Luxion konuşurken, komut dinlenirken ve ses bittikten sonraki 600 ms boyunca analiz yok (kendi sesi tetiklemesin)
     const paused = () => {
       if (voice.isPlaying()) { quietUntil = performance.now() + 600; return true; }
-      return !!commandRef.current || !!ultronRef.current || performance.now() < quietUntil || (wstateRef.current === 'attention' && !calibRef.current);
+      return !!commandRef.current || !!noxionRef.current || performance.now() < quietUntil || (wstateRef.current === 'attention' && !calibRef.current);
     };
     const cfg = wakeRef.current!;
     startClapListener(ctx, { sens: cfg.sens, rhythm: cfg.rhythmOn ? cfg.rhythm : null }, {
@@ -1229,7 +1229,7 @@ export default function App() {
     d.rhythm = wake.rhythmOn ? wake.rhythm : null;
   }, [wake]);
 
-  // ---- Yalnızca "uyan Jarvis" modu: uykudayken döngüde dinle (konuşma duyulmazsa istek gitmez) ----
+  // ---- Yalnızca "uyan Luxion" modu: uykudayken döngüde dinle (konuşma duyulmazsa istek gitmez) ----
   const voiceLoop = !!wake && wake.enabled && wake.mode === 'voice' && device === wake.listener && wstate === 'sleep';
   useEffect(() => {
     if (!voiceLoop) return;
@@ -1338,7 +1338,7 @@ export default function App() {
             onSky={() => setGok(true)}
             onBekci={() => setBekci(true)}
             onToplanti={() => { voice.unlock(); setToplanti({ canli: false }); }}
-            onUltron={() => { voice.unlock(); setUltronSecici(true); }}
+            onNoxion={() => { voice.unlock(); setNoxionSecici(true); }}
             onStop={stopPlayback}
             onDrawer={d => setDrawer(drawer === d ? null : d)}
             onSleep={() => { voice.unlock(); postSleep(); }}
@@ -1435,7 +1435,7 @@ export default function App() {
         <footer className="dock">
           <button className="icon-btn" onClick={() => setDrawer(drawer ? null : 'gecmis')} aria-label="Menü">☰</button>
           <form className="ask" onSubmit={e => { e.preventDefault(); submit(input); }}>
-            <input value={input} onChange={e => setInput(e.target.value)} placeholder="Jarvis'e sor…" enterKeyHint="send" />
+            <input value={input} onChange={e => setInput(e.target.value)} placeholder="Luxion'a sor…" enterKeyHint="send" />
           </form>
           <button className="icon-btn cam" onClick={() => setKitapligim(true)} aria-label="Kitaplığım" title="Kitaplığım (K)">
             <svg viewBox="0 0 24 24"><path d="M4 4h3v16H4zM9 4h3v16H9z" /><path d="M14.5 5.2l2.9-.8 3.6 15-2.9.8z" /></svg>
@@ -1446,7 +1446,7 @@ export default function App() {
           <button className="icon-btn cam" onClick={() => setBekci(true)} aria-label="Bekçi" title="Bekçi (B)">
             <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z" /><path d="M9 12l2 2 4-4" /></svg>
           </button>
-          <button className="icon-btn cam" onClick={() => { voice.unlock(); setUltronSecici(true); }} aria-label="Ultron" title="Ultron: Savaş Modu ve Ultron'un Gözü">
+          <button className="icon-btn cam" onClick={() => { voice.unlock(); setNoxionSecici(true); }} aria-label="Noxion" title="Noxion: Savaş Modu ve Noxion'un Gözü">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" /><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4M5.3 5.3l2.9 2.9M15.8 15.8l2.9 2.9M5.3 18.7l2.9-2.9M15.8 8.2l2.9-2.9" /></svg>
           </button>
           <button className="icon-btn cam" onClick={() => setGok(true)} aria-label="Gece gökyüzü" title="Gece gökyüzü">
@@ -1488,7 +1488,7 @@ export default function App() {
                   {messages.length === 0 && <p className="muted">Konuşma boş.</p>}
                   {messages.map((m, i) => (
                     <li key={i} className={m.role}>
-                      <span className="who">{m.role === 'user' ? `sen · ${DEVICE_LABEL[m.device]}` : 'jarvis'}</span>
+                      <span className="who">{m.role === 'user' ? `sen · ${DEVICE_LABEL[m.device]}` : 'luxion'}</span>
                       <span className="txt">{m.text}</span>
                       {m.reply && <button className="replay" onClick={() => { voice.unlock(); setDrawer(null); play(m.reply!); }}>▶ burada oynat</button>}
                     </li>
@@ -1512,15 +1512,15 @@ export default function App() {
                   <ProfileSettings flash={flash} />
                   <label>Kitaplık</label>
                   <button className="lib-btn" onClick={() => { setDrawer(null); setKitapligim(true); }}>📚 Kitaplığım'ı aç</button>
-                  <p className="muted small">Kitaplar, 6 bölümün fotoğrafları, notlar, alıntılar ve telefonda kitaplık kamerası. Kısayol: <b>K</b> · sesle: "Jarvis, kitaplığımı aç".</p>
+                  <p className="muted small">Kitaplar, 6 bölümün fotoğrafları, notlar, alıntılar ve telefonda kitaplık kamerası. Kısayol: <b>K</b> · sesle: "Luxion, kitaplığımı aç".</p>
                   <label>Bu cihazın rolü</label>
                   <div className="seg">
                     <button className={getRole() === 'ekran' ? 'on' : ''} onClick={() => setRole('ekran')}>Ekran</button>
-                    <button className={getRole() === 'kamera' ? 'on' : ''} disabled={!cameraEnabled} onClick={() => setRole('kamera')}>Kamera (Jarvis'in gözü)</button>
+                    <button className={getRole() === 'kamera' ? 'on' : ''} disabled={!cameraEnabled} onClick={() => setRole('kamera')}>Kamera (Luxion'un gözü)</button>
                   </div>
                   <p className="muted small">
                     {cameraEnabled
-                      ? 'Kamera rolünde bu cihaz Jarvis arayüzü yerine kamera ekranını açar; görüntüsü diğer ekranlarda canlı izlenir ve Jarvis istenince ona bakar.'
+                      ? 'Kamera rolünde bu cihaz Luxion arayüzü yerine kamera ekranını açar; görüntüsü diğer ekranlarda canlı izlenir ve Luxion istenince ona bakar.'
                       : 'Kamera özelliği kapalı: sunucuda ACCESS_TOKEN tanımlı değil. Görüntü taşıyan bir özellik olduğu için erişim anahtarı olmadan açılmaz (README → Kamera cihazı).'}
                   </p>
                   <label>Bu cihaz</label>
@@ -1567,7 +1567,7 @@ export default function App() {
                   )}
                   <label>Konuşma hızı · {(speedDraft ?? voiceSel?.speed ?? 1.08).toLocaleString('tr-TR')}×</label>
                   <input className="range" type="range" min={0.9} max={1.3} step={0.02} value={speedDraft ?? voiceSel?.speed ?? 1.08} onChange={e => setSpeedDraft(Number(e.target.value))} />
-                  <label>Jarvis efekti (sahne geçiş sesi)</label>
+                  <label>Luxion efekti (sahne geçiş sesi)</label>
                   <div className="seg">
                     <button className={sfxOn ? 'on' : ''} onClick={() => saveSettings({ sfx: true })}>Açık</button>
                     <button className={!sfxOn ? 'on' : ''} onClick={() => saveSettings({ sfx: false })}>Kapalı</button>
@@ -1642,24 +1642,24 @@ export default function App() {
           <button onClick={() => { sohbetRef.current = null; setKitapSohbeti(null); }} aria-label="Kitap sohbetini bitir">✕</button>
         </div>
       )}
-      {ultronSecici && (
+      {noxionSecici && (
         <Suspense fallback={null}>
-          <UltronSecici onKapat={() => setUltronSecici(false)} onSec={mod => { voice.unlock(); setUltronSecici(false); setUltron({ mod }); }} />
+          <NoxionSecici onKapat={() => setNoxionSecici(false)} onSec={mod => { voice.unlock(); setNoxionSecici(false); setNoxion({ mod }); }} />
         </Suspense>
       )}
-      {ultron?.mod === 'savas' && (
+      {noxion?.mod === 'savas' && (
         <Suspense fallback={null}>
-          <SavasModu final={ULTRON_FINAL} onizleme={ULTRON_ONIZLEME} onBitti={s => setUltron(s === 'goz' ? { mod: 'goz', gecis: true } : null)} />
+          <SavasModu final={NOXION_FINAL} onizleme={NOXION_ONIZLEME} onBitti={s => setNoxion(s === 'goz' ? { mod: 'goz', gecis: true } : null)} />
         </Suspense>
       )}
-      {ultron?.mod === 'goz' && (
+      {noxion?.mod === 'goz' && (
         <Suspense fallback={null}>
-          <UltronGozu gecis={!!ultron.gecis} girdi={gozGirdi} onKapat={() => setUltron(null)} onMic={toggleMic} dinliyor={core === 'listening'} />
+          <NoxionGozu gecis={!!noxion.gecis} girdi={gozGirdi} onKapat={() => setNoxion(null)} onMic={toggleMic} dinliyor={core === 'listening'} />
         </Suspense>
       )}
-      {ULTRON_KAYIT && (
+      {NOXION_KAYIT && (
         <Suspense fallback={null}>
-          <UltronKayit mod={ULTRON_KAYIT} />
+          <NoxionKayit mod={NOXION_KAYIT} />
         </Suspense>
       )}
       {toplanti && (

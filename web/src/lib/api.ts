@@ -6,22 +6,22 @@ function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } cat
 // ?token=... bir kez açılınca saklanır
 const urlToken = new URLSearchParams(location.search).get('token');
 if (urlToken) {
-  safeSet('jarvis.token', urlToken);
+  safeSet('luxion.token', urlToken);
   history.replaceState(null, '', location.pathname);
 }
-export const token = safeGet('jarvis.token') || '';
+export const token = safeGet('luxion.token') || '';
 
 export const clientId = (() => {
-  let id = sessionStorage.getItem('jarvis.client');
+  let id = sessionStorage.getItem('luxion.client');
   if (!id) {
     id = Math.random().toString(36).slice(2, 10);
-    sessionStorage.setItem('jarvis.client', id);
+    sessionStorage.setItem('luxion.client', id);
   }
   return id;
 })();
 
 export function detectDevice(): Device {
-  const saved = safeGet('jarvis.device') as Device | null;
+  const saved = safeGet('luxion.device') as Device | null;
   if (saved) return saved;
   const ua = navigator.userAgent;
   const touch = navigator.maxTouchPoints > 1;
@@ -29,9 +29,9 @@ export function detectDevice(): Device {
   if (/iPhone|Android.*Mobile|Mobile/.test(ua) || Math.min(innerWidth, innerHeight) < 500) return 'telefon';
   return 'masaustu';
 }
-export function saveDevice(d: Device) { safeSet('jarvis.device', d); }
+export function saveDevice(d: Device) { safeSet('luxion.device', d); }
 
-export const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-jarvis-token': token } : {}) });
+export const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(token ? { 'x-luxion-token': token } : {}) });
 
 export interface AppState {
   messages: StoredMessage[];
@@ -111,7 +111,7 @@ export async function saveSettings(patch: { voice?: VoiceSel; sfx?: boolean; wak
 
 /** Mikrofon kaydını sunucudaki ses tanımayla (beynin STT modeli) yazıya çevirir. */
 export async function stt(audio: Blob): Promise<string> {
-  const r = await fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': audio.type || 'audio/webm', ...(token ? { 'x-jarvis-token': token } : {}) }, body: audio });
+  const r = await fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': audio.type || 'audio/webm', ...(token ? { 'x-luxion-token': token } : {}) }, body: audio });
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'ses yazıya çevrilemedi');
   return (await r.json()).text ?? '';
 }
@@ -133,7 +133,7 @@ export const saveProfile = (text: string) => fetch('/api/profile', { method: 'PO
 export const addMemory = (text: string) => fetch('/api/memory', { method: 'POST', headers: headers(), body: JSON.stringify({ text }) }).then(r => json<{ memory: MemoryItem[] }>(r));
 export const deleteMemory = (id: string) => fetch(`/api/memory/${encodeURIComponent(id)}`, { method: 'DELETE', headers: headers() }).then(r => json<{ memory: MemoryItem[] }>(r));
 
-/** Oynatıcı "sahibi bu sitede oynatılmasını engelledi" dedi: sunucu bir daha Jarvis içinde önermesin */
+/** Oynatıcı "sahibi bu sitede oynatılmasını engelledi" dedi: sunucu bir daha Luxion içinde önermesin */
 export const reportVideoBlocked = (id: string, code: number) => post('/api/video-blocked', { id, code });
 
 // ---------- İki alkışla uyanma ----------

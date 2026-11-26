@@ -34,15 +34,15 @@ export const AYAR_LISTESI: { k: AcKapa; ad: string; alt?: string }[] = [
   { k: 'patlat', ad: '✊→✋ Patlat', alt: 'yumruk açılınca dalga' },
   { k: 'simsek', ad: '☝️☝️ Şimşek', alt: 'iki işaret parmağı' },
   { k: 'iz', ad: '☝️ Işık izi', alt: 'tek işaret parmağı' },
-  { k: 'kontroller', ad: '👍 ✌️ ✊ Jarvis kontrolleri', alt: 'kahve, ışık, sustur' },
+  { k: 'kontroller', ad: '👍 ✌️ ✊ Luxion kontrolleri', alt: 'kahve, ışık, sustur' },
   { k: 'yuz', ad: '◎ Yüz kilidi', alt: 'F' },
   { k: 'kitaplik', ad: '📚 Kitaplık', alt: 'kitap seç, çek, aç' },
   { k: 'rafSessiz', ad: '📚 Raf bölgesinde ateş/iz yok', alt: 'kitaba uzanırken araya girmesin' },
   { k: 'ses', ad: '🔊 Efekt sesleri', alt: 'M' },
-  { k: 'haberMotto', ad: '📰 Haber açılışında motto', alt: 'Jarvis seslendirir' },
+  { k: 'haberMotto', ad: '📰 Haber açılışında motto', alt: 'Luxion seslendirir' },
 ];
 
-const KEY = 'jarvis.el.ayar';
+const KEY = 'luxion.el.ayar';
 
 export function loadAyar(): ElAyar {
   try {

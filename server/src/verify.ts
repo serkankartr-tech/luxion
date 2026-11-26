@@ -9,7 +9,7 @@ import Parser from 'rss-parser';
 import { DOGRULAMA_BESLEMELERI } from './newsSources.js';
 import { fold, kokBenzerligi, kokler } from './newsCluster.js';
 
-const UA = { 'User-Agent': 'Mozilla/5.0 (Jarvis veri okuyucu)' };
+const UA = { 'User-Agent': 'Mozilla/5.0 (Luxion veri okuyucu)' };
 const zaman = (ms = 9000) => AbortSignal.timeout(ms);
 
 /** Basit önbellek: aynı sorgu süre dolana kadar tekrar çekilmez */

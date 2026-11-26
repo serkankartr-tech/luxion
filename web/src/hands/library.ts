@@ -23,11 +23,11 @@ export interface LibraryResult {
 }
 
 export interface LibraryHooks {
-  /** 👍 basılı: Jarvis özeti seçili sesle okusun */
+  /** 👍 basılı: Luxion özeti seçili sesle okusun */
   onRead(k: Kitap): void;
   /** Açık kitap değişti (App "bunu özetle" komutu için) */
   onOpenChange(k: Kitap | null): void;
-  /** Jarvis sayfaları yoksa doldur (sunucu, RouteLLM): özet, ana fikirler, yazar, temalar, benzerler */
+  /** Luxion sayfaları yoksa doldur (sunucu, RouteLLM): özet, ana fikirler, yazar, temalar, benzerler */
   fill(k: Kitap): Promise<Kitap | null>;
   /** Kapak resmi (Open Library / yüklenen); yoksa null → sırttan kapak üretilir */
   cover(k: Kitap): Promise<HTMLImageElement | null>;
@@ -261,7 +261,7 @@ export class Library {
   private cooldownUntil = 0;
   /** Kalem yazıyor: bu sırada gelen harita güncellemesi bitince uygulanır (sayfa yazılırken ezilmesin) */
   private yazim: { bekleyen: { list: Kitap[]; ref: Referans | null } | null } | null = null;
-  /** Jarvis'in önerdiği kitap: sırtı parlar, sonra raftan kendiliğinden çıkar */
+  /** Luxion'un önerdiği kitap: sırtı parlar, sonra raftan kendiliğinden çıkar */
   private oneri: { id: string; at: number } | null = null;
   private lastMotion = 0;
   private movedN = 0;
@@ -347,7 +347,7 @@ export class Library {
     }
     this.motionCheck(now);
 
-    // Jarvis öneriyor: 1,7 sn sırt altın ışıkla parlar (eller seçimi bozmaz), sonra kitap kendiliğinden raftan çıkar
+    // Luxion öneriyor: 1,7 sn sırt altın ışıkla parlar (eller seçimi bozmaz), sonra kitap kendiliğinden raftan çıkar
     if (this.oneri) {
       if (this.out || !this.books.some(b => b.id === this.oneri!.id)) this.oneri = null;
       else {
@@ -357,7 +357,7 @@ export class Library {
           this.oneri = null;
           this.detachVia({ x: this.W / 2, y: this.H * 0.62 }, now);
         }
-        return { capture: true, zone, holds, mode: 'kitap · Jarvis öneriyor' };
+        return { capture: true, zone, holds, mode: 'kitap · Luxion öneriyor' };
       }
     }
 
@@ -508,7 +508,7 @@ export class Library {
     this.detachVia({ x: lerp(h.shape.pinchPt.x, this.W / 2, 0.3), y: Math.min(h.shape.pinchPt.y, this.H * 0.6) }, now);
   }
 
-  /** Jarvis'in önerdiği kitabı çağır (El Kontrolü açıkken): sırtı parlar, ardından raftan çıkıp açılır */
+  /** Luxion'un önerdiği kitabı çağır (El Kontrolü açıkken): sırtı parlar, ardından raftan çıkıp açılır */
   cagir(id: string): boolean {
     if (this.out || this.paused || !this.books.some(b => b.id === id)) return false;
     this.oneri = { id, at: performance.now() };
@@ -547,12 +547,12 @@ export class Library {
       out.cover = img; out.coverSrc = img.src;
       this.paintBook(); this.paintSpread();
     }).catch(() => {});
-    // Jarvis sayfaları yoksa şimdiden iste (açılana kadar çoğu zaman hazır olur)
+    // Luxion sayfaları yoksa şimdiden iste (açılana kadar çoğu zaman hazır olur)
     this.maybeFill(out);
   }
 
   private maybeFill(out: OutBook) {
-    if (out.k.jarvis || !out.k.ad || out.fillLoading) return;
+    if (out.k.luxion || !out.k.ad || out.fillLoading) return;
     out.fillLoading = true;
     const id = out.k.id;
     this.hooks.fill(out.k).then(nk => {
@@ -566,7 +566,7 @@ export class Library {
     this.paintSpread();
   }
 
-  /** Açık kitabın adı değişti ("Jarvis, bu kitabın adı …"): kapağı yeniden üret, varsa gerçek kapağı ara */
+  /** Açık kitabın adı değişti ("Luxion, bu kitabın adı …"): kapağı yeniden üret, varsa gerçek kapağı ara */
   private renamed(out: OutBook) {
     out.cover = makeCover(out.k, out.spine);
     out.coverSrc = (out.cover as HTMLCanvasElement).toDataURL('image/jpeg', 0.85);
@@ -848,14 +848,14 @@ export class Library {
     }
   }
 
-  /** Sayfalar: (sol) kapak + künye, (sağ) Jarvis özeti, sonra notlar ve alıntılar (sayfa başına 1-2) */
+  /** Sayfalar: (sol) kapak + künye, (sağ) Luxion özeti, sonra notlar ve alıntılar (sayfa başına 1-2) */
   private buildPages(o: OutBook, yeni?: KalemKaydi): string[] {
     const k = o.k;
     const yeniChip = yeni?.tip === 'durum' ? ' lb-yeni' : '';
     const yeniBar = yeni?.tip === 'sayfa' ? ' lb-yeni' : '';
     const prog = k.sayfa && k.toplamSayfa ? Math.round((k.sayfa / k.toplamSayfa) * 100) : k.durum === 'bitti' ? 100 : null;
     const foot = (i: number, n: number) => `<div class="lb-foot">${String(i).padStart(2, '0')} / ${String(n).padStart(2, '0')}</div>`;
-    const J = k.jarvis && !k.jarvis.bilinmiyor ? k.jarvis : null;
+    const J = k.luxion && !k.luxion.bilinmiyor ? k.luxion : null;
     const meta = [J?.tur, J?.yil].filter(Boolean).join(' · ');
     const p0 = `<div class="lb-in"><div class="lb-h">KİTAPLIK · KÜNYE</div>
       <img class="lb-thumb" src="${o.coverSrc}" alt="">
@@ -867,32 +867,32 @@ export class Library {
       __FOOT0__</div>`;
     const ozet = k.ozet
       ? `<p class="lb-text">${esc(k.ozet)}</p>`
-      : o.fillLoading ? '<p class="lb-text dim"><span class="lb-spin"></span> Jarvis sayfaları dolduruyor…</p>'
-        : k.jarvis?.bilinmiyor ? '<p class="lb-text dim">Jarvis bu kitabı tanımıyor; sayfa uydurmadı. Adı doğru mu?</p>'
-          : `<p class="lb-text dim">${k.ad ? 'Bu kitap için özet yok.' : 'Kitabın adı bilinmiyor. "Jarvis, bu kitabın adı …" deyin ya da K ile adını yazın.'}</p>`;
-    const p1 = `<div class="lb-in"><div class="lb-h">JARVIS · ÖZET</div>${ozet}<p class="lb-hint">👍 basılı tut: sesli oku</p>__FOOT1__</div>`;
-    // Jarvis'in kitap defteri: ana fikirler (3'erli), yazar ve temalar, neden okumalı ve raftan benzerler
+      : o.fillLoading ? '<p class="lb-text dim"><span class="lb-spin"></span> Luxion sayfaları dolduruyor…</p>'
+        : k.luxion?.bilinmiyor ? '<p class="lb-text dim">Luxion bu kitabı tanımıyor; sayfa uydurmadı. Adı doğru mu?</p>'
+          : `<p class="lb-text dim">${k.ad ? 'Bu kitap için özet yok.' : 'Kitabın adı bilinmiyor. "Luxion, bu kitabın adı …" deyin ya da K ile adını yazın.'}</p>`;
+    const p1 = `<div class="lb-in"><div class="lb-h">LUXION · ÖZET</div>${ozet}<p class="lb-hint">👍 basılı tut: sesli oku</p>__FOOT1__</div>`;
+    // Luxion'un kitap defteri: ana fikirler (3'erli), yazar ve temalar, neden okumalı ve raftan benzerler
     const jp: string[] = [];
     if (J) {
       const ideas = J.anaFikirler;
       for (let i = 0; i < ideas.length; i += 3) {
-        jp.push(`<div class="lb-in"><div class="lb-h">JARVIS · ANA FİKİRLER${ideas.length > 3 ? ` ${i / 3 + 1}/${Math.ceil(ideas.length / 3)}` : ''}</div><ol class="lb-ideas" start="${i + 1}">${ideas
+        jp.push(`<div class="lb-in"><div class="lb-h">LUXION · ANA FİKİRLER${ideas.length > 3 ? ` ${i / 3 + 1}/${Math.ceil(ideas.length / 3)}` : ''}</div><ol class="lb-ideas" start="${i + 1}">${ideas
           .slice(i, i + 3).map(x => `<li>${esc(x)}</li>`).join('')}</ol>__FOOT__</div>`);
       }
       if (J.yazarHakkinda || J.temalar.length) {
-        jp.push(`<div class="lb-in"><div class="lb-h">JARVIS · YAZAR VE TEMALAR</div>${J.yazarHakkinda ? `<p class="lb-text">${esc(J.yazarHakkinda)}</p>` : ''}${J.temalar.length ? `<div class="lb-tags">${J.temalar.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}__FOOT__</div>`);
+        jp.push(`<div class="lb-in"><div class="lb-h">LUXION · YAZAR VE TEMALAR</div>${J.yazarHakkinda ? `<p class="lb-text">${esc(J.yazarHakkinda)}</p>` : ''}${J.temalar.length ? `<div class="lb-tags">${J.temalar.map(t => `<span>${esc(t)}</span>`).join('')}</div>` : ''}__FOOT__</div>`);
       }
       if (J.nedenOku || J.kimeUygun || J.benzer.length) {
-        jp.push(`<div class="lb-in"><div class="lb-h">JARVIS · NEDEN OKUMALI</div>${J.nedenOku ? `<p class="lb-text">${esc(J.nedenOku)}</p>` : ''}${J.kimeUygun ? `<p class="lb-text dim">${esc(J.kimeUygun)}</p>` : ''}${J.benzer.length ? `<div class="lb-sub">RAFINIZDAN BENZERLER</div><ul class="lb-similar">${J.benzer.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}__FOOT__</div>`);
+        jp.push(`<div class="lb-in"><div class="lb-h">LUXION · NEDEN OKUMALI</div>${J.nedenOku ? `<p class="lb-text">${esc(J.nedenOku)}</p>` : ''}${J.kimeUygun ? `<p class="lb-text dim">${esc(J.kimeUygun)}</p>` : ''}${J.benzer.length ? `<div class="lb-sub">RAFINIZDAN BENZERLER</div><ul class="lb-similar">${J.benzer.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}__FOOT__</div>`);
       }
     } else if (o.fillLoading) {
-      jp.push('<div class="lb-in"><div class="lb-h">JARVIS · KİTAP DEFTERİ</div><p class="lb-text dim"><span class="lb-spin"></span> Ana fikirler, yazar ve rafınızdan benzer kitaplar yazılıyor…</p>__FOOT__</div>');
+      jp.push('<div class="lb-in"><div class="lb-h">LUXION · KİTAP DEFTERİ</div><p class="lb-text dim"><span class="lb-spin"></span> Ana fikirler, yazar ve rafınızdan benzer kitaplar yazılıyor…</p>__FOOT__</div>');
     }
     const items = [...k.notlar.map(t => ({ t: 'NOT', x: t })), ...k.alintilar.map(t => ({ t: 'ALINTI', x: t }))];
     // Kalemle yazılacak kayıt: son eklenen (metni kalem yazar)
     const yeniI = yeni?.tip === 'not' ? k.notlar.length - 1 : yeni?.tip === 'alinti' ? k.notlar.length + k.alintilar.length - 1 : -1;
     const rest: string[] = [];
-    if (!items.length) rest.push('<div class="lb-in"><div class="lb-h">NOTLARIM</div><p class="lb-text dim">Henüz not yok.</p><p class="lb-hint">Kitap açıkken: "Jarvis, not al: …" ya da "alıntı ekle: …"</p>__FOOT__</div>');
+    if (!items.length) rest.push('<div class="lb-in"><div class="lb-h">NOTLARIM</div><p class="lb-text dim">Henüz not yok.</p><p class="lb-hint">Kitap açıkken: "Luxion, not al: …" ya da "alıntı ekle: …"</p>__FOOT__</div>');
     for (let i = 0; i < items.length; i += 2) {
       const chunk = items.slice(i, i + 2);
       rest.push(`<div class="lb-in"><div class="lb-h">${chunk.every(c => c.t === 'ALINTI') ? 'ALINTILAR' : 'NOTLARIM'}</div>${chunk
@@ -1022,7 +1022,7 @@ export class Library {
       this.outline(g, { x: r.x + jx - (lift - 1) * r.w / 2, y: r.y + jy + dy - (lift - 1) * r.h / 2, w: r.w * lift, h: r.h * lift }, CYAN, 0.9 + 0.1 * Math.sin(now / 40));
     }
 
-    // Jarvis öneriyor: sırtın üstünden inen altın ışık huzmesi ve etiket
+    // Luxion öneriyor: sırtın üstünden inen altın ışık huzmesi ve etiket
     if (this.oneri) {
       const r = this.rects.get(this.oneri.id), k = this.books.find(b => b.id === this.oneri!.id);
       const t = (now - this.oneri.at) / 1700;
@@ -1035,9 +1035,9 @@ export class Library {
         g.fillStyle = `rgba(255,211,107,${0.18 * pulse})`;
         g.fillRect(r.x, r.y, r.w, r.h);
         this.outline(g, r, '255,211,107', pulse);
-        this.label(g, r, `JARVIS ÖNERİYOR · ${shortLabel(k)}`, '255,211,107');
+        this.label(g, r, `LUXION ÖNERİYOR · ${shortLabel(k)}`, '255,211,107');
       } else if (k) {
-        this.banner(g, `JARVIS ÖNERİYOR · ${shortLabel(k)} · rafta yeri yok, getiriyorum`, '255,211,107', this.H - 120);
+        this.banner(g, `LUXION ÖNERİYOR · ${shortLabel(k)} · rafta yeri yok, getiriyorum`, '255,211,107', this.H - 120);
       }
     }
     // Seçili kitap: kenar parıltısı + üstünde HUD etiketi

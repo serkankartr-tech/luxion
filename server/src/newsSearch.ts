@@ -94,7 +94,7 @@ export async function haberAra(q: string, bildir: (o: AramaOlay) => void): Promi
   bildir({ tip: 'adim', ad: `Arşiv · ${arsivGunSayisi()} gün` });
   const guncelId = new Set(kumele(trBulunan).map(k => k.id));
   const arsiv = arsivAra(eslesir).filter(a => !guncelId.has(a.kume.id));
-  bildir({ tip: 'kaynak', ad: 'Jarvis arşivi', dil: 'tr', grup: 'arsiv', adet: arsiv.length, konum: null });
+  bildir({ tip: 'kaynak', ad: 'Luxion arşivi', dil: 'tr', grup: 'arsiv', adet: arsiv.length, konum: null });
 
   // 4) Google News (paralel)
   bildir({ tip: 'adim', ad: 'Google News · Türkçe ve İngilizce' });

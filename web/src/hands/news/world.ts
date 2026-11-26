@@ -45,14 +45,14 @@ export function dunyaHtml(k: KumeOzet, a: Analiz | null, d: DunyaBasini | null, 
       ${alinti(y.alinti, 'en')}
       <u>${esc(alanAdi(y.url))}${y.tam ? '' : ' · yalnızca özet okundu'}</u>
     </article>`).join('');
-  // Tür başına bir madde (üst satıra yer kalsın; tamamı Jarvis'in anlatımında)
+  // Tür başına bir madde (üst satıra yer kalsın; tamamı Luxion'un anlatımında)
   const serit = SERIT.flatMap(([key, ad, renk]) => d[key].slice(0, 1).map(m => madde(m, renk, ad))).join('');
   const diger = d.basliklar.length
     ? `<footer class="hb-dn-diger"><b>BAŞLIK DÜZEYİNDE (metin okunmadı)</b>${d.basliklar.slice(0, 8).map(b => `<span title="${esc(b.baslik)}"><em>${esc(b.kaynak)}</em> ${esc(b.baslik.slice(0, 70))}${b.baslik.length > 70 ? '…' : ''}</span>`).join('')}</footer>`
     : '';
   return `
   <div class="hb-dunya">
-    <h2>DÜNYA BASINI <span>${d.yayinlar.length} yayında bulundu · taranan: ${esc(taranan)}</span><em>Alıntılar kendi dilinde birebir · çeviriler Jarvis'in</em></h2>
+    <h2>DÜNYA BASINI <span>${d.yayinlar.length} yayında bulundu · taranan: ${esc(taranan)}</span><em>Alıntılar kendi dilinde birebir · çeviriler Luxion'un</em></h2>
     <div class="hb-dn-ic">${tr}<section class="hb-dn-yayinlar">${kartlar || '<p class="bos">Dünya yayınlarında eşleşen metin yok; başlık düzeyinde bulunanlar aşağıda.</p>'}</section></div>
     ${serit ? `<div class="hb-serit-alt">${serit}</div>` : ''}
     ${diger}
